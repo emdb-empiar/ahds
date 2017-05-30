@@ -23,7 +23,7 @@ setup(
       url="https://github.com/polarise/ahds",
       license = "Apache License",
       keywords = "header, parser, data streams",
-      install_requires=["SimpleParse==2.1.1", "numpy", "scikit-image"],
+      install_requires=["simpleparse==2.1.1", "numpy", "scikit-image"],
       ext_modules=[decoders],
       include_dirs=[np.get_include()],
 )
