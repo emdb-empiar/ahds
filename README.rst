@@ -7,14 +7,11 @@ ahds
 ----------------------------------------------
 Overview
 ----------------------------------------------
-
-.. include:: <isonum.txt>
-
-ahds (Amira |reg| header and data streams) is a Python package to parse and handle Amira |reg| files. It was developed to facilitate reading of Amira |reg| files as part of the EMDB-SFF toolkit. 
+ahds (Amira (R) header and data streams) is a Python package to parse and handle Amira (R) files. It was developed to facilitate reading of Amira (R) files as part of the EMDB-SFF toolkit. 
 
 Use Cases
 ==============================================
-* 	Detect and parse Amira |reg| headers and return structured data
+* 	Detect and parse Amira (R) headers and return structured data
 
 * 	Decode data (HxRLEByte, HxZip)
 
@@ -54,12 +51,12 @@ License
 ----------------------------------------------
 Future Plans
 ----------------------------------------------
-*	Write out valid Amira |reg| files
+*	Write out valid Amira (R) files
 
 ----------------------------------------------
 Background and Definitions
 ----------------------------------------------
-ahds presently handles two types of Amira |reg| files:
+ahds presently handles two types of Amira (R) files:
 
 * 	`AmiraMesh` files, which typically but not necessarily have a ``.am`` extension, and
 
@@ -260,7 +257,7 @@ These modules are tied into a user-level class called AmiraFile that does all th
 
 ahds.grammar
 ==============================================
-This module describes the header grammar for Amira |reg| (AmiraMesh and HyperSurface) files and so depends on simpleparse Python package. It defines a single class (AmiraDispatchProcessor) and four functions.
+This module describes the header grammar for Amira (R) (AmiraMesh and HyperSurface) files and so depends on simpleparse Python package. It defines a single class (AmiraDispatchProcessor) and four functions.
 
 AmiraDispatchProcessor is a subclass of simpleparse.dispatchprocessor which implements the core functionality required to use the grammar. Each grammar token has a corresponding method defined on this class which determines how the data associated with that token will be rendered. Data can be rendered as a single or multimap, string, number, or in custom format.
 
@@ -365,9 +362,9 @@ into an AmiraHeader object.
 	>>> amira_header.data_pointers.data_pointer_1.data_length
 	4014522
 
-This module consists of two main classes: ``ahds.header.AmiraHeader`` is the user-level class and ``ahds.header.Block`` which is a container class for a block of structured data from an Amira |reg| header.
+This module consists of two main classes: ``ahds.header.AmiraHeader`` is the user-level class and ``ahds.header.Block`` which is a container class for a block of structured data from an Amira (R) header.
 
-AmiraHeader has one constructor: ``AmiraHeader.from_file(fn, *args, **kwargs)`` which takes an Amira |reg| file by name and arguments and returns an ``AmiraHeader`` object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: AmiraHeader(parsed_data) which returns an AmiraHeader object configured appropriately. 
+AmiraHeader has one constructor: ``AmiraHeader.from_file(fn, *args, **kwargs)`` which takes an Amira (R) file by name and arguments and returns an ``AmiraHeader`` object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: AmiraHeader(parsed_data) which returns an AmiraHeader object configured appropriately. 
 
 * 	The raw data structured data is available as read-only property: AmiraHeader.raw_header
 
@@ -412,7 +409,7 @@ The ``Block`` class is a container class which converts structured groups to att
 
 ahds.data_stream
 ==============================================
-This is most complex module implementing a hierarchy of classes describing various data streams within Amira |reg| files. It has 22 classes and five functions
+This is most complex module implementing a hierarchy of classes describing various data streams within Amira (R) files. It has 22 classes and five functions
 
 Classes
 ----------------------------------------------
@@ -420,7 +417,7 @@ There are three categories of classes:
 
 * 	A user-level class that encapsulates (2) below.
 
-* 	Classes describing Amira |reg| data streams
+* 	Classes describing Amira (R) data streams
 
 	* 	Classes describing AmiraMesh data streams
 	
@@ -432,7 +429,7 @@ There are three categories of classes:
 
 	* 	Classes abstracting contours
 
-The user-level DataStreams class is the preferred way to use the module. It takes the name of an Amira |reg| file and encapsulates an iterator of data streams.
+The user-level DataStreams class is the preferred way to use the module. It takes the name of an Amira (R) file and encapsulates an iterator of data streams.
 
 .. code:: python
 
@@ -465,7 +462,7 @@ DataStreams class
 ``````````````````````````````````````````````
 The following attributes are available on objects of this class:
 
-* 	``ahds.data_stream.DataStreams.file`` - filename of Amira |reg| file
+* 	``ahds.data_stream.DataStreams.file`` - filename of Amira (R) file
 
 *	``ahds.data_stream.DataStreams.header`` - an object of class ahds.header.AmiraHeader encapsulating the header data in four sections (designation, definitions, parameters, and data pointers)
 
@@ -477,11 +474,11 @@ The following attributes are available on objects of this class:
 
 *	``ahds.data_stream.DataStreams[<index>]`` - returns the data stream of the index specified (as defined in the data_pointers section of the header object
 
-Classes describing Amira |reg| data streams
+Classes describing Amira (R) data streams
 ``````````````````````````````````````````````
 The following diagrams illustrates the hierarchy of classes:
 
-Classes describing Amira |reg| data streams
+Classes describing Amira (R) data streams
 
 
 *	``ahds.data_stream.AmiraDataStream`` is the base class for all data stream classes and defines the following attributes:
