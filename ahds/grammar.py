@@ -215,7 +215,7 @@ number_seq                   :=    number, (ts, number)*
 '''
 
 
-def detect_format(fn, format_bytes=50, verbose=False):
+def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
     """Detect Amira file format (AmiraMesh or HyperSurface)
     
     :param str fn: file name
@@ -275,7 +275,7 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False):
     return data
 
 
-def parse_header(data, verbose=False):
+def parse_header(data, verbose=False, *args, **kwargs):
     """Parse the data using the grammar specified in this module
     
     :param str data: delimited data to be parsed for metadata
@@ -284,7 +284,7 @@ def parse_header(data, verbose=False):
     # the parser
     if verbose:
         print >> sys.stderr, "Creating parser object..."
-    parser = Parser(amira_header_grammar.encode('utf-8'))
+    parser = Parser(amira_header_grammar)
     
     # the processor
     if verbose:
