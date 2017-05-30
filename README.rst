@@ -22,7 +22,7 @@ ahds was written and is maintained by Paul K. Korir.
 ----------------------------------------------
 Dependencies
 ---------------------------------------------- 
-* 	SimpleParse (tested with 2.1.1)
+* 	SimpleParse (tested with 2.2.0)
 
 * 	numpy (tested with 1.11.2)
 

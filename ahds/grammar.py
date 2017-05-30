@@ -284,7 +284,7 @@ def parse_header(data, verbose=False):
     # the parser
     if verbose:
         print >> sys.stderr, "Creating parser object..."
-    parser = Parser(amira_header_grammar)
+    parser = Parser(amira_header_grammar.encode('utf-8'))
     
     # the processor
     if verbose:
