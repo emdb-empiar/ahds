@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ahdr.data_stream &mdash; Amira Header and Data Reader 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Amira Header and Data Reader 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ahdr.data_stream</h1><div class="highlight"><pre>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># amira_data_streams.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Extract and decode individual data streams from an Amira file</span>
+<span class="sd">Package the data stream as an image and contours by segment</span>
+
+<span class="sd">&gt;&gt;&gt; from amira_data_streams import get_streams</span>
+<span class="sd">&gt;&gt;&gt; data_streams = get_streams(&#39;file.am&#39;) # a valid .am file</span>
+<span class="sd">&gt;&gt;&gt; # data_streams is a dictionary of ``DataStreams`` having the ``data_index`` of the respective ``data_pointer`` as the key</span>
+<span class="sd">&gt;&gt;&gt; print data_streams[1]</span>
+<span class="sd">data_pointer_1</span>
+<span class="sd">pointer_name: Lattice</span>
+<span class="sd">data_format: HxByteRLE</span>
+<span class="sd">data_dimension: None</span>
+<span class="sd">data_type: byte</span>
+<span class="sd">data_name: Labels</span>
+<span class="sd">data_index: 1</span>
+<span class="sd">data_length: 299178</span>
+<span class="sd">compressed size: 299178</span>
+<span class="sd">uncompressed size: 16777216</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">skimage.measure._find_contours</span> <span class="kn">import</span> <span class="n">find_contours</span>
+<span class="kn">from</span> <span class="nn">UserList</span> <span class="kn">import</span> <span class="n">UserList</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.header</span> <span class="kn">import</span> <span class="n">AmiraHeader</span>
+<span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">header</span> <span class="kn">import</span> <span class="n">AmiraHeader</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ahdr</span> <span class="kn">import</span> <span class="n">byterle_decoder</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">decoders</span> <span class="kn">import</span> <span class="n">byterle_decoder</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">struct</span>
+    
+<div class="viewcode-block" id="byterle_decoder"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.byterle_decoder">[docs]</a>    <span class="k">def</span> <span class="nf">byterle_decoder</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Python drop-in replacement for compiled equivalent</span>
+<span class="sd">        </span>
+<span class="sd">        :param int output_size: the number of items when ``data`` is uncompressed</span>
+<span class="sd">        :param str data: a raw stream of data to be unpacked</span>
+<span class="sd">        :return numpy.array output: an array of ``numpy.uint8``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+        
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;using pure-Python (instead of Python C-extension) implementation of byterle_decoder&quot;</span><span class="p">)</span>
+        
+        <span class="n">input_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&lt;{}B&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)),</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">repeat</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">no</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">no</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">no</span> <span class="o">&gt;</span> <span class="mi">127</span><span class="p">:</span>
+                    <span class="n">no</span> <span class="o">&amp;=</span> <span class="mh">0x7f</span> <span class="c1"># 2&#39;s complement</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="n">repeat</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="n">repeat</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">continue</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">count</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">repeat</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">no</span><span class="p">]</span>
+                    <span class="n">repeat</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">output</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="n">no</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="n">no</span>
+                    <span class="n">j</span> <span class="o">+=</span> <span class="n">no</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="n">repeat</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">output</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="n">no</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">j</span> <span class="o">+=</span> <span class="n">no</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">repeat</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">continue</span>
+        
+        <span class="k">assert</span> <span class="n">j</span> <span class="o">==</span> <span class="n">output_size</span>
+        
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="hxbyterle_decode"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.hxbyterle_decode">[docs]</a><span class="k">def</span> <span class="nf">hxbyterle_decode</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decode HxRLE data stream</span>
+<span class="sd">    </span>
+<span class="sd">    If C-extension is not compiled it will use a </span>
+<span class="sd">    </span>
+<span class="sd">    :param int output_size: the number of items when ``data`` is uncompressed</span>
+<span class="sd">    :param str data: a raw stream of data to be unpacked</span>
+<span class="sd">    :return numpy.array output: an array of ``numpy.uint8``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">byterle_decoder</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">output_size</span><span class="p">)</span>
+    
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="n">output_size</span>
+            
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="hxzip_decode"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.hxzip_decode">[docs]</a><span class="k">def</span> <span class="nf">hxzip_decode</span><span class="p">(</span><span class="n">data_size</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decode HxZip data stream</span>
+<span class="sd">    </span>
+<span class="sd">    :param int data_size: the number of items when ``data`` is uncompressed</span>
+<span class="sd">    :param str data: a raw stream of data to be unpacked</span>
+<span class="sd">    :return numpy.array output: an array of ``numpy.uint8``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">zlib</span>
+    
+    <span class="n">data_stream</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&lt;{}B&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_stream</span><span class="p">)),</span> <span class="n">data_stream</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="n">data_size</span>
+    
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="unpack"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.unpack">[docs]</a><span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="n">data_pointer</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unpack using ``struct.unpack``</span>
+<span class="sd">    </span>
+<span class="sd">    :param data_pointer: metadata for the ``data_pointer`` attribute for this data stream</span>
+<span class="sd">    :type data_pointer: ``ahdr.header.Block``</span>
+<span class="sd">    :param definitions: definitions specified in the header</span>
+<span class="sd">    :type definitions: ``ahdr.header.Block``</span>
+<span class="sd">    :param bytes data: raw binary data to be unpacked</span>
+<span class="sd">    :return tuple output: unpacked data </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">data_pointer</span><span class="o">.</span><span class="n">data_dimension</span><span class="p">:</span>
+        <span class="n">data_dimension</span> <span class="o">=</span> <span class="n">data_pointer</span><span class="o">.</span><span class="n">data_dimension</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data_dimension</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># if data_dimension is None</span>
+        
+    <span class="k">if</span> <span class="n">data_pointer</span><span class="o">.</span><span class="n">data_type</span> <span class="o">==</span> <span class="s2">&quot;float&quot;</span><span class="p">:</span>
+        <span class="n">data_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span> <span class="o">*</span> <span class="n">data_dimension</span>
+    <span class="k">elif</span> <span class="n">data_pointer</span><span class="o">.</span><span class="n">data_type</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+        <span class="n">data_type</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span> <span class="o">*</span> <span class="n">data_dimension</span> <span class="c1"># assume signed int</span>
+    
+    <span class="n">data_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">definitions</span><span class="p">,</span> <span class="n">data_pointer</span><span class="o">.</span><span class="n">data_name</span><span class="p">))</span>
+        
+    <span class="kn">import</span> <span class="nn">struct</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&lt;&#39;</span> <span class="o">+</span> <span class="s1">&#39;{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_type</span><span class="p">)</span> <span class="o">*</span> <span class="n">data_length</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span> <span class="c1"># assume little-endian</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">data_length</span><span class="p">,</span> <span class="n">data_dimension</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="DataStream"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.DataStream">[docs]</a><span class="k">class</span> <span class="nc">DataStream</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stream object representing data obtained from file with methods</span>
+<span class="sd">    to decode it into uncompressed sequence of bytes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span> <span class="n">stream_data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span> <span class="o">=</span> <span class="n">amira_header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span> <span class="o">=</span> <span class="n">data_pointer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span> <span class="o">=</span> <span class="n">stream_data</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="p">,</span> <span class="s1">&#39;Lattice&#39;</span><span class="p">):</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="o">.</span><span class="n">Lattice</span>
+            <span class="n">data_size</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">Y</span> <span class="o">*</span> <span class="n">Z</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__len_decoded_data</span> <span class="o">=</span> <span class="n">data_size</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="p">,</span> <span class="s1">&#39;Vertices&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__len_decoded_data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to determine data size&quot;</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">decoded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span><span class="o">.</span><span class="n">data_format</span> <span class="o">==</span> <span class="s2">&quot;HxByteRLE&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">hxbyterle_decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoded_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span><span class="o">.</span><span class="n">data_format</span> <span class="o">==</span> <span class="s2">&quot;HxZip&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">hxzip_decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoded_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span><span class="o">.</span><span class="n">data_format</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="c1"># try to unpack data</span>
+            <span class="k">return</span> <span class="n">unpack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+<span class="c1">#     @property</span>
+<div class="viewcode-block" id="DataStream.to_images"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.DataStream.to_images">[docs]</a>    <span class="k">def</span> <span class="nf">to_images</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="p">,</span> <span class="s1">&#39;Lattice&#39;</span><span class="p">):</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="o">.</span><span class="n">Lattice</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to determine data size&quot;</span><span class="p">)</span>
+        <span class="n">image_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoded_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+
+        <span class="n">imgs</span> <span class="o">=</span> <span class="n">ImageSet</span><span class="p">(</span><span class="n">image_data</span><span class="p">[:])</span>
+        <span class="k">return</span> <span class="n">imgs</span></div>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span><span class="p">)</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;compressed size: {}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;uncompressed size: {}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoded_length</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">string</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">decoded_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__len_decoded_data</span></div>
+
+
+<div class="viewcode-block" id="ImageSet"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.ImageSet">[docs]</a><span class="k">class</span> <span class="nc">ImageSet</span><span class="p">(</span><span class="n">UserList</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Encapsulation for set of ``Image`` objects&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Image</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">segments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A dictionary of lists of contours keyed by z-index&quot;&quot;&quot;</span>
+        <span class="n">segments</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">z</span><span class="p">,</span> <span class="n">contour</span> <span class="ow">in</span> <span class="n">image</span><span class="o">.</span><span class="n">as_segments</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">byte_value</span><span class="p">,</span> <span class="n">contour_set</span> <span class="ow">in</span> <span class="n">contour</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">byte_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+                        <span class="n">segments</span><span class="p">[</span><span class="n">byte_value</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">z</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">[</span><span class="n">byte_value</span><span class="p">]:</span>
+                        <span class="n">segments</span><span class="p">[</span><span class="n">byte_value</span><span class="p">][</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="n">contour_set</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">segments</span><span class="p">[</span><span class="n">byte_value</span><span class="p">][</span><span class="n">z</span><span class="p">]</span> <span class="o">+=</span> <span class="n">contour_set</span>                
+         
+        <span class="k">return</span> <span class="n">segments</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;{} with {} images&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
+ 
+
+<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Encapsulates individual images&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">=</span> <span class="n">array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">byte_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accessor to underlying array data&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__array</span>
+<div class="viewcode-block" id="Image.equalise"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.Image.equalise">[docs]</a>    <span class="k">def</span> <span class="nf">equalise</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Increase the dynamic range of the image&quot;&quot;&quot;</span>
+        <span class="n">multiplier</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">*</span> <span class="n">multiplier</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">as_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A dictionary of lists of contours keyed by byte_value&quot;&quot;&quot;</span>
+        <span class="n">contours</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">byte_value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">byte_value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">==</span> <span class="n">byte_value</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
+            <span class="n">found_contours</span> <span class="o">=</span> <span class="n">find_contours</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">254</span><span class="p">,</span> <span class="n">fully_connected</span><span class="o">=</span><span class="s1">&#39;high&#39;</span><span class="p">)</span> <span class="c1"># a list of array</span>
+            <span class="n">contours</span><span class="p">[</span><span class="n">byte_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">ContourSet</span><span class="p">(</span><span class="n">found_contours</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">contours</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">as_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_contours</span><span class="p">}</span>
+<div class="viewcode-block" id="Image.show"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.Image.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display the image&quot;&quot;&quot;</span>
+        <span class="n">with_matplotlib</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">skimage.io</span> <span class="kn">as</span> <span class="nn">io</span>
+            <span class="n">with_matplotlib</span> <span class="o">=</span> <span class="bp">False</span>
+            
+        <span class="k">if</span> <span class="n">with_matplotlib</span><span class="p">:</span>
+            <span class="n">equalised_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">equalise</span><span class="p">()</span>
+            
+            <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+            
+            <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">equalised_img</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+    
+            <span class="kn">import</span> <span class="nn">random</span>
+            
+            <span class="k">for</span> <span class="n">contour_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_contours</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+                <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+                <span class="p">[</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">contour</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">contour</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">contour</span> <span class="ow">in</span> <span class="n">contour_set</span><span class="p">]</span>
+            
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+            
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">io</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equalise</span><span class="p">())</span>
+            <span class="n">io</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;{} with dimensions {}&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;{} with dimensions {}&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class="viewcode-block" id="Image.as_contour"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.Image.as_contour">[docs]</a>    <span class="k">def</span> <span class="nf">as_contour</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="ContourSet"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.ContourSet">[docs]</a><span class="k">class</span> <span class="nc">ContourSet</span><span class="p">(</span><span class="n">UserList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Contour</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;{} with {} contours&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">string</span></div>
+
+
+<div class="viewcode-block" id="Contour"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.Contour">[docs]</a><span class="k">class</span> <span class="nc">Contour</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Encapsulates the array representing a contour&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">=</span> <span class="n">array</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span><span class="p">)</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Contour.string_repr"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.Contour.string_repr">[docs]</a>    <span class="k">def</span> <span class="nf">string_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;&lt;Contour at z={} with {} points&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">string</span></div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">string_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">string_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+   
+
+<div class="viewcode-block" id="get_streams"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.get_streams">[docs]</a><span class="k">def</span> <span class="nf">get_streams</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get data streams (identified by data markers e.g. ``@1``)</span>
+<span class="sd">    </span>
+<span class="sd">    :param str fn: file name</span>
+<span class="sd">    :return dict data_streams: a dictionary with ``data_index`` as keys and values as ``DataStream`` objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">amira_header</span> <span class="o">=</span> <span class="n">AmiraHeader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+    <span class="n">data_streams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;AmiraMesh&quot;</span><span class="p">:</span>
+        
+        <span class="k">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Processing AmiraMesh bitmap file...&quot;</span> 
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">raw_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span> 
+                <span class="n">data_pointer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="p">,</span> <span class="s1">&#39;data_pointer_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\n@{}\n(?P&lt;stream&gt;.*)\n@{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_pointer</span><span class="o">.</span><span class="n">data_index</span><span class="p">,</span> <span class="n">data_pointer</span><span class="o">.</span><span class="n">data_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">raw_data</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
+                <span class="n">stream_data</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;stream&#39;</span><span class="p">)</span>
+                <span class="n">data_streams</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">DataStream</span><span class="p">(</span><span class="n">amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span> <span class="n">stream_data</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :TODO: make this parallel so that streams can be decoded/unpacked in parallel</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">data_pointer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="p">,</span> <span class="s1">&#39;data_pointer_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">r&#39;\n@{}\n(?P&lt;stream&gt;.*)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">raw_data</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
+            <span class="n">stream_data</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;stream&#39;</span><span class="p">)</span>
+            <span class="n">data_streams</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">DataStream</span><span class="p">(</span><span class="n">amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span> <span class="n">stream_data</span><span class="p">)</span>
+    
+    <span class="k">elif</span> <span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;HyperSurface&quot;</span><span class="p">:</span>
+        
+        <span class="k">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Processing AmiraMesh 3D surface file...&quot;</span>
+        <span class="k">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Coming soon...&quot;</span>
+    
+    <span class="k">return</span> <span class="n">data_streams</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../ahdr.html#ahdr.data_stream.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">argparse</span>
+    
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s1">&#39;amira_data_streams&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;module to extract individual streams of data in an Amira file&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;amira_file&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;a valid Amira file&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;enable verbosity [default: False]&quot;</span><span class="p">)</span>
+    
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    
+    <span class="n">data_streams</span> <span class="o">=</span> <span class="n">get_streams</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">amira_file</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+
+<span class="c1">#     from pprint import pprint</span>
+    
+    <span class="k">for</span> <span class="n">data_stream</span> <span class="ow">in</span> <span class="n">data_streams</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+        <span class="k">print</span> <span class="n">data_stream</span><span class="o">.</span><span class="n">decoded_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">100</span><span class="p">]</span>
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    # for testing AmiraMesh bitmap segmentations</span>
+<span class="sd">    for stream in data_streams.itervalues():    </span>
+<span class="sd">        imgs = stream.to_images() # list of Image objects</span>
+<span class="sd">        \&quot;&quot;&quot;</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="n">imgs</span><span class="o">.</span><span class="n">segments</span><span class="p">)</span>     
+        \<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        no_of_images = len(imgs)</span>
+<span class="s2">        img_index = 0</span>
+<span class="s2">        while 0 &lt;= img_index &lt; no_of_images:</span>
+<span class="s2">#             pprint(imgs.segments[2][199])</span>
+<span class="s2">            img = imgs[img_index]</span>
+<span class="s2">#             pprint(img.as_segments)</span>
+<span class="s2">            img.show()</span>
+<span class="s2">            </span>
+<span class="s2">            try: </span>
+<span class="s2">                img_index = int(input(&quot;image? [0-{}]&quot;.format(no_of_images - 1)))</span>
+<span class="s2">            except:</span>
+<span class="s2">                break</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+        
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Paul K. Korir, PhD.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

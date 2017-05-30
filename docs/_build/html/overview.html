@@ -1,0 +1,668 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ahds &mdash; Amira Header and Data Reader 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Amira Header and Data Reader 0.1 documentation" href="index.html" />
+    <link rel="next" title="ahds package" href="ahds.html" />
+    <link rel="prev" title="Welcome to Amira Header and Data Stream (ahds) package documentation!" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ahds">
+<h1><a class="toc-backref" href="#id1">ahds</a><a class="headerlink" href="#ahds" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#ahds" id="id1">ahds</a><ul>
+<li><a class="reference internal" href="#overview" id="id2">Overview</a><ul>
+<li><a class="reference internal" href="#use-cases" id="id3">Use Cases</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dependencies" id="id4">Dependencies</a></li>
+<li><a class="reference internal" href="#license" id="id5">License</a></li>
+<li><a class="reference internal" href="#future-plans" id="id6">Future Plans</a></li>
+<li><a class="reference internal" href="#background-and-definitions" id="id7">Background and Definitions</a><ul>
+<li><a class="reference internal" href="#headers-in-detail" id="id8">Headers in Detail</a></li>
+<li><a class="reference internal" href="#data-streams-in-detail" id="id9">Data Streams in Detail</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ahds-modules" id="id10">ahds Modules</a><ul>
+<li><a class="reference internal" href="#ahds-grammar" id="id11">ahds.grammar</a></li>
+<li><a class="reference internal" href="#ahds-header" id="id12">ahds.header</a></li>
+<li><a class="reference internal" href="#ahds-data-stream" id="id13">ahds.data_stream</a><ul>
+<li><a class="reference internal" href="#classes" id="id14">Classes</a></li>
+<li><a class="reference internal" href="#functions" id="id15">Functions</a></li>
+<li><a class="reference internal" href="#classes-in-detail" id="id16">Classes in Detail</a><ul>
+<li><a class="reference internal" href="#datastreams-class" id="id17">DataStreams class</a></li>
+<li><a class="reference internal" href="#classes-describing-amira-reg-data-streams" id="id18">Classes describing Amira ® data streams</a></li>
+<li><a class="reference internal" href="#conversion-classes" id="id19">Conversion classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="overview">
+<h2><a class="toc-backref" href="#id2">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>ahds (Amira ® header and data streams) is a Python package to parse and handle Amira ® files. It was developed to facilitate reading of Amira ® files as part of the EMDB-SFF toolkit.</p>
+<div class="section" id="use-cases">
+<h3><a class="toc-backref" href="#id3">Use Cases</a><a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Detect and parse Amira ® headers and return structured data</li>
+<li>Decode data (HxRLEByte, HxZip)</li>
+<li>Easy extensibility to handle previously unencountered data streams</li>
+</ul>
+<p>ahds was written and is maintained by Paul K. Korir.</p>
+</div>
+</div>
+<div class="section" id="dependencies">
+<h2><a class="toc-backref" href="#id4">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>SimpleParse (tested with 2.1.1)</li>
+<li>numpy (tested with 1.11.2)</li>
+<li>scikit-image (tested with 0.11.3)</li>
+</ul>
+</div>
+<div class="section" id="license">
+<h2><a class="toc-backref" href="#id5">License</a><a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>Copyright 2017 EMBL - European Bioinformatics Institute
+
+Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+&quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific
+language governing permissions and limitations under the License.
+</pre></div>
+</div>
+</div>
+<div class="section" id="future-plans">
+<h2><a class="toc-backref" href="#id6">Future Plans</a><a class="headerlink" href="#future-plans" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Write out valid Amira ® files</li>
+</ul>
+</div>
+<div class="section" id="background-and-definitions">
+<h2><a class="toc-backref" href="#id7">Background and Definitions</a><a class="headerlink" href="#background-and-definitions" title="Permalink to this headline">¶</a></h2>
+<p>ahds presently handles two types of Amira ® files:</p>
+<ul class="simple">
+<li><cite>AmiraMesh</cite> files, which typically but not necessarily have a <code class="docutils literal"><span class="pre">.am</span></code> extension, and</li>
+<li><cite>HyperSurface</cite> files, which have <code class="docutils literal"><span class="pre">.surf</span></code> and represent an older filetype.</li>
+</ul>
+<p>Both file types consist of two parts:</p>
+<ul class="simple">
+<li>a <cite>header</cite>, and</li>
+<li>one or more <cite>data streams</cite>.</li>
+</ul>
+<p>Headers are structured in a modified VRML-like syntax and differ between AmiraMesh and HyperSurface files in some of the keywords used.</p>
+<p>A data stream is a sequence of encoded bytes either referred to in the header by some delimiter (usually <code class="docutils literal"><span class="pre">&#64;&lt;data_stream_index&gt;</span></code>, where <code class="docutils literal"><span class="pre">&lt;data_stream_index&gt;</span></code> is an integer) or a set of structural keywords (e.g. <code class="docutils literal"><span class="pre">Vertices</span></code>, <code class="docutils literal"><span class="pre">Patches</span></code>) expected in a predefined sequence.</p>
+<div class="section" id="headers-in-detail">
+<h3><a class="toc-backref" href="#id8">Headers in Detail</a><a class="headerlink" href="#headers-in-detail" title="Permalink to this headline">¶</a></h3>
+<p>AmiraMesh and HyperSurface headers can be divided into four main sections:</p>
+<ul class="simple">
+<li>designation</li>
+<li>definitions</li>
+<li>parameters, and</li>
+<li>data pointers.</li>
+</ul>
+<p>The <cite>designation</cite> is the first line and conveys several important details about the format and structure of the file such as:</p>
+<ul class="simple">
+<li>filetype (either <code class="docutils literal"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal"><span class="pre">HyperSurface</span></code>)</li>
+<li>dimensionality (<code class="docutils literal"><span class="pre">3D</span></code>)</li>
+<li>format (<code class="docutils literal"><span class="pre">BINARY-LITTLE-ENDIAN</span></code>, <code class="docutils literal"><span class="pre">BINARY</span></code> or <code class="docutils literal"><span class="pre">ASCII</span></code>)</li>
+<li>version (a decimal number e.g. <code class="docutils literal"><span class="pre">2.1</span></code></li>
+<li>extra format data e.g. <code class="docutils literal"><span class="pre">&lt;hxsurface&gt;</span></code> specifying that an AmiraMesh file will contain HyperSurface data</li>
+</ul>
+<p>A series of <cite>definitions</cite> follow that refer to data found in the data pointer sections that either begin with the word ‘define’ or have ‘n’ prepended to a variable. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>define Lattice 862 971 200
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-python"><div class="highlight"><pre>nVertices 85120
+</pre></div>
+</div>
+<p>This is followed by grouped <cite>parameters</cite> enclosed in a series of braces beginning with the word ‘Parameters’. Various parameters are then enclosed each beginning with the name of that group of parameters e.g. ‘Materials’</p>
+<div class="highlight-python"><div class="highlight"><pre>Parameters {
+        # grouped parameters
+        Material {
+                # the names of various materials with attributes
+                Exterior {
+                        id 0
+                }
+                Inside {
+                        id 1,
+                        Color 0 1 1,
+                        Transparency 0.5
+                }
+        }
+        Patches {
+        # patch attributes
+                InnerRegion “Inside”,
+                OuterRegion “Exterior”,
+                BoundaryID 0,
+                BranchingPoints 0
+        }
+        # inline parameters
+        GridSize &lt;value&gt;,
+        …
+}
+</pre></div>
+</div>
+<p>The most important set of parameters are materials as these specify colours and identities of distinct segments/datasets within the file.</p>
+<p>Finally, AmiraMesh files list a set of <cite>data pointers</cite> that point to data labels within the file together with additional information to decode the data. We refer to these as data streams because they consist of continuous streams of raw byte data that need to be decoded. Here is an example of data pointers that refer to the location of 3D surface primitives:</p>
+<div class="highlight-python"><div class="highlight"><pre>Vertices { float[3] Vertices } @1
+TriangleData { int[7] Triangles } @2
+Patches-0 { int Patches-0 } @3
+</pre></div>
+</div>
+<p>These refer to three raw data streams each found beginning with the delimiter <code class="docutils literal"><span class="pre">&#64;&lt;number&gt;</span></code>. Data stream one (<code class="docutils literal"><span class="pre">&#64;1</span></code>) is called <code class="docutils literal"><span class="pre">Vertices</span></code> and consists of float triples, two is called <code class="docutils literal"><span class="pre">TriangleData</span></code> and has integer 7-tuples and three called <code class="docutils literal"><span class="pre">Patches-</span></code> is a single integer (the number of patches). In some cases the data pointer contains the data encoding for the corresponding data pointer.</p>
+<div class="highlight-python"><div class="highlight"><pre>Lattice { byte Labels } @1(HxByteRLE,234575740)
+</pre></div>
+</div>
+<p>which is a run-length encoded data stream of the specified length, while</p>
+<div class="highlight-python"><div class="highlight"><pre>Lattice { byte Data } @1(HxZip,919215)
+</pre></div>
+</div>
+<p>contains zipped data of the specified length.</p>
+</div>
+<div class="section" id="data-streams-in-detail">
+<h3><a class="toc-backref" href="#id9">Data Streams in Detail</a><a class="headerlink" href="#data-streams-in-detail" title="Permalink to this headline">¶</a></h3>
+<p>AmiraMesh data streams are very simple. They always have a start delimiter made of <code class="docutils literal"><span class="pre">&#64;</span></code> with an index that identifies the data stream. A newline character separates the delimiter with the data stream proper which is either plain ASCII or a binary stream (raw, zipped or encoded).</p>
+<p>HyperSurface data streams structured to have the following sections:</p>
+<div class="highlight-python"><div class="highlight"><pre># Header
+Vertices &lt;nvertices&gt;
+# vertices data stream
+
+NBranchingPoints &lt;nbranching_points&gt;
+NVerticesOnCurves &lt;nvertices_on_curves&gt;
+BoundaryCurves &lt;nboundary_curves&gt;
+Patches &lt;npatches&gt;
+{
+InnerRegion &lt;inner_region_name&gt;
+OuterRegion &lt;outer_region_name&gt;
+BoundaryID &lt;boundary_id&gt;
+BranchingPoints &lt;nbranching_points&gt;
+Triangles &lt;ntriangles&gt;
+# triangles data stream
+} # repeats for as &lt;npatches&gt; times
+</pre></div>
+</div>
+<p>HyperSurface data streams can be either plain ASCII or binary.</p>
+</div>
+</div>
+<div class="section" id="ahds-modules">
+<h2><a class="toc-backref" href="#id10">ahds Modules</a><a class="headerlink" href="#ahds-modules" title="Permalink to this headline">¶</a></h2>
+<p>ahds has three main modules:</p>
+<ul class="simple">
+<li>ahds.grammar specifies an EBNF grammar</li>
+<li>ahds.header</li>
+<li>ahds.data_stream</li>
+</ul>
+<p>These modules are tied into a user-level class called AmiraFile that does all the work for you.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ahds</span> <span class="kn">import</span> <span class="n">AmiraFile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># read an AmiraMesh file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span> <span class="o">=</span> <span class="n">AmiraFile</span><span class="p">(</span><span class="s1">&#39;am/test7.am&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">header</span>
+<span class="go">&lt;AmiraHeader with 4 bytes&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># empty data streams</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">af</span><span class="o">.</span><span class="n">data_streams</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># we have to explicitly read to get the data streams</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span>
+<span class="go">&lt;class &#39;ahds.data_stream.DataStreams&#39;&gt; object with 13 stream(s): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">af</span><span class="o">.</span><span class="n">data_streams</span><span class="p">:</span>
+<span class="gp">... </span>  <span class="k">print</span> <span class="n">ds</span>
+<span class="gp">...</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 2,608 bytes</span>
+<span class="go"># we get the n-th data stream using the index/key notation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">encoded_data</span>
+<span class="go">&#39;1 \n2 \n3 \n&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decoded_data</span>
+<span class="go">[1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">encoded_data</span>
+<span class="go">&#39;69 \n120 \n116 \n101 \n114 \n105 \n111 \n114 \n0 \n73 \n110 \n115 \n105 \n100 \n101 \n0 \n109 \n111 \n108 \n101 \n99 \n117 \n108 \n101 \n0 \n&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">decoded_data</span>
+<span class="go">[69, 120, 116, 101, 114, 105, 111, 114, 0, 73, 110, 115, 105, 100, 101, 0, 109, 111, 108, 101, 99, 117, 108, 101, 0]</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c1"># read an HyperSurface file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span> <span class="o">=</span> <span class="n">AmiraFile</span><span class="p">(</span><span class="s1">&#39;surf/test4.surf&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span>
+<span class="go">&lt;class &#39;ahds.data_stream.DataStreams&#39;&gt; object with 5 stream(s): Patches, NBranchingPoints, BoundaryCurves, Vertices, NVerticesOnCurves</span>
+<span class="go"># HyperSurface files have pre-set data streams</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">af</span><span class="o">.</span><span class="n">data_streams</span><span class="p">[</span><span class="s1">&#39;Vertices&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">decoded_data</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+<span class="go">[(560.0, 243.0, 60.96875), (560.0, 242.9166717529297, 61.0), (559.5, 243.0, 61.0), (561.0, 243.0, 60.95833206176758), (561.0, 242.5, 61.0), (561.0384521484375, 243.0, 61.0), (559.0, 244.0, 60.94444274902344), (559.0, 243.5, 61.0), (558.9722290039062, 244.0, 61.0), (560.0, 244.0, 60.459999084472656)]</span>
+</pre></div>
+</div>
+<div class="section" id="ahds-grammar">
+<h3><a class="toc-backref" href="#id11">ahds.grammar</a><a class="headerlink" href="#ahds-grammar" title="Permalink to this headline">¶</a></h3>
+<p>This module describes the header grammar for Amira ® (AmiraMesh and HyperSurface) files and so depends on simpleparse Python package. It defines a single class (AmiraDispatchProcessor) and four functions.</p>
+<p>AmiraDispatchProcessor is a subclass of simpleparse.dispatchprocessor which implements the core functionality required to use the grammar. Each grammar token has a corresponding method defined on this class which determines how the data associated with that token will be rendered. Data can be rendered as a single or multimap, string, number, or in custom format.</p>
+<ul class="simple">
+<li>:py:func:<code class="docutils literal"><span class="pre">ahds.grammar.get_parsed_data(fn,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)</span></code> is the user-level function that takes a filename and returns structured parsed data. It depends on the other three functions defined:</li>
+<li>:py:func:<code class="docutils literal"><span class="pre">ahds.grammar.detect_format(fn,</span> <span class="pre">format_bytes=50,</span> <span class="pre">verbose=False)</span></code> returns either <code class="docutils literal"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal"><span class="pre">HyperSurface</span></code> given a file name and arguments,</li>
+<li>:py:func:<code class="docutils literal"><span class="pre">get_header(fn,</span> <span class="pre">file_format,</span> <span class="pre">header_bytes=20000,</span> <span class="pre">verbose=False)</span></code> returns the header portion based on the file format determined by detect_format(...), and</li>
+<li>:py:func:<code class="docutils literal"><span class="pre">parse_header(data,</span> <span class="pre">verbose=False)</span></code> converts the raw header data returned by get_header(...) into a structured header based on AmiraDispatchProcessor.</li>
+</ul>
+</div>
+<div class="section" id="ahds-header">
+<h3><a class="toc-backref" href="#id12">ahds.header</a><a class="headerlink" href="#ahds-header" title="Permalink to this headline">¶</a></h3>
+<p>This module converts the structured header from the :py:mod:<code class="docutils literal"><span class="pre">ahds.grammar</span></code> module into an object with the sections of the header (designation, definitions, parameters and data pointers) and corresponding structured data available as attributes. That is it converts the header</p>
+<div class="highlight-python"><div class="highlight"><pre># AmiraMesh BINARY-LITTLE-ENDIAN 2.1
+
+
+define Lattice 862 971 200
+
+Parameters {
+    Materials {
+        Exterior {
+            Id 1
+        }
+        Inside {
+            Color 0.64 0 0.8,
+            Id 2
+        }
+        Mitochondria {
+            Id 3,
+            Color 0 1 0
+        }
+        Mitochondria_ {
+            Id 4,
+            Color 1 1 0
+        }
+        mitochondria__ {
+            Id 5,
+            Color 0 0.125 1
+        }
+        NE {
+            Id 6,
+            Color 1 0 0
+        }
+    }
+    Content &quot;862x971x200 byte, uniform coordinates&quot;,
+    BoundingBox 0 13410.7 0 15108.4 1121.45 4221.01,
+    CoordType &quot;uniform&quot;
+}
+
+Lattice { byte Labels } @1(HxByteRLE,4014522)
+</pre></div>
+</div>
+<p>into an AmiraHeader object.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ahds.header</span> <span class="kn">import</span> <span class="n">AmiraHeader</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span> <span class="o">=</span> <span class="n">AmiraHeader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s1">&#39;am/test2.am&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;filetype&#39;, &#39;dimension&#39;, &#39;format&#39;, &#39;version&#39;, &#39;extra_format&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">filetype</span>
+<span class="go">&#39;AmiraMesh&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">dimension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">format</span>
+<span class="go">&#39;BINARY-LITTLE-ENDIAN&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;Lattice&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">definitions</span><span class="o">.</span><span class="n">Lattice</span>
+<span class="go">[862, 971, 200]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;Materials&#39;, &#39;Content&#39;, &#39;BoundingBox&#39;, &#39;CoordType&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Materials</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;Exterior&#39;, &#39;Inside&#39;, &#39;Mitochondria&#39;, &#39;Mitochondria_&#39;, &#39;mitochondria__&#39;, &#39;NE&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Materials</span><span class="o">.</span><span class="n">Exterior</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;Id&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Materials</span><span class="o">.</span><span class="n">Exterior</span><span class="o">.</span><span class="n">Id</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Content</span>
+<span class="go">&#39;&quot;862x971x200 byte, uniform coordinates&quot;,&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">BoundingBox</span>
+<span class="go">[0, 13410.7, 0, 15108.4, 1121.45, 4221.01]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">CoordType</span>
+<span class="go">&#39;&quot;uniform&quot;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;data_pointer_1&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;pointer_name&#39;, &#39;data_format&#39;, &#39;data_dimension&#39;, &#39;data_type&#39;, &#39;data_name&#39;, &#39;data_index&#39;, &#39;data_length&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">pointer_name</span>
+<span class="go">&#39;Lattice&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">data_format</span>
+<span class="go">&#39;HxByteRLE&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">data_dimension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">data_type</span>
+<span class="go">&#39;byte&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">data_name</span>
+<span class="go">&#39;Labels&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">data_index</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span><span class="o">.</span><span class="n">data_length</span>
+<span class="go">4014522</span>
+</pre></div>
+</div>
+<p>This module consists of two main classes: :py:class:<code class="docutils literal"><span class="pre">ahds.header.AmiraHeader</span></code> is the user-level class and :py:class:<code class="docutils literal"><span class="pre">ahds.header.Block</span></code> which is a container class for a block of structured data from an Amira ® header.</p>
+<p>AmiraHeader has one constructor: <code class="docutils literal"><span class="pre">AmiraHeader.from_file(fn,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)</span></code> which takes an Amira ® file by name and arguments and returns an <code class="docutils literal"><span class="pre">AmiraHeader</span></code> object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: AmiraHeader(parsed_data) which returns an AmiraHeader object configured appropriately.</p>
+<ul class="simple">
+<li>The raw data structured data is available as read-only property: AmiraHeader.raw_header</li>
+<li>Internally the AmiraHeader class implements a set of private methods which individually load the four data sections (designation, definitions, parameters, and data pointers).</li>
+</ul>
+<p>The <code class="docutils literal"><span class="pre">Block</span></code> class is a container class which converts structured groups to attributes and has two main attributes:</p>
+<ul class="simple">
+<li>Block.name provides the name of the current block</li>
+</ul>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;designation&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Materials</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;Materials&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Materials</span><span class="o">.</span><span class="n">Exterior</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;Exterior&#39;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Block.attrs provides the attributes available on this Block</li>
+</ul>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;filetype&#39;, &#39;dimension&#39;, &#39;format&#39;, &#39;version&#39;, &#39;extra_format&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">format</span>
+<span class="go">&#39;BINARY-LITTLE-ENDIAN&#39;</span>
+<span class="go">A given Materials block has two special features:</span>
+<span class="go">Block.ids returns the list of ids for all materials. This is important when decoding HxByteRLE compressed data</span>
+<span class="go">Block[id] returns the material for the given id using index notation.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Materials</span><span class="o">.</span><span class="n">ids</span>
+<span class="go">[1, 2, 3, 4, 5, 6]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">[&#39;Materials&#39;, &#39;Content&#39;, &#39;BoundingBox&#39;, &#39;CoordType&#39;]</span>
+<span class="go"># ids attribute is only available for ‘Material’ blocks within ‘parameters’ section</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Content</span><span class="o">.</span><span class="n">ids</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+<span class="gr">AttributeError</span>: <span class="n">&#39;str&#39; object has no attribute &#39;ids&#39;</span>
+<span class="go"># we can get the name of a material of the given id</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amira_header</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">Materials</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;Mitochondria_&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ahds-data-stream">
+<h3><a class="toc-backref" href="#id13">ahds.data_stream</a><a class="headerlink" href="#ahds-data-stream" title="Permalink to this headline">¶</a></h3>
+<p>This is most complex module implementing a hierarchy of classes describing various data streams within Amira ® files. It has 22 classes and five functions</p>
+<div class="section" id="classes">
+<h4><a class="toc-backref" href="#id14">Classes</a><a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h4>
+<p>There are three categories of classes:</p>
+<ul class="simple">
+<li>A user-level class that encapsulates (2) below.</li>
+<li>Classes describing Amira ® data streams<ul>
+<li>Classes describing AmiraMesh data streams</li>
+<li>Classes describing HyperSurface data streams</li>
+</ul>
+</li>
+<li>Data conversion classes (AmiraMesh only)<ul>
+<li>Classes abstracting images</li>
+<li>Classes abstracting contours</li>
+</ul>
+</li>
+</ul>
+<p>The user-level DataStreams class is the preferred way to use the module. It takes the name of an Amira ® file and encapsulates an iterator of data streams.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ahds</span> <span class="kn">import</span> <span class="n">data_stream</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_streams</span> <span class="o">=</span> <span class="n">data_stream</span><span class="o">.</span><span class="n">DataStreams</span><span class="p">(</span><span class="s1">&#39;am/test6.am&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_streams</span>
+<span class="go">&lt;class &#39;ahds.data_stream.DataStreams&#39;&gt; object with 2 stream(s): 1, 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">data_streams</span><span class="p">:</span>
+<span class="gp">... </span>  <span class="k">print</span> <span class="n">ds</span>
+<span class="gp">...</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 968,909 bytes</span>
+<span class="go">&lt;class &#39;ahds.data_stream.AmiraMeshDataStream&#39;&gt; object of 968,909 bytes</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="functions">
+<h4><a class="toc-backref" href="#id15">Functions</a><a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h4>
+<p>The functions implemented in this module decode data streams.</p>
+<ul class="simple">
+<li>:py:func:<code class="docutils literal"><span class="pre">ahds.data_stream.hxbyterle_decode</span></code> decodes HxByteRLE data streams</li>
+<li>:py:func:<code class="docutils literal"><span class="pre">ahds.data_stream.hxzip_decode(data_size,</span> <span class="pre">data)</span></code> unzips zlib-compressed data streams</li>
+<li>:py:func:<code class="docutils literal"><span class="pre">ahds.data_stream.unpack_binary(data_pointer,</span> <span class="pre">definitions,</span> <span class="pre">data)</span></code> unpacks the structured data stream according to the attributes specified in the data’s data pointer</li>
+<li>:py:func:<code class="docutils literal"><span class="pre">ahds.data_stream.unpack_ascii(data)</span></code> converts rows of ASCII data into numerical data</li>
+</ul>
+</div>
+<div class="section" id="classes-in-detail">
+<h4><a class="toc-backref" href="#id16">Classes in Detail</a><a class="headerlink" href="#classes-in-detail" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="datastreams-class">
+<h5><a class="toc-backref" href="#id17">DataStreams class</a><a class="headerlink" href="#datastreams-class" title="Permalink to this headline">¶</a></h5>
+<p>The following attributes are available on objects of this class:</p>
+<ul class="simple">
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.DataStreams.file</span></code> - filename of Amira ® file</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.DataStreams.header</span></code> - an object of class ahds.header.AmiraHeader encapsulating the header data in four sections (designation, definitions, parameters, and data pointers)</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.DataStreams.filetype</span></code> - the filetype as specified in (ii) above.</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.DataStreams.stream_data</span></code> - all raw data from the file (including the header)</li>
+<li>:py:func:<code class="docutils literal"><span class="pre">len(DataStreams)</span></code> - the number of data streams contained</li>
+<li><code class="docutils literal"><span class="pre">ahds.data_stream.DataStreams[&lt;index&gt;]</span></code> - returns the data stream of the index specified (as defined in the data_pointers section of the header object</li>
+</ul>
+</div>
+<div class="section" id="classes-describing-amira-reg-data-streams">
+<h5><a class="toc-backref" href="#id18">Classes describing Amira ® data streams</a><a class="headerlink" href="#classes-describing-amira-reg-data-streams" title="Permalink to this headline">¶</a></h5>
+<p>The following diagrams illustrates the hierarchy of classes:</p>
+<p>Classes describing Amira ® data streams</p>
+<ul class="simple">
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream</span></code> is the base class for all data stream classes and defines the following attributes:<ul>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream.header</span></code> - an ahds.header.AmiraHeader object</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream.data_pointer</span></code> - the ahds.header.AmiraHeader.data_pointers.data_pointer_X for this data stream</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream.stream_data</span></code> - the raw file data</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream.encoded_data</span></code> - the encoded data for this stream; None for VoidDataStream subclasses</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream.decoded_data</span></code> - the decoded data for this stream; None for VoidDataStream subclasses</li>
+<li>:py:attr:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream.decoded_length</span></code> - the number of items (tuples, integers) in decoded data</li>
+</ul>
+</li>
+</ul>
+<p>The two main subclasses of AmiraDataStream are :py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraMeshDataStream</span></code>, which is a concrete class representing all AmiraMesh data streams, and :py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.AmiraHxSurfaceDataStream</span></code>, which abstractly defines HyperSurface data streams.</p>
+<p>There are two main AmiraHxSurfaceDataStream subclasses:</p>
+<ul class="simple">
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.VoidDataStream</span></code> represents AmiraHxSurfaceDataStream data streams that only have a name and value but no actual encoded data (on the following line). There are two subclasses:<ul>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.NamedDataStream</span></code> subclasses have a strings after data stream name. The two concrete subclasses are:<ul>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.PatchesInnerRegionDataStream</span></code> for the name of an inner region of a patch (see PatchesDataStream), and</li>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.PatchesOuterRegionDataStream</span></code> for corresponding name of the outer region of a patch.</li>
+</ul>
+</li>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.ValuedDataStream</span></code> have an integer value after the data stream name. The three concrete subclasses are:<ul>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.PatchesBoundaryIDDataStream</span></code> hold the boundary ID of a patch,</li>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.PatchesBranchingPointsDataStream</span></code> stores the number of branching points, and</li>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.PatchesDataStream</span></code> with the number of patches, which is a special ValueDataStream that contains an iterable of patches each containing a <code class="docutils literal"><span class="pre">Patches&lt;X&gt;DataStream</span></code> objects.</li>
+</ul>
+</li>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.LoadedDataStream</span></code> represent AmiraHxSurfaceDataStream data streams that have a name, a value and encoded data. The two main concrete subclasses are:<ul>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.VerticesDataStream</span></code> represents data streams with float-triples, and</li>
+<li>:py:class:<code class="docutils literal"><span class="pre">ahds.data_stream.PatchesTrianglesDataStream</span></code> represents data streams within a patch with triples of 1-based indices (triangles) of vertices specified in the VerticesDataStream.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="conversion-classes">
+<h5><a class="toc-backref" href="#id19">Conversion classes</a><a class="headerlink" href="#conversion-classes" title="Permalink to this headline">¶</a></h5>
+<p>There are two groups of conversion classes which only apply to (some) AmiraMesh data streams:
+Conversion classes</p>
+<ul class="simple">
+<li>Image conversion classes consist of a image container class ImageSet and an Image class. ImageSet objects that can be iterated to give Image objects are returned from the AmiraMeshDataStream.to_images() method call.</li>
+</ul>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c1"># decode the data stream to images</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">images</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">to_images</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">images</span>
+<span class="go">&lt;ImageSet with 200 images&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">image</span>
+<span class="gp">...</span>
+<span class="go">&lt;Image with dimensions (971, 862)&gt;</span>
+<span class="go">&lt;Image with dimensions (971, 862)&gt;</span>
+<span class="go">&lt;Image with dimensions (971, 862)&gt;</span>
+<span class="gp">...</span>
+<span class="go">&lt;Image with dimensions (971, 862)&gt;</span>
+<span class="go">&lt;Image with dimensions (971, 862)&gt;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Contour conversion classes convert individual images into sets of contours (ContourSet) iterable as individual Contours objects. They are obtained from calls to the Image.as_contours property. Furthermore, the Image.as_segments property call returns a dictionary of the corresponding ContourSet object indexed by the z plane.</li>
+</ul>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c1"># contours per image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># the dictionary key is the Amira Id for the segment (the Id of the Material)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># a segment can have several non-overlapping contours (or polylines)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">image</span><span class="o">.</span><span class="n">as_contours</span>
+<span class="gp">...</span>
+<span class="go">{2: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 15 contours, 3: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 3 contours, 5: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 2 contours}</span>
+<span class="go">{2: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 18 contours, 3: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 3 contours, 5: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 2 contours}</span>
+<span class="gp">...</span>
+<span class="go">{2: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 15 contours, 3: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 1 contours, 5: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 3 contours}</span>
+<span class="go">{2: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 15 contours, 3: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 1 contours, 5: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 3 contours}</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># separate individual segments</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">images</span><span class="o">.</span><span class="n">segments</span>
+<span class="go">{1: {110: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 1 contours}, 2: {0: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 15 contours, 1: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 18 contours, ..., 198: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 3 contours, 199: &lt;class &#39;ahds.data_stream.ContourSet&#39;&gt; with 3 contours}}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ahds</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#use-cases">Use Cases</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#future-plans">Future Plans</a></li>
+<li><a class="reference internal" href="#background-and-definitions">Background and Definitions</a><ul>
+<li><a class="reference internal" href="#headers-in-detail">Headers in Detail</a></li>
+<li><a class="reference internal" href="#data-streams-in-detail">Data Streams in Detail</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ahds-modules">ahds Modules</a><ul>
+<li><a class="reference internal" href="#ahds-grammar">ahds.grammar</a></li>
+<li><a class="reference internal" href="#ahds-header">ahds.header</a></li>
+<li><a class="reference internal" href="#ahds-data-stream">ahds.data_stream</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#classes-in-detail">Classes in Detail</a><ul>
+<li><a class="reference internal" href="#datastreams-class">DataStreams class</a></li>
+<li><a class="reference internal" href="#classes-describing-amira-reg-data-streams">Classes describing Amira ® data streams</a></li>
+<li><a class="reference internal" href="#conversion-classes">Conversion classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Amira Header and Data Stream (<code class="docutils literal"><span class="pre">ahds</span></code>) package documentation!</a></li>
+      <li>Next: <a href="ahds.html" title="next chapter">ahds package</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/overview.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Paul K. Korir, PhD.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/overview.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
