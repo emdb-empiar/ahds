@@ -204,7 +204,7 @@ data_format                  :=    "HxByteRLE" / "HxZip"
 data_length                  :=    number
 
 hyphname                     :=    [A-Za-z_], [A-Za-z0-9_\-]*
-qstring                      :=    "\"", [A-Za-z0-9_,.\(\):/ \t]*, "\""
+qstring                      :=    "\"", "["*, [A-Za-z0-9_,.\(\):/ \t]*, "]"*, "\""
 xstring                      :=    [A-Za-z], [A-Za-z0-9_\- (\xef)(\xbf)(\xbd)]*
 number_seq                   :=    number, (ts, number)*
 
@@ -242,7 +242,7 @@ def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
     return file_format
 
 
-def get_header(fn, file_format, header_bytes=20000, verbose=False):
+def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwargs):
     """Apply rules for detecting the boundary of the header
     
     :param str fn: file name

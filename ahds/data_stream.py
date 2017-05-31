@@ -135,7 +135,11 @@ def unpack_binary(data_pointer, definitions, data):
         """
         :TODO: nNodes definition fix
         """
-        data_length = int(getattr(definitions, 'Nodes'))
+        try:
+            data_length = int(getattr(definitions, 'Nodes'))
+        except AttributeError:
+            x, y, z = definitions.Lattice
+            data_length = x * y * z
         
     output = numpy.array(struct.unpack('<' + '{}'.format(data_type) * data_length, data)) # assume little-endian
     output = output.reshape(data_length, data_dimension)
