@@ -14,7 +14,7 @@ with open(os.path.join(here, 'README.rst')) as f:
 
 setup(
       name = "ahds",
-      version = "0.1.5",
+      version = "0.1.6",
       packages = find_packages(),
       author = "Paul K. Korir, PhD",
       author_email = "pkorir@ebi.ac.uk, paul.korir@gmail.com",
