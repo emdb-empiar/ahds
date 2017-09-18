@@ -54,8 +54,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Amira Header and Data Reader'
-copyright = u'2017, Paul K. Korir, PhD'
+project = u'Amira Header and Data Streams'
+copyright = u'2017, EMBL-EBI'
 author = u'Paul K. Korir, PhD'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -230,7 +230,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'AmiraHeaderandDataReader.tex', u'Amira Header and Data Reader Documentation',
+    (master_doc, 'AmiraHeaderandDataStreams.tex', u'Amira Header and Data Streams Documentation',
      u'Paul K. Korir, PhD', 'manual'),
 ]
 
@@ -260,7 +260,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'amiraheaderanddatareader', u'Amira Header and Data Reader Documentation',
+    (master_doc, 'amiraheaderanddatastreams', u'Amira Header and Data Streams Documentation',
      [author], 1)
 ]
 
@@ -274,8 +274,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'AmiraHeaderandDataReader', u'Amira Header and Data Reader Documentation',
-     author, 'AmiraHeaderandDataReader', 'One line description of project.',
+    (master_doc, 'AmiraHeaderandDataStreams', u'Amira Header and Data Streams Documentation',
+     author, 'AmiraHeaderandDataStreams', 'One line description of project.',
      'Miscellaneous'),
 ]
 
