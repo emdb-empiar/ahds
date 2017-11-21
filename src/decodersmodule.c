@@ -19,7 +19,7 @@ typedef unsigned char uchar;
 static PyObject *decoders_byterle_decode(PyObject *, PyObject *);
 static void get_multiple(uchar *, uchar *, ulong, ulong);
 static void set_multiple_diff(uchar *, uchar *, ulong, ulong);
-static void set_multiple_same(uchar *, uchar , ulong, ulong);
+static void set_multiple_same(uchar *, uchar *, ulong, ulong);
 
 // methods in this module
 static PyMethodDef HxMethods[] = {
@@ -33,8 +33,9 @@ initdecoders(void)
 	PyObject *m;
 
 	m = Py_InitModule("decoders", HxMethods);
-	if (m == NULL)
-		return;
+	if (m == NULL) {
+	    return;
+	}
 
 	// for numpy
 	import_array();
@@ -45,18 +46,23 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 {
 	ulong input_size, output_size;
 	uchar *input;
-
-	// Python usage: hx.byterle_decode(input, output_size)
-	if (!PyArg_ParseTuple(args, "s#k", &input, &input_size, &output_size))
-		return NULL;
-
-//	printf("c: input size = %lu\n", input_size);
-//	printf("c output_size: %lu\n", output_size);
 	uchar *output = PyMem_New(uchar, output_size);
-
 	ulong i=0, j=0;
 	int count=1, repeat=0; // count/repeat: true = 1; false = 0
 	uchar no=0;
+	int nd=1;
+	npy_intp dims[1] = {j};
+	PyObject *output_array = PyArray_SimpleNewFromData(nd, dims, NPY_UINT8, output);
+	uchar *value;
+
+	// Python usage: hx.byterle_decode(input, output_size)
+	if (!PyArg_ParseTuple(args, "s#k", &input, &input_size, &output_size)) {
+	    return NULL;
+	}
+
+//	printf("c: input size = %lu\n", input_size);
+//	printf("c output_size: %lu\n", output_size);
+
 
 	while (i < input_size) {
 		if (count) {
@@ -75,7 +81,6 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 		}
 		else {
 			if (repeat) {
-				uchar value[no];
 				get_multiple(input, value, i, i+no);
 				repeat = 0;
 				count = 1;
@@ -84,8 +89,8 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 				j += no;
 			}
 			else {
-				uchar value;
-				value = input[i];
+				//uchar value;
+				value[0] = input[i];
 				set_multiple_same(output, value, j, j+no);
 				i++;
 				j += no;
@@ -95,10 +100,7 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 		}
 	}
 
-	int nd=1;
-	npy_intp dims[1] = {j};
 	// create a numpy array using the buffer as the data source
-	PyObject *output_array = PyArray_SimpleNewFromData(nd, dims, NPY_UINT8, output);
 	Py_INCREF(output_array); // ... because it will be managed from Python
 	return output_array;
 }
@@ -124,12 +126,12 @@ set_multiple_diff(uchar *output, uchar *value, ulong start_index, ulong end_inde
 }
 
 static void
-set_multiple_same(uchar *output, uchar value, ulong start_index, ulong end_index)
+set_multiple_same(uchar *output, uchar *value, ulong start_index, ulong end_index)
 {
 	ulong i;
 
 	for (i=start_index; i < end_index; i++) {
-		output[i] = value;
+		output[i] = value[0];
 	}
 }
 
