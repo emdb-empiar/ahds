@@ -44,7 +44,7 @@ initdecoders(void)
 static PyObject *
 decoders_byterle_decode(PyObject *self, PyObject *args)
 {
-	ulong input_size, output_size;
+	ulong input_size, output_size = 0;
 	uchar *input;
 	uchar *output = PyMem_New(uchar, output_size);
 	ulong i=0, j=0;
@@ -53,7 +53,7 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 	int nd=1;
 	npy_intp dims[1] = {j};
 	PyObject *output_array = PyArray_SimpleNewFromData(nd, dims, NPY_UINT8, output);
-	uchar *value;
+	uchar *value = NULL;
 
 	// Python usage: hx.byterle_decode(input, output_size)
 	if (!PyArg_ParseTuple(args, "s#k", &input, &input_size, &output_size)) {

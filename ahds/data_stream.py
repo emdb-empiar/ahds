@@ -158,6 +158,7 @@ def unpack_ascii(data):
     """
     # string: split at newlines -> exclude last list item -> strip space from each 
     numstrings = map(lambda s: s.strip(), data.split('\n')[:-1])
+    print numstrings
     # check if string is digit (integer); otherwise float
     if len(numstrings) == len(filter(lambda n: n.isdigit(), numstrings)):
         output = map(int, numstrings)
@@ -580,11 +581,20 @@ class DataStreams(object):
                 AmiraMeshDataStream.last_stream = False
             elif self.__amira_header.designation.filetype == "HyperSurface":
                 self.__filetype = "HyperSurface"
-                self.__data_streams['Vertices'] = VerticesDataStream(self.__amira_header, None, self.__stream_data)
-                self.__data_streams['NBranchingPoints'] = NBranchingPointsDataStream(self.__amira_header, None, self.__stream_data)
-                self.__data_streams['NVerticesOnCurves'] = NVerticesOnCurvesDataStream(self.__amira_header, None, self.__stream_data)
-                self.__data_streams['BoundaryCurves'] = BoundaryCurvesDataStream(self.__amira_header, None, self.__stream_data)
-                self.__data_streams['Patches'] = PatchesDataStream(self.__amira_header, None, self.__stream_data)
+                if self.__amira_header.designation.format == "BINARY":
+                    self.__data_streams['Vertices'] = VerticesDataStream(self.__amira_header, None, self.__stream_data)
+                    self.__data_streams['NBranchingPoints'] = NBranchingPointsDataStream(self.__amira_header, None, self.__stream_data)
+                    self.__data_streams['NVerticesOnCurves'] = NVerticesOnCurvesDataStream(self.__amira_header, None, self.__stream_data)
+                    self.__data_streams['BoundaryCurves'] = BoundaryCurvesDataStream(self.__amira_header, None, self.__stream_data)
+                    self.__data_streams['Patches'] = PatchesDataStream(self.__amira_header, None, self.__stream_data)
+                elif self.__amira_header.designation.format == "ASCII":
+                    self.__data_streams['Vertices'] = VerticesDataStream(self.__amira_header, None, self.__stream_data)
+                    print self.__data_streams['Vertices']
+#                     f.seek(self.__data_streams['Vertices'].start_offset)
+#                     print f.readline(),
+#                     print f.readline(),
+#                     print f.readline(),
+#                     print f.readline(),
         return self.__data_streams 
     @property
     def file(self): return self.__fn
