@@ -3,10 +3,8 @@
 
 from UserList import UserList
 import numpy
-import os
 import re
 import struct
-import sys
 
 from skimage.measure._find_contours import find_contours
 
@@ -126,6 +124,8 @@ def unpack_binary(data_pointer, definitions, data):
         data_type = "f" * data_dimension
     elif data_pointer.data_type == "int":
         data_type = "i" * data_dimension # assume signed int
+    elif data_pointer.data_type == "byte":
+        data_type = "b" * data_dimension # assume signed char
 
     # get this streams size from the definitions
     try: 
@@ -378,6 +378,15 @@ class AmiraMeshDataStream(AmiraDataStream):
 
         imgs = ImageSet(image_data[:])
         return imgs
+    def to_volume(self):
+        """Return a 3D volume of the data"""
+        if hasattr(self.header.definitions, "Lattice"):
+            X, Y, Z = self.header.definitions.Lattice
+        else:
+            raise ValueError("Unable to determine data size")
+        
+        volume = self.decoded_data.reshape(Z, Y, X)
+        return volume
 
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):
