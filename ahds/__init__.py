@@ -13,18 +13,18 @@ class AmiraFile(object):
     data streams attribute.
     """
     def __init__(self, fn, *args, **kwargs):
-        self.__fn = fn
-        self.__header = header.AmiraHeader.from_file(self.__fn, *args, **kwargs)
-        self.__data_streams = None # only populate on call to read() method
+        self._fn = fn
+        self._header = header.AmiraHeader.from_file(self._fn, *args, **kwargs)
+        self._data_streams = None # only populate on call to read() method
         
     @property
     def header(self):
-        return self.__header
+        return self._header
     
     @property
     def data_streams(self):
-        return self.__data_streams
+        return self._data_streams
     
     def read(self, *args, **kwargs):
-        self.__data_streams = data_stream.DataStreams(self.__fn, *args, **kwargs)
+        self._data_streams = data_stream.DataStreams(self._fn, *args, **kwargs)
         
