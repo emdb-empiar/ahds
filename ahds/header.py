@@ -88,8 +88,8 @@ class Block(object):
                     return attr_obj
                 else:
                     continue # next attr
-            else:
-                return None
+        else:
+            return None
     
 
 class AmiraHeader(object):
