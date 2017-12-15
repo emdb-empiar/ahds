@@ -4,7 +4,7 @@ from setuptools import setup, find_packages, Extension
 import numpy as np
 import os
 
-decoders = Extension('ahds.decoders', sources=['src/decodersmodule.c'])
+decoders = Extension('ahds.decoders', sources=['src/decodersmodule.cpp'])
 
 here = os.path.abspath(os.path.dirname(__file__))
 

@@ -57,7 +57,7 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 
 	ulong i=0, j=0;
 	int count=1, repeat=0; // count/repeat: true = 1; false = 0
-	uchar no=0;
+	uchar no;
 
 	while (i < input_size) {
 		if (count) {
@@ -76,7 +76,7 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 		}
 		else {
 			if (repeat) {
-				uchar value[no];
+				uchar *value;
 				get_multiple(input, value, i, i+no);
 				repeat = 0;
 				count = 1;
