@@ -6,6 +6,9 @@
 Amira Header and Data Stream (``ahds``) package
 =========================================================================
 
+.. image:: https://badge.fury.io/py/ahds.svg
+    :target: https://badge.fury.io/py/ahds
+    
 Contents:
 
 .. toctree::
