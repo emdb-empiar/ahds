@@ -142,7 +142,7 @@ class AmiraDispatchProcessor(DispatchProcessor):
     def inline_parameter_value(self, value, buffer_):
         # value = (tag, left, right, taglist)
         if value[3][0][0] == "qstring":
-            return getString(value, buffer_)
+            return getString(value, buffer_).strip(' \t\n\r\f"') 
         _av = dispatchList(self, value[3], buffer_)
         # if list of attribute values contains only one entry reduce it 
         # to scalar value. Otherwise # insert the string "<!?c?!>" which
