@@ -23,17 +23,17 @@ import sys
 import functools as ft
 
 # TODO remove as soon as DataStrams class is removed
-import warnings
+import warnings 
 
 from skimage.measure._find_contours import find_contours
 try:
     from .ahds_common import (
-        _dict_iter_keys, _dict_iter_items, _dict_iter_values, Block, _AnyBlockProxy,
+        _dict_iter_keys, _dict_iter_items, _dict_iter_values, Block, ListBlock,_AnyBlockProxy,
         xrange,_doraise,_decode_string,mixed_property,deprecated
     )
 except:
     from ahds_common import (
-        _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,
+        _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,ListBlock,_AnyBlockProxy,
         xrange,_doraise,_decode_string,mixed_property,deprecated
     )
 
@@ -66,6 +66,9 @@ _np_floatbig = np.dtype(np.float32).newbyteorder('>')
 _np_floatlitle = np.dtype(np.float32).newbyteorder('<')
 _np_doublebig = np.dtype(np.float64).newbyteorder('>')
 _np_doublelitle = np.dtype(np.float64).newbyteorder('<')
+_np_complexbig = np.dtype(np.complex64).newbyteorder('>')
+_np_complexlittle = np.dtype(np.complex64).newbyteorder('<')
+_np_char = np.dtype(np.string_)
 
 # lookuptable of the differnt data types occuring within
 # AmiraMesh and HyperSurface files grouped by their endianess
@@ -87,7 +90,7 @@ _np_doublelitle = np.dtype(np.float64).newbyteorder('<')
 #    reading ASCII encoded data which have no specific endianness besides the
 #    bigendian characteristic intrinsic to decimal numbers.
 #
-# [1] pp 519-525 # downloaded Dezember 2018 from
+# [1] pp 519-525 # downloaded Dezember 2018 from 
 #    http://www1.udel.edu/ctcr/sites/udel.edu.ctcr/files/Amira%20Reference%20Guide.pdf
 _type_map = {
     True: {
@@ -100,7 +103,11 @@ _type_map = {
         'long':_np_longlitle,
         'ulong':_np_ulonglitle,
         'float':_np_floatlitle,
-        'double':_np_doublelitle
+        'double':_np_doublelitle,
+        'complex':_np_complexlittle,
+        'char':_np_char,
+        'string':_np_char,
+        'ascii':_np_char
     },
     False: {
         'byte':_np_ubytebig,
@@ -112,25 +119,33 @@ _type_map = {
         'long':_np_longbig,
         'ulong':_np_ulongbig,
         'float':_np_floatbig,
-        'double':_np_doublebig
+        'double':_np_doublebig,
+        'complex':_np_complexbig,
+        'char':_np_char,
+        'string':_np_char,
+        'ascii':_np_char
     },
-    'byte':np.int8,
-    'ubyte':np.uint8,
-    'short':np.int16,
-    'ushort':np.uint16,
-    'int':np.int32,
-    'uint':np.uint32,
-    'long':np.int64,
-    'ulong':np.uint64,
-    'float':np.float32,
-    'double':np.float64
+    'byte':np.dtype(np.int8),
+    'ubyte':np.dtype(np.uint8),
+    'short':np.dtype(np.int16),
+    'ushort':np.dtype(np.uint16),
+    'int':np.dtype(np.int32),
+    'uint':np.dtype(np.uint32),
+    'long':np.dtype(np.int64),
+    'ulong':np.dtype(np.uint64),
+    'float':np.dtype(np.float32),
+    'double':np.dtype(np.float64),
+    'complex':np.dtype(np.complex64),
+    'char':_np_char,
+    'string':_np_char,
+    'ascii':_np_char
 }
 
 # try to import native byterele_decoder binary and fallback to python implementation
 # if import failed for whatever reason
 try:
     from ahds.decoders import byterle_decoder
-except ImportError:
+except ImportError:    
     def byterle_decoder(data, dtype = None,count = 0):
         """Python drop-in replacement for compiled equivalent
         
@@ -139,9 +154,9 @@ except ImportError:
         :return np.array output: an array of ``np.uint8``
         """
         from warnings import warn
-
+        
         warn("using pure-Python (instead of Python C-extension) implementation of byterle_decoder")
-
+        
         #input_data = struct.unpack('<{}B'.format(len(data)), data)
         input_data = np.frombuffer(data,dtype=_np_ubytelitle,count = len(data))
         output = np.zeros(count, dtype=np.uint8)
@@ -252,24 +267,24 @@ class Image(object):
         except RuntimeError:
             import skimage.io as io
             with_matplotlib = False
-
+            
         if with_matplotlib:
             equalised_img = self.equalise()
-
+            
             _, ax = plt.subplots()
-
+            
             ax.imshow(equalised_img, cmap='gray')
-
+    
             import random
-
+            
             for contour_set in _dict_iter_values(self.as_contours):
                 r, g, b = random.random(), random.random(), random.random()
                 [ax.plot(contour[:,1], contour[:,0], linewidth=2, color=(r,g,b,1)) for contour in contour_set]
-
+            
             ax.axis('image')
             ax.set_xticks([])
             ax.set_yticks([])
-
+            
             plt.show()
         else:
             io.imshow(self.equalise())
@@ -335,7 +350,7 @@ class Contour(object):
 class AmiraDataStream(Block):
     """Base class for all Amira DataStreams"""
 
-    __slots__ = ( "_stream_data","_decoded_length","_loader","_decoder","_decoded_data" )
+    __slots__ = ( "_stream_data","_decoded_length","_loader","_decoder","_itemsize","_decoded_data" )
     def __init__(self,name,loader,*args,**kwargs):
         super(AmiraDataStream,self).__init__(name)
         self._decoded_length = 0
@@ -392,33 +407,35 @@ class AmiraMeshDataStream(AmiraDataStream):
 
     def add_attr(self,name,value):
         if name == 'dimension':
-            if type(value) in [str,int,float]:
-                value = np.int64(value)
+            value = np.int64(value)
             super(AmiraMeshDataStream,self).add_attr(name,value)
-            if hasattr(self,'array'):
-                if self.array.name == 'Lattice':
-                    #_dim = self.array.dimension
-                    self._decoded_length = np.prod(self.array.dimension) * np.prod(value)
-                    return
-                self._decoded_length = np.prod(value) * np.prod(self.array.dimension)
+            _array = getattr(self,'array',None)
+            if _array is None: # or isinstance(_array,_AnyBlockProxy):
+                self._decoded_length = np.prod(value)
                 return
-            self._decoded_length = np.prod(value)
+            _array_dim = getattr(_array,'dimension',None)
+            if _array_dim is None: # or isinstance(_array_dim,_AnyBlockProxy):
+                self._decoded_length = np.prod(value)
+                return
+            self._decoded_length = np.prod(value) * np.prod(_array.dimension)
             return
         super(AmiraMeshDataStream,self).add_attr(name,value)
-        if name == 'array' and hasattr(self,'dimension'):
-            #pylint: disable=E1101
-            if value.name == 'Lattice':
-                #x,y,z = value.dimension
-                self._decoded_length = np.prod(value.dimension) * np.prod(self.dimension)
+        if name == 'array':
+            _array_dim = getattr(value,'dimension',None)
+            if _array_dim is None: # or isinstance(_array_dim,_AnyBlockProxy):
                 return
-            self._decoded_length = np.prod(value.dimension) * np.prod(self.dimension)
+            _dimension = getattr(self,'dimension',None)
+            if _dimension is None: # or isinstance(_dimension,_AnyBlockProxy):
+                return
+            #pylint: disable=E1101
+            self._decoded_length = np.prod(_array_dim) * np.prod(_dimension)
             #pylint: enable=E1101
             return
         if name == 'type':
-            self._decoder = self._loader.select_decoder(self)
+            self._decoder,self._itemsize = self._loader.select_decoder(self)
             return
         if name == 'data_format' and hasattr(self,'type'):
-            self._decoder = self._loader.select_decoder(self)
+            self._decoder,self._itemsize = self._loader.select_decoder(self)
             return
 
     @deprecated("use <AmiraMeshDataStream instance>.stream_data instead")
@@ -459,7 +476,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                 _final_shape = np.append(self.array_dimension,self.dimension)
             try:
                 self._decoded_data = self._decoder(
-                    self.stream_data,
+                    self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
                     #dtype=self._loader.type_map[self.type],
                     count= self._decoded_length
                 ).reshape(_final_shape)
@@ -493,6 +510,249 @@ class AmiraMeshDataStream(AmiraDataStream):
             if not hasattr(self,'_decoded_data'):
                 return np.swapaxes(self.data,0,self.array.dimension.size - 1)
             raise ValueError("Unable to determine data size")
+
+class AmiraMeshArrayList(ListBlock):
+    __slots__ = ("_stashed_by","_stashing_attr")
+    def __init__(self,*args,**kwargs):
+        super(AmiraMeshArrayList,self).__init__(*args,**kwargs)
+        self._stashing_attr = None
+
+    def __getattr__(self,name):
+        if self._stashing_attr == name:
+            self._stashed_by._stash(self)
+        return super(AmiraMeshArrayList,self).__getattr__(name)
+
+    def add_attr(self,name,value):
+        if name == self._stashing_attr:
+            if value != self._stashed_by:
+                raise AttributeError("can't replace automatic attribute '{}'".format(self._stashing_attr))
+            return
+        if name == 'dimension':
+            value = np.int64(value)
+        super(AmiraMeshArrayList,self).add_attr(name,value)
+
+
+    def _stash(self,by):
+        try:
+            if self._stashed_by != by:
+                raise TypeError("object of type '{}' can only be stashed by stasching child stream".format(self.__class__.__name__))
+        except AttributeError:
+            raise TypeError("object of type '{}' can only be stashed by stasching child stream".format(self.__class__.__name__))
+        if self._list is None:
+            return tuple()
+        _rem = []
+        for _attrname in (
+            _key
+            for _key,_val in _dict_iter_items(self.__dict__)
+            if _val in self._list
+        ):
+            _rem.append(_attrname)
+        for _attrname in _rem:
+            delattr(self,_attrname)
+
+        _stashed = self._list
+        self._list = None
+        _stashing_attr,self._stashing_attr = self._stashing_attr,None
+        _stashed_by,self._stashed_by = self._stashed_by,None
+        self.add_attr(_stashing_attr,_stashed_by)
+        return _stashed
+
+    def _will_stash(self,child):
+        if not isinstance(child,AmiraMeshDataStream):
+            raise TypeError("object of type '{}' can only be stashed by 'AmiraMeshDataStream' type child streams".format(self.__class__.__name__))
+        try:
+            if self._stashed_by is None:
+                raise ValueError("instance of '{}' has already been stashed".format(self.__class__.__name__))
+        except AttributeError:
+            pass
+        _childattr = None
+        for _childattr in (
+            _key
+            for _key,_val in _dict_iter_items(self.__dict__)
+            if _val == child
+        ):
+            break
+        if _childattr is None:
+            raise TypeError("object of type '{}' can only be stashed by 'AmiraMeshDataStream' type child streams".format(self.__class__.__name__))
+        self._stashed_by = child
+        self._stashing_attr = _childattr
+        delattr(self,_childattr)
+        self._stashed_by.add_attr('dimension',len(self))
+
+
+    def __setitem__(self,index,value):
+        try:
+            super(AmiraMeshArrayList,self).__setitem__(index,value)
+        except TypeError:
+            raise TypeError("stashed '{}' object does not support item assignment".format(self.__class__.__name__))
+        try:
+            self._stashed_by.add_attr('dimension',len(self._list))
+        except AttributeError:
+            pass
+
+    def __getitem__(self,index):
+        try:
+            super(AmiraMeshArrayList,self).__getitem__(index)
+        except TypeError:
+            raise TypeError("stashed '{}' object is not subscriptable".format(self.__class__.__name__))
+
+    def __iter__(self):
+        try:
+            return iter(super(AmiraMeshArrayList,self).__iter__())
+        except TypeError:
+            raise TypeError("stashed '{}' object is not iterable".format(self.__class__.__name__))
+
+    def __len__(self):
+        try:
+            return super(AmiraMeshArrayList,self).__len__()
+        except TypeError:
+            raise TypeError("stashed object of type '{}' has no len()".format(self.__class__.__name__))
+
+    def __contains__(self,item):
+        try:
+            return super(AmiraMeshArrayList,self).__contains__(item)
+        except TypeError:
+            raise TypeError("argument of type '{}' is not iterable after stashing".format(self.__class__.__name__))
+
+class AmiraMeshSheetDataStream(AmiraMeshDataStream):
+    __slots__ = ('_stashed_items','_stack_info')
+    def __init__(self,*args,**kwargs):
+        super(AmiraMeshSheetDataStream,self).__init__(*args,**kwargs)
+        self._stashed_items = tuple()
+        self._stack_info = None
+
+    def add_attr(self,name,value):
+        super(AmiraMeshSheetDataStream,self).add_attr(name,value)
+        if name in ['array'] and isinstance(value,AmiraMeshArrayList):
+            value._will_stash(self)
+            self.add_attr('dimension',len(value))
+            self._stashed_items = None
+
+
+    def _stash(self,triggeredby):
+        try:
+            if self.array != triggeredby:
+                raise RuntimeError("stashing can not be completed requester does not match array attribute")
+        except AttributeError:
+            raise RuntimeError("stashing can not be completed missing array attribute")
+        self._stashed_items = self.array._stash(self)
+        _dimensions = ()
+        _names =  ()
+        _types = ()
+        _defined = False
+        for _index,_val in enumerate(self._stashed_items):
+            if _val is None:
+                if _defined:
+                    if np.any(_dimensions[-1][0] != 0):
+                        _dimensions = _dimensions + ( [0,_index],)
+                        _names = _names + ([_names[-1][0],_index],)
+                        _types = _types + ([_types[-1][0],_index],)
+                    else:
+                        _dimensions[-1][1] = _index
+                        _types[-1][1] = _index
+                        _names[-1][1] = _index
+                continue
+            _name_nocount = StreamLoader._locate_counter.match(_val.name[::-1])
+            if _name_nocount is None:
+                _name_nocount = _val.name
+            else:
+                _name_nocount = _val.name[:-_name_nocount.end()]
+            if _defined and _name_nocount == _names[-1][0] and np.all(_val.dimension == _dimensions[-1][0]) and _val.type == _types[-1][0]:
+                _names[-1][1] = _index
+                _dimensions[-1][1] = _index
+                _types[-1][1] = _index
+                continue
+            if not _defined and _index > 0:
+                _names = _names + ( [_name_nocount,_index-1],)
+                _dimensions = _dimensions + ([0,_index-1],)
+                _types = _types + ([_val.type,_index-1],)
+            _names = _names + ([_name_nocount,_index],)
+            _dimensions = _dimensions + ([_val.dimension,_index],)
+            _types = _types + ([_val.type,_index],)
+            _defined = True
+        if len(_names) == 1:
+            self.name = _names[0][0]
+        self._stack_info = dict(names = _names,dimensions = _dimensions, types = _types)
+
+    @mixed_property
+    def stream_data(self):
+        try:
+            return self._stream_data
+        except AttributeError:
+            if self._stashed_items is None or self._stack_info is None:
+                raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
+            self._stream_data = tuple((
+                _stream.stream_data if isinstance(_stream,AmiraDataStream) else None
+                for _stream in self._stashed_items
+            ))
+            return self._stream_data
+
+
+    @mixed_property
+    def data(self):
+        try:
+            return self._decoded_data
+        except AttributeError:
+            et,ev,eb = sys.exc_info()
+            _ign = self.stream_data
+            _names = self._stack_info.get("names",None)
+            if _names is None:
+                raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
+            self.array.dimension = np.int64(self.array.dimension)
+            if len(_names) < 2:
+                if len(_names) < 1:
+                    _dim = np.hstack((self.array.dimension,self.dimension,0))
+                    self._decoded_data = np.zeros(_dim)
+                else:
+                    _dimensions = self._stack_info.get("dimensions",None)
+                    self._decoded_data = (
+                        np.concatenate if (_dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1 ) ) or _dimensions[0][0][0] == 1 else np.stack
+                    )(
+                        [
+                            _stream.data
+                            for _stream in self._stashed_items
+                        ],
+                        axis = self.array.dimension.size
+                    )
+                    #if _dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1):
+                    #    self._decoded_data = np.reshape(self._decoded_data,self._decoded_data.shape[:-1])
+            else:
+                _dimensions = self._stack_info.get("dimensions",None)
+                _types = self._stack_info.get("types",None)
+                _blocks = []
+                _dtypes = []
+                _parentdim = self.array.dimension
+                _axis = _parentdim.size
+                _stashed_items = self._stashed_items
+                for _blockid in xrange(len(_names)):
+                    _name = _names[_blockid]
+                    _dim = _dimensions[_blockid]
+                    _type = _types[_blockid]
+                    if np.all(_dim < 1):
+                        if _blockid < 1:
+                            _type = self._stashed_items[_type[1]+1].data.dtype.str
+                            _count = _type[1] + 1
+                        else:
+                            _type = self._stashed_items[_types[_blockid-1][1]].data.dtype.str
+                            _count = _type[1] - _types[_blockid-1][1]
+                        _dim = np.hstack((_parentdim,_count,0))
+                        _blocks += [np.zeros(_dim,dtype = _type)]
+                        _dtypes += [(_name[0],_type,_dim)]
+                        continue
+                    if _blockid < 1:
+                        _count = _type[1] + 1
+                    else:
+                        _count = _type[1] - _types[_blockid-1][1]
+                    _data = _stashed_items[_name[1]].data
+                    _type = _data.dtype.str
+                    if len(_data.shape) > 1 or _count > 1:
+                        _data = np.repeat(np.expand_dims(_data,axis = _axis),_count,axis=_axis)
+                    _blocks += [_data]
+                    _dtypes += [(_name[0],_type,_data.shape)]
+                self._decoded_data = np.array(_blocks,dtype = _dtypes)
+            self._stashed_items = None
+            self._stack_info = None
+            return self._decoded_data
 
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):
@@ -550,7 +810,7 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
                 _final_shape = np.append(self.array_dimension,self.dimension)
             try:
                 self._decoded_data = self._decoder(
-                    self.stream_data,
+                    self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
                     #dtype=self._loader.type_map[self.type],
                     count= self._decoded_length
                 ).reshape(_final_shape)
@@ -586,13 +846,13 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
         if name == 'type':
             # select decoding function and result type based upon type name provided by
             # value
-            self._decoder = self._loader.select_decoder(self)
+            self._decoder,self._itemsize = self._loader.select_decoder(self)
             return
         if name == 'data_format' and hasattr(self,'type'):
             # data stream is compressed binary stream the format is specified by data_format
             # attribute. select decoding method and datatype of decoded data as specified by
             # the type attribute
-            self._decoder = self._loader.select_decoder(self)
+            self._decoder,self._itemsize = self._loader.select_decoder(self)
             return
 
 _blob_size = 524288
@@ -601,7 +861,7 @@ class StreamLoader(object):
     __slots__ = (
         "_header","_next_datasection","_field_data_map","create_stream","_section_pattern",
         "_next_key_toload","create_array","type_map","decode","_header_locked","_next_stream",
-        "_last_checked","_group_end"
+        "_last_checked","_group_end","create_list_array"
     )
 
     # maps stream/block and <block>List names related to HyperSurface sections encoding multiple
@@ -647,6 +907,7 @@ class StreamLoader(object):
             # select instrumentation for AmiraMesh file
             self.create_stream = self._create_amira_mesh_stream
             self.create_array = self._create_amira_mesh_array
+            self.create_list_array = self._create_amira_mesh_list_array
             self._section_pattern = _stream_delimiters[0]
             self._header_locked = True
             self._next_stream = self._get_next_block
@@ -661,6 +922,7 @@ class StreamLoader(object):
             # select instrumentation for HyperSurface file
             self.create_stream = self._create_hyper_surface_stream
             self.create_array = self._create_hyper_surface_array
+            self.create_list_array = self._create_hyper_surface_list_array
             self._section_pattern = _stream_delimiters[1]
             self._header_locked = False
             self._next_stream = self._no_next_block
@@ -703,14 +965,16 @@ class StreamLoader(object):
 
         if self._header.format is None:
             # header does not specify any of ASCII, BINARY or BINARY-LITTLE-ENDIAN
-            return ft.partial(np.frombuffer,dtype=_type_map[False][stream.type])
+            _dtype = _type_map[False][stream.type]
+            return ft.partial(np.frombuffer,dtype=_dtype),-1
         if self._header.format[0] in ['A','a']:
             # Format is ASCII type use numpy.fromstring function for decoding
             # return functools partial object with dtype parameter preset to the datatype
             # defined by the type attribute
             if self._header.format[1:] not in ["SCII","scii"]:
                 raise Exception("File encoding '{}' not supported".format(self._header.format))
-            return ft.partial(np.fromstring,dtype=_type_map[stream.type],sep="\n \t")
+            _dtype = _type_map[stream.type]
+            return ft.partial(np.fromstring,dtype=_dtype,sep="\n \t"), 0
         if self._header.format[0] not in ['B','b'] or self._header.format[1:6] not in ["INARY","inary"]:
             raise Exception("File encoding '{}' not supported".format(self._header.format))
         # check if data stream is compressed (HxByteRLE or HxZip)
@@ -720,16 +984,19 @@ class StreamLoader(object):
         _endianess = self._header.format[6:] == "-LITTLE-ENDIAN"
         if _data_format in ["HxByteRLE","hxbyterle"]:
             # 8 bit binary data compressed using rle encoding
-            return ft.partial(hxbyterle_decode,dtype = _type_map[stream.type])
+            _dtype = _type_map[stream.type]
+            return ft.partial(hxbyterle_decode,dtype = _dtype),(_dtype.itemsize * 2 if _dtype.kind in 'cC' else _dtype.itemsize )
         if _data_format in ["HxZip","hxzip"]:
             # 8 bit binary data zip compressed
-            return ft.partial(hxzip_decode,dtype = _type_map[stream.type])
+            _dtype = _type_map[stream.type]
+            return ft.partial(hxzip_decode,dtype = _dtype),(_dtype.itemsize * 2 if _dtype.kind in 'cC' else _dtype.itemsize)
         # binary data use numpy frombuffer and return
         # functools.partial object with dtype parameter preset to data type
         # indicated by type attribute and the endianess of the data as specified by
         # file meta data
-        return ft.partial(np.frombuffer,dtype=_type_map[_endianess][stream.type])
-
+        _dtype = _type_map[_endianess][stream.type]
+        return ft.partial(np.frombuffer,dtype=_dtype),(_dtype.itemsize * 2 if _dtype.kind in 'cC' else _dtype.itemsize)
+                
     def _create_amira_mesh_stream(self,name,array=None):
         """ create AmiraMeshDataStream stream block
             :param str name: name of the new stream block
@@ -742,6 +1009,17 @@ class StreamLoader(object):
             :param str name: name of the data array
         """
         return Block(name)
+
+    def _create_amira_mesh_list_array(self,name,kind = 'spreadsheet',child_name = 'Table'):
+        _array = AmiraMeshArrayList(name)
+        if kind.lower() == 'spreadsheet':
+            _sheet = AmiraMeshSheetDataStream(child_name,self)
+            #_sheet must be added first to ensure that check for stashability of _array
+            # will find it as valid attribute otherwise a TypeError will be issued
+            _array.add_attr(child_name,_sheet)
+            _sheet.add_attr('array',_array)
+        return _array
+
 
     def _create_hyper_surface_stream(self,name,array=None):
         """ create AmiraHxSurfaceDataStream stream block
@@ -798,6 +1076,9 @@ class StreamLoader(object):
         if _subblock is not None:
             _block_obj.add_attr("subblock",int(_subblock))
         return _block_obj
+
+    def _create_hyper_surface_list_array(self,name):
+        raise Exception("hyper surface does not support listlike array structures")
 
     @property
     def data_section_start(self):
@@ -960,7 +1241,7 @@ class StreamLoader(object):
                         if _current_stream is not None:
                             # attach bytes for last data_stream extending to the end of file
                             # to the corresponding metadata block
-                            _current_stream.add_attr('_stream_data',_stream_data[_block_start:].strip(_strip_lineend))
+                            _current_stream.add_attr('_stream_data',_stream_data[_block_start:])
                         if _block_not_found:
                             raise Exception("File '{}': data_block '{}' for data_stream '{}' not found".format(self._header.filename,_block_name,_stream_name))
                         # enable autoloading of missing attributes by header block
@@ -993,7 +1274,7 @@ class StreamLoader(object):
 
                         # store the binary data in the _stream_data attribute of the current
                         # stream block
-                        _current_stream.add_attr('_stream_data',_stream_data[_block_start:_match.start()].strip(_strip_lineend))
+                        _current_stream.add_attr('_stream_data',_stream_data[_block_start:_match.start()])
 
                         # try to get the metadata block for the next stream if available
                         _current_stream = self._next_stream(_match_group)
@@ -1079,7 +1360,7 @@ class StreamLoader(object):
                     _continue_scan_at = _match.end('count')
                     continue
                 if _current_stream is not None:
-                    _current_stream.add_attr('_stream_data',_stream_data[_block_start:_match.start()].strip(_strip_lineend))
+                    _current_stream.add_attr('_stream_data',_stream_data[_block_start:_match.start()])
                     _current_stream = None
                 if not isinstance(_ingroup,dict) or _match_group not in _ingroup or ( _match_group in _hyper_surface_file and self._group_end.match(_stream_data[-len(_stream_data) - _match.start() - 1::-1]) is not None ):
                     # true outer group hit
