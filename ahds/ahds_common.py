@@ -82,7 +82,7 @@ else:
     try:
         xrange = __builtins__['xrange']
     except:
-        xrange = getattr(__builtins__,'xrange',range)
+        xrange = getattr(__builtins__,'xrange',xrange)
     
     # define _dict_iter_values, _dict_iter_items, _dict_iter_keys aliases imported by the
     # other parts for dict.itervalues, dict.iteritems and dict.iterkeys
@@ -391,11 +391,14 @@ class Block(object):
         """Add an attribute to an ``Block`` object"""
         setattr(self, name, value)
 
-    #def move_attr(self,to,name):
-    #    try:
-    #        setattr(to,getattr(self,name))
-    #    except:
-    #        raise AttributeError("can not move missing attribute '{}' ".format(name))
+    def move_attr(self,to,name):
+        _tomove = getattr(self,name,None)
+        if _tomove is None or isinstance(_tomove,_AnyBlockProxy):
+            raise AttributeError("can not move missing attribute '{}' ".format(name))
+        if isinstance(_tomove,Block) and _tomove.name == name:
+            _tomove.name = to
+        setattr(self,to,_tomove)
+        delattr(self,name)
 
     @deprecated("user dir(<Block object>) instead")
     @mixed_property
@@ -406,10 +409,10 @@ class Block(object):
         try:
             return self.__dict__[name]
         except KeyError:
-            if len(self.__dict__) < 1:
-                # return dummy block if __dict__ and _list are empty to keep linters happy
-                return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
-            raise AttributeError("-{} instance has not attributes '{}'".format(self.__class__.__name__,name))
+            if name == 'name' or len(self.__dict__) > 0 or getattr(self,'name',None) is not None:
+                raise AttributeError("-{} instance has not attributes '{}'".format(self.__class__.__name__,name))
+            # return dummy block if __dict__ and _list are empty to keep linters happy
+            return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
         
     _recurse = {}
     def __str__(self):
@@ -477,12 +480,12 @@ class ListBlock(Block):
 
     def __getattr__(self,name):
         try:
-            return self.__dict[name]
+            return self.__dict__[name]
         except KeyError:
-            if len(self.__dict__) < 1 and len(self._list) < 1:
-                # return dummy block if __dict__ and _list are empty to keep linters happy
-                return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
-            raise
+            if name == 'name' or len(self.__dict__) > 0 or self._list is None or len(self._list) > 0 or getattr(self,'name',None) is not None:
+                raise AttributeError("-{} instance has not attributes '{}'".format(self.__class__.__name__,name))
+            # return dummy block if __dict__ and _list are empty to keep linters happy
+            return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
 
     def __setitem__(self,index,value):
         """ set the item with given index to specified value
@@ -514,28 +517,46 @@ class ListBlock(Block):
         """
         string = super(ListBlock,self).__str__()
         indent = " | " * len(Block._recurse)
-        if self in Block._recurse:
+        if self in Block._recurse or self._list is None:
             return string
         Block._recurse[self] = True
         indent += " | "
-        _head = min(5,len(self._list)-1)
-        if _head > 0:
-            for _idx in range(_head):
-                _entry = self._list[_idx]
-                if isinstance(_entry, Block):
-                    string += "{} +-[{}]=({}<{}.{} object at {}>)\n".format(indent,_idx,_entry.name,_entry.__module__,_entry.__class__.__name__,hex(id(_entry)))
-                else:
-                    string += "{} +-[{}]={}\n".format(indent,_idx, _entry)
-            if len(self._list) - _head > 5:
-                string += "{} + ...: ... \n"
-                _taillen = len(self._list) - 5
+        _count = 0
+        _idx = -1
+        for _count,_entry,_idx in (
+            (_count + 1,_ent,_entid)
+            for _ent,_entid in (
+                (self._list[_entid],_entid)
+                for _entid in xrange(len(self._list))
+            )
+            if _ent is not None
+        ):
+            if isinstance(_entry, Block):
+                string += "{} +-[{}]=({}<{}.{} object at {}>)\n".format(indent,_idx,_entry.name,_entry.__module__,_entry.__class__.__name__,hex(id(_entry)))
             else:
-                _taillen = len(self._list) - _head
-        else:
-            _taillen = len(self._list)
-        for _idx in range(len(self._list)-_taillen,len(self._list)):
-            _entry = self._list[_idx]
-            if isinstance(self._list[_idx], Block):
+                string += "{} +-[{}]={}\n".format(indent,_idx, _entry)
+            if _count > 4:
+                break
+        _back = _idx + 1
+        _count = 0
+        for _back,_count in (
+            ( _bk,_count + 1 )
+            for _bk in xrange(len(self._list)-1,0,-1)
+            if self._list[_bk] is not None and _bk > _idx
+        ):
+            if _count > 4:
+                break
+        if _back > _idx + 1:
+            string += "{} + ...: ... \n"
+            
+        for _idx,_entry in (
+            (_entid,_ent)
+            for _entid,_ent in (
+                (_entidx,self._list[_entidx])
+                for _entidx in xrange(_back,len(self._list))
+            ) if _ent is not None
+        ):
+            if isinstance(_entry, Block):
                 _entry = self._list[_idx]
                 string += "{} +-[{}]=({}<{}.{} object at {}>)\n".format(indent,_idx,_entry.name,_entry.__module__,_entry.__class__.__name__,hex(id(_entry)))
             else:
@@ -551,6 +572,9 @@ class ListBlock(Block):
         """ list iterator """
         for _item in self._list:
             yield _item
+
+    def __contains__(self,item):
+        return item in self._list
 
 class _AnyBlockProxy(Block):
     """ dummy block returned by __getattr__ method of Block in case
@@ -758,6 +782,9 @@ class _AnyBlockProxy(Block):
         return 0
 
     def __nonzero__(self):
+        return False
+
+    def __contains__(self):
         return False
 
     def keys(self):

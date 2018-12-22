@@ -57,7 +57,7 @@ parameter_name               :=    hyphname
 parameter_value              :=    parameter_list / inline_parameter_value / attribute_value
 parameter_list               :=    "{", tsn, ( parameter / comment )*, "}" 
 attribute_value              :=    ("-"*, "\""*, ((number, (ts, number)*) / xstring)*, "\""*)
-inline_parameter_value       :=    (number, (ts, number)*) / qstring, c*
+inline_parameter_value       :=    (number, (ts, number)*) / qstring
 
 materials                    :=    "Materials" , tsn, "{", tsn*, ( parameter_list, tsn* )+, "}", tsn 
 
@@ -144,7 +144,7 @@ if sys.version_info[0] > 2:
     _strip_lineend = b'\n'
     _stream_delimiters = [
         re.compile(b"(?:^|\n)@(?P<stream>\d+)\n",flags=re.S),
-        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+)".format(_hyper_surface_entities).encode('ASCII')),
+        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(_hyper_surface_entities).encode('ASCII')),
         re.compile(b"^\s*}',re.I") # NOTE this is appried to reverese slice of stream_data therefore ^
     ]
 
@@ -164,7 +164,7 @@ else:
     _strip_lineened = r'\n}{\t '
     _stream_delimiters = [
         re.compile(r"(?:^|\n)@(?P<stream>\d+)\n",flags=re.S),
-        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+)".format(r"|".join(_hyper_surface_entities))),
+        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(r"|".join(_hyper_surface_entities))),
         re.compile(r"^\s*}',re.I") # NOTE this is appried to reverese slice of stream_data therefore ^
     ]
 
