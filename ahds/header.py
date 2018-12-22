@@ -213,6 +213,8 @@ try:
 except:
     from data_stream import StreamLoader
 
+import functools as ft
+
 
 # empty arrays passed to _load_declarations and _load_definitions on creation
 # of HyperSuface header. The commented elements may be used for debuging purposes
@@ -242,7 +244,7 @@ _hyper_surface_base_definitions = [
 
 # regular expression applied to names of array declarations and corresponding data definitions to identifiy
 # whether they shall be joinded within an additional <commonname>List array attribute. 
-_match_sibling = re.compile(r'^(?P<commonname>\w+)(?P<counter>(?:\d+))$')
+_match_sibling = re.compile(r'^\d+')
 
 class AmiraHeader(Block):
     """Class to encapsulate Amira metadata and accessors to amria data streams"""
@@ -251,7 +253,7 @@ class AmiraHeader(Block):
     # representing the metadata and the accessors to the content of the data streams
     # which will be stored inside the __dict__ attribute of the Block base class
     __slots__ = (
-        "_fn","_parsed_data","_stream_loader","_parameters","_materials","_field_data_map","_noload"
+        "_fn","_parsed_data","_stream_loader","_parameters","_materials","_field_data_map","_noload","_array_data_rename"
     )
 
     def __init__(self, parsed_data,fn):
@@ -268,6 +270,7 @@ class AmiraHeader(Block):
         # first data stream starts
         self._parsed_data,_data_section_start = parsed_data
         self._field_data_map = dict()
+        self._array_data_rename = dict()
         self._noload = 0
         # construct the metadata structure represented by this header and establish all
         # initial datastream accessors if possible
@@ -346,6 +349,8 @@ class AmiraHeader(Block):
         return block_data
     
     def _load(self,_data_section_start):
+        # disable automatic  loading of data streams while construction of header
+        self.autoload(False)
         # first flatten the dict
         block_data = self.flatten_dict(self._parsed_data)
         if len(block_data) < 1:
@@ -356,8 +361,6 @@ class AmiraHeader(Block):
         
         self._load_designation(block_data['designation'])
         self._stream_loader = StreamLoader(self,_data_section_start,self._field_data_map)
-        self._load_declarations(block_data['array_declarations'])
-        self._load_definitions(block_data['data_definitions'])
         # if present load parameters section, it may be missing on Files describing vector fields only
         if 'parameters' in block_data:
             self._parameters = self._load_parameters(block_data['parameters'],'parameters',parent = self)
@@ -373,6 +376,16 @@ class AmiraHeader(Block):
             # load dedicated materials section and insert it within the Materials section of the parameters block
             self._materials = self._load_parameters(block_data['materials'],'materials',self._parameters.Materials)
 #         self._load_date()
+        # load declarations after parameters in case AmiraMesh file represents HxSpreadSheet.
+        # in that case parameters contain ContentType and numRows attribute and for each column the labeling of the columns
+        # which allows to collate array_declarations for spreadsheet into one listblock labeled and attach a data and a stream_data
+        # attribute to ListBlock in case all columns have same data type.
+        _finish = self._load_declarations(block_data['array_declarations'])
+        self._load_definitions(block_data['data_definitions'])
+        for _call in _finish:
+            _call()
+        # enable automatic loading of data streams
+        self.autoload(True)
 
     @deprecated(" use header attributes version, dimension, fileformat, format and extra_format istead")
     @mixed_property
@@ -455,31 +468,102 @@ class AmiraHeader(Block):
             block_data = _hyper_surface_declarations
         elif self.filetype == 'HyperSurface':
             raise ("array declarations found on file '{}' designated having '{}' file type".format(self.path,self.filetype))
+        _special_content = getattr(self._parameters,'ContentType',None)
+        _finish = tuple()
+        if _special_content in ['HxSpreadSheet']:
+            _numrows = getattr(self._parameters,'numRows',None)
+            if _numrows is not None:
+                _numrows = np.int64(_numrows)
+                def _flatten(name):
+                    _counterat = _match_sibling.match(name[::-1])
+                    return name if _counterat is None else name[:-_counterat.end()]
+                def _relabel(name,counter,formatter):
+                    _column_label = getattr(self.parameters,"__ColumnName{:04d}".format(counter),None)
+                    name = formatter.format(name,counter)
+                    if _column_label is None:# or isinstance(_column_label,_AnyBlockProxy):
+                        return name,name
+                    return name,_column_label
+    
+                _check_dim = (
+                    lambda dim:np.all(np.int64(dim) == _numrows),
+                    "array_dimension={} does not match number of rows ({}) in spreadsheet",
+                    _flatten,
+                    lambda name : self._stream_loader.create_list_array(name,kind = 'spreadsheet',child_name = '{}Sheet'.format(name.strip('_ \t\r\n\f'))),
+                    _relabel,
+                    lambda name,array:(ft.partial(getattr,array,'{}Sheet'.format(name.strip('_ \t\r\n\f')),None),)
+                )
+            else:
+                _check_dim = (
+                    lambda dim:True,
+                    Exception("strange"),
+                    lambda name:name,
+                    self._stream_loader.create_array,
+                    lambda name,counter,formatter:(name,formatter.format(name,counter)),
+                    lambda name,array:()
+                )
+        else:
+                _check_dim = (
+                    lambda dim:True,
+                    Exception("strange"),
+                    lambda name:name,
+                    self._stream_loader.create_array,
+                    lambda name,counter,formatter:(name,formatter.format(name,counter)),
+                    lambda name,array:()
+                )
+        _base_map = dict()
         for declaration in block_data:
-            _array_name = declaration['array_name']
-            _block_obj = self._stream_loader.create_array(_array_name)
+            if not _check_dim[0](declaration['array_dimension']):
+                raise ValueError(_check_dim[1].format(declaration['array_dimension']))
+            _array_name = _check_dim[2](declaration['array_name'])
+            _equalnamed = getattr(self,_array_name,None)
+            if _equalnamed is not None: # and not isinstance(_equalnamed,_AnyBlockProxy):
+                try:
+                    if np.all(_equalnamed.dimension != declaration['array_dimension']):
+                       raise Exception("either HxSpreadSheet with equal named columns of different length can't handle")
+                    _rename = self._array_data_rename.get(_array_name,None)
+                    if _rename is None:
+                        self._array_data_rename[_array_name] = {
+                            0:ft.partial(_check_dim[4],formatter = ('{0:s}{1:05d}' if declaration['array_name'] == _array_name else '{0:s}')),
+                        }
+                    continue # already defined if data has also equal names just renumber definitions
+                except AttributeError:
+                    raise Exception("definition name colides with some static non block attribute")
+            #_array_name = declaration['array_name']
+            _block_obj = _check_dim[3](_array_name)
             self.add_attr(_array_name,_block_obj)
             _block_obj.add_attr('dimension',declaration['array_dimension'])
             self._check_siblings(_block_obj,_array_name,self)
+            _base_map[_array_name] = declaration['array_name']
+            _finish = _finish + _check_dim[5](_array_name,_block_obj)
+            if len(_array_name) > 0 and _array_name[0] in '_ \n\t\f\r':
+                # unhide arrays which start with '__' or '_' most likely these are arrays 
+                # which encode HxSpreadSheet column arrays where each column has its own array  
+                _finish = _finish + (ft.partial(self.move_attr,to = _array_name.strip('_ \n\t\r\f'),name = _array_name),)
+        return _finish
 
     def _check_siblings(self,block_obj,name,parent):
             # check if the last characters in the name could resemble a valid counter
-            _issibling = _match_sibling.match(name)
+            # search reverse from tail of name any digit character
+            _issibling = _match_sibling.match(name[::-1])
             if _issibling is None:
                 # no counter found 
                 return
             # try to load an existing <commonname>List attribute from the specified parent Node
-            _list_name = _issibling.group('commonname') + 'List'
-            _siblinglist = getattr(parent,_list_name,None)
-            if _siblinglist is None or isinstance(_siblinglist,_AnyBlockProxy):
-                # create a new ListBlock allowing to access the attributes of the Parentblock by index
-                _siblinglist = ListBlock(_list_name)
-                parent.add_attr(_list_name,_siblinglist)
-            elif not isinstance(_siblinglist,ListBlock):
-                # an attribute with name of list exists but does not resemble a ListBlock
-                raise Exception("convertion of Block({0}) to ListBlock({0}) not supported".format(_list_name))
+            if isinstance(parent,ListBlock):
+                _list_name = parent.name
+                _siblinglist = parent
+            else:
+                _list_name = name[:-_issibling.end()] + 'List'
+                _siblinglist = getattr(parent,_list_name,None)
+                if _siblinglist is None: # or isinstance(_siblinglist,_AnyBlockProxy):
+                    # create a new ListBlock allowing to access the attributes of the Parentblock by index
+                    _siblinglist = ListBlock(_list_name)
+                    parent.add_attr(_list_name,_siblinglist)
+                elif not isinstance(_siblinglist,ListBlock):
+                    # an attribute with name of list exists but does not resemble a ListBlock
+                    raise Exception("convertion of Block({0}) to ListBlock({0}) not supported".format(_list_name))
             # insert new block in addition into the corresponding list
-            _siblinglist[int(_issibling.group('counter'))] = block_obj
+            _siblinglist[int(name[-_issibling.end():])] = block_obj
     
     def _load_parameters(self, block_data,parameter_name="<unknown>",block_obj = None,parent = None):
         if type(block_data) not in [list,tuple]:
@@ -583,7 +667,14 @@ class AmiraHeader(Block):
                 _fields_list.add_attr(data_definition['data_name'],_field_obj)
                 _field_obj.add_attr("interpolation",data_definition['interpolation_method'])
                 continue
-            _array_obj = getattr(self,data_definition['array_reference'],None)
+            _array_base = _match_sibling.match(data_definition['array_reference'][::-1])
+            if _array_base is None:
+                _array_obj = getattr(self,data_definition['array_reference'],None)
+            else:
+                _array_base = data_definition['array_reference'][:-_array_base.end()]
+                _array_obj = getattr(self,_array_base,None)
+                if _array_obj is None or not isinstance(_array_obj,ListBlock):    
+                    _array_obj = getattr(self,data_definition['array_reference'],None)
             if _array_obj is None:
                 raise Exception("DataError: array_reference '{}' not found".format(data_definition['array_reference']))
             # assume data_dimension to be one if not explicitly specified and load corresponding data type
@@ -592,12 +683,20 @@ class AmiraHeader(Block):
             # check if a data definition stub has already been created by a preceeding Field definitions
             _block_index = int(data_definition['data_index']) if data_definition['data_index'] else data_definition['data_name']
             _data_obj = self._field_data_map.get(_block_index,None)
+            _relabel = self._array_data_rename.get(_array_obj.name,None)
+            if _relabel is None:
+                _data_name = data_definition['data_name']
+                _data_label = _data_name
+            else:
+                _counter = _relabel.get(data_definition['data_name'],-1) + 1
+                _data_name,_data_label = _relabel[0](data_definition['data_name'],_counter)
+                _relabel[data_definition['data_name']] = _counter
             if _data_obj is None:
                 if _data_dimension is None:
-                    _array_obj.add_attr(data_definition['data_name'],None)
+                    _array_obj.add_attr(_data_name,None)
                     continue
                 # create the corresponding data stream object and set all corresponding attributes
-                _data_obj = self._stream_loader.create_stream(data_definition['data_name'],_array_obj)
+                _data_obj = self._stream_loader.create_stream(_data_label,_array_obj)
                 _data_obj.add_attr("type",_data_type)
                 _data_obj.add_attr("dimension",_data_dimension)
                 _data_obj.add_attr("block",_block_index)
@@ -610,19 +709,20 @@ class AmiraHeader(Block):
                     )
                 )
             elif _data_obj.name != "<FieldData>":
+                
                 # current definition would overwrite previous one
                 raise Exception(
                     "DataError: data for block {} ('{}') redefined to '{}'".format(
-                        _block_index,_data_obj.name,data_definition['data_name']
+                        _block_index,_data_obj.name,_data_name + "({})".format(data_definition['data_name'])
                     )
                 )
             else:
                 # fill in appropriate name of data definiton
-                _data_obj.name = data_definition['data_name']
+                _data_obj.name = _data_label
             # fill the remaining attributes and link the object to its parent array
             _data_obj.add_attr("array",_array_obj)
-            _array_obj.add_attr(data_definition['data_name'],_data_obj)
-            self._check_siblings(_data_obj,data_definition['data_name'],_array_obj)
+            _array_obj.add_attr(_data_name,_data_obj)
+            self._check_siblings(_data_obj,_data_name,_array_obj)
             if 'data_format' in data_definition:
                 _data_obj.add_attr('data_format', data_definition['data_format'])
             if 'data_length' in data_definition:
