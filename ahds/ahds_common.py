@@ -405,14 +405,16 @@ class Block(object):
     def attrs(self):
         return [ _attr for _attr in self.__dict__ ]
 
+    def _make_proxy_or_attributeerror(self,name,more_alife = False):
+        if name == 'name' or len(self.__dict__) > 0 or getattr(self,'name',None) is not None or more_alife:
+            raise AttributeError("-{} instance has not attributes '{}'".format(self.__class__.__name__,name))
+        return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
+
     def __getattr__(self,name):
         try:
             return self.__dict__[name]
         except KeyError:
-            if name == 'name' or len(self.__dict__) > 0 or getattr(self,'name',None) is not None:
-                raise AttributeError("-{} instance has not attributes '{}'".format(self.__class__.__name__,name))
-            # return dummy block if __dict__ and _list are empty to keep linters happy
-            return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
+            return self._make_proxy_or_attributeerror(name)
         
     _recurse = {}
     def __str__(self):
@@ -478,14 +480,12 @@ class ListBlock(Block):
         super(ListBlock,self).__init__(name)
         self._list = tuple() 
 
-    def __getattr__(self,name):
-        try:
-            return self.__dict__[name]
-        except KeyError:
-            if name == 'name' or len(self.__dict__) > 0 or self._list is None or len(self._list) > 0 or getattr(self,'name',None) is not None:
-                raise AttributeError("-{} instance has not attributes '{}'".format(self.__class__.__name__,name))
-            # return dummy block if __dict__ and _list are empty to keep linters happy
-            return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
+
+    def _make_proxy_or_attributeerror(self,name,more_alife = False):
+        return super(ListBlock,self)._make_proxy_or_attributeerror(
+            name,
+            self._list is None or len(self._list) > 0 or more_alife
+        )
 
     def __setitem__(self,index,value):
         """ set the item with given index to specified value

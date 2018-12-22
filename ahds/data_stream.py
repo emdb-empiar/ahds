@@ -471,7 +471,9 @@ class AmiraMeshDataStream(AmiraDataStream):
                 _final_shape = np.append(self.array_dimension,self.dimension)
             try:
                 self._decoded_data = self._decoder(
+                    #pylint: disable=E1136
                     self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
+                    #pylint: enable=E1136
                     #dtype=self._loader.type_map[self.type],
                     count= self._decoded_length
                 ).reshape(_final_shape)
@@ -512,6 +514,11 @@ class AmiraMeshArrayList(ListBlock):
         super(AmiraMeshArrayList,self).__init__(*args,**kwargs)    
         self._stashing_attr = None
 
+    def _make_proxy_or_attributeerror(self,name,more_alife = False):
+        return super(AmiraMeshArrayList,self)._make_proxy_or_attributeerror(
+            name,
+            self._stashing_attr is not None or more_alife
+        )
     def __getattr__(self,name):
         if self._stashing_attr == name:
             self._stashed_by._stash(self)
@@ -668,6 +675,8 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         if len(_names) == 1:
             self.name = _names[0][0]
         self._stack_info = dict(names = _names,dimensions = _dimensions, types = _types)
+        setattr(self,'dimension',( 0 if len(_dimensions) < 1 else ( _dimensions[0][1] + 1 if _dimensions[0][0] == 1 else np.array([_dimensions[0][1] + 1 ,_dimensions[0][0]]) ) ) if len(_dimensions) < 2 else tuple(((_dim[1] + 1 if _idx < 1 else _dim[1] - _dimensions[_idx-1][1],_dim[0]) for _idx,_dim in enumerate(_dimensions))))
+        setattr(self,'type',(None if len(_types) < 1 else _types[0][0] ) if len(_types) < 2 else tuple((_tp[0] for _tp in _types)))
 
     @mixed_property
     def stream_data(self):
@@ -696,7 +705,7 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
             self.array.dimension = np.int64(self.array.dimension)
             if len(_names) < 2:
                 if len(_names) < 1:
-                    _dim = np.hstack((self.array.dimension,self.dimension,0))
+                    _dim = np.hstack((self.array.dimension,self.dimension))
                     self._decoded_data = np.zeros(_dim)
                 else:
                     _dimensions = self._stack_info.get("dimensions",None)
