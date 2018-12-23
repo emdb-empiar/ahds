@@ -541,7 +541,7 @@ class AmiraHeader(Block):
                 _finish = _finish + (ft.partial(self.move_attr,to = _array_name.strip('_ \n\t\r\f'),name = _array_name),)
         return _finish
 
-    def _check_siblings(self,block_obj,name,parent):
+    def _check_siblings(self,block_obj,name,parent,listnameformat = '{}List'):
             # check if the last characters in the name could resemble a valid counter
             # search reverse from tail of name any digit character
             _issibling = _match_sibling.match(name[::-1])
@@ -553,7 +553,7 @@ class AmiraHeader(Block):
                 _list_name = parent.name
                 _siblinglist = parent
             else:
-                _list_name = name[:-_issibling.end()] + 'List'
+                _list_name = listnameformat.format(name[:-_issibling.end()])
                 _siblinglist = getattr(parent,_list_name,None)
                 if _siblinglist is None: # or isinstance(_siblinglist,_AnyBlockProxy):
                     # create a new ListBlock allowing to access the attributes of the Parentblock by index

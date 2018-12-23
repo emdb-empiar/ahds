@@ -1327,7 +1327,7 @@ class StreamLoader(object):
                             raise Exception("File '{}': Array '{}'({}) empty!".format(self._header.filename,_firstentry_name,_match_group))
                         _current_group = self.create_array(_firstentry_name)
                         self._header.add_attr(_firstentry_name,_current_group)
-                        self._header._check_siblings(_current_group,_firstentry_name,self._header)
+                        self._header._check_siblings(_current_group,_firstentry_name,self._header,_current_group.block)
                         _current_group.add_attr('block',_match_group)
                     elif isinstance(_ingroup,list) and  _ingroup[1] is None:
                         self._header.add_attr(_firstentry_name,int(_count) if _count is not None else _match.group('name'))
@@ -1356,7 +1356,7 @@ class StreamLoader(object):
                         if _current_stream is None:
                             _current_stream = self.create_stream(_ingroup[0],_current_group)
                             _current_group.add_attr(_ingroup[0],_current_stream)
-                            self._header._check_siblings(_current_stream,_ingroup[0],_current_group)
+                            self._header._check_siblings(_current_stream,_ingroup[0],_current_group,_current_group.block)
                             _current_stream.add_attr('block ',_match_group)
                             _current_stream.add_attr('array',_current_group)
                         _current_stream.add_attr('type',_ingroup[2])
@@ -1395,7 +1395,7 @@ class StreamLoader(object):
                     if _current_group is None:
                         _current_group = self.create_array(_firstentry_name)
                         self._header.add_attr(_firstentry_name,_current_group)
-                        self._header._check_siblings(_current_group,_firstentry_name,self._header)
+                        self._header._check_siblings(_current_group,_firstentry_name,self._header,_current_group.block)
                     _current_group.add_attr('block',_common_block)
                     _current_group.add_attr('dimension',1)
                 _subgroup_seen.add(_match_group)
@@ -1427,7 +1427,7 @@ class StreamLoader(object):
                     _current_stream.add_attr('block ',_match_group)
                     _current_stream.add_attr('array',_current_group)
                     _current_group.add_attr(_match_group,_current_stream)
-                    self._header._check_siblings(_current_stream,_match_group,_current_group)
+                    self._header._check_siblings(_current_stream,_match_group,_current_group,_current_group.block)
                 _current_stream.add_attr('dimension',_dimension)
                 _current_stream.add_attr('type',_data_name[2])
                 _continue_scan_at = _match.end(_last_group)
@@ -1445,7 +1445,7 @@ class DataStreams(object):
                 self.__stream_data = self._header.data_pointers
             self.__stream_data = datastreams = dict()
             for _streamblock in _dict_iter_keys(_hyper_surface_file):
-                _streamlist = self._header._stream_loader.__class__._group_array_map.get(_streamblock,_streamblock).format('List')
+                _streamlist = _streamblock #self._header._stream_loader.__class__._group_array_map.get(_streamblock,_streamblock).format('List')
                 _streamlist = getattr(self._header,_streamlist,None)
                 if _streamlist is None:
                     continue
