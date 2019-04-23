@@ -202,9 +202,9 @@ except:
     from grammar import get_parsed_data
 import os.path as path
 try:
-    from .ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock,_doraise,mixed_property
+    from .ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock,_doraise
 except:
-    from ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock,_doraise,mixed_property
+    from ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock,_doraise
 import numpy as np
 import re
 
@@ -284,12 +284,20 @@ class AmiraHeader(Block):
         :return ah: object of class ``AmiraHeader`` containing header metadata
         :rtype: ah: :py:class:`ahds.header.AmiraHeader`
         """
-        return AmiraHeader(get_parsed_data(fn, *args, **kwargs),fn)
+        return cls(get_parsed_data(fn, *args, **kwargs),fn)
 
-    def __getattr__(self,name):
+    def __getattribute__(self,name):
         """tries to load the quested attribute from the file if not already present in this header"""
+        if name in ("filename","path"):
+            return super(AmiraHeader,self).__getattribute__("_fn")
+        if name in ("raw_header",):
+            return super(AmiraHeader,self).__getattribute__("_parsed_data")
+        if name in ("designation","definitions","data_pointers"):
+            return super(AmiraHeader,self).__getattribute__(name)()
+        if name in ("parameters",):
+            return super(AmiraHeader,self).__getattribute__("_"+name)
         try:
-            return super(AmiraHeader,self).__getattr__(name)
+            return super(AmiraHeader,self).__getattribute__(name)
         except AttributeError:
             if self._noload:
                 # autoload is already off reraise AttributeError
@@ -308,7 +316,7 @@ class AmiraHeader(Block):
             # turn on autoload again and try to return the newly loaded attribute
             # from the __dict__ of the base class
             self.autoload(True)
-            return super(AmiraHeader,self).__getattr__(name)
+            return super(AmiraHeader,self).__getattribute__(name)
 
     def autoload(self,on):
         """ 
@@ -326,16 +334,6 @@ class AmiraHeader(Block):
             return
         self._noload -= 1
 
-    @mixed_property
-    def filename(self):
-        """ return the full path of the file loaded """
-        return self._fn
-    
-    @mixed_property
-    def raw_header(self):
-        """Show the raw header data"""
-        return self._parsed_data
-    
     def __len__(self):
         return len(self._parsed_data)
     
@@ -388,7 +386,6 @@ class AmiraHeader(Block):
         self.autoload(True)
 
     @deprecated(" use header attributes version, dimension, fileformat, format and extra_format istead")
-    @mixed_property
     def designation(self):
         """Designation of the Amira file defined in the first row
         
@@ -410,7 +407,6 @@ class AmiraHeader(Block):
         return self
 
     @deprecated(" use data array attributes instead eg. Vertices, Triangles, ...")
-    @mixed_property
     def definitions(self):
         """Definitions consist of a key-value pair specified just after the 
         designation preceded by the key-word 'define'      
@@ -420,18 +416,8 @@ class AmiraHeader(Block):
         """
         return self
     
-    @mixed_property
-    def parameters(self):
-        """The set of parameters for each of the segments specified 
-        e.g. colour, data pointer etc.
-        """
-        try:
-            return self._parameters
-        except AttributeError:
-            return _AnyBlockProxy('parameters')
             
     @deprecated(" use data attributes of data arrays  instead eg. header.Vertices.Coordinates")
-    @mixed_property
     def data_pointers(self):
         """The list of data pointers together with a name, data type, dimension, 
         index, format and length
@@ -447,12 +433,6 @@ class AmiraHeader(Block):
             _data_pointers.add_attr("data_pointer_{}".format(_i),_data)
             _i += 1
         return _data_pointers
-
-    @mixed_property
-    def path(self):
-        """ file system path where the file represented by this AmiraHeader is stored """
-        return self._fn
-
 
     def _load_designation(self, block_data):
         setattr(self,'filetype',block_data['filetype'] if 'filetype' in block_data else None)
@@ -720,7 +700,7 @@ class AmiraHeader(Block):
                 # fill in appropriate name of data definiton
                 _data_obj.name = _data_label
             # fill the remaining attributes and link the object to its parent array
-            _data_obj.add_attr("array",_array_obj)
+            _data_obj.add_attr("array",_array_obj,True)
             _array_obj.add_attr(_data_name,_data_obj)
             self._check_siblings(_data_obj,_data_name,_array_obj)
             if 'data_format' in data_definition:
@@ -748,7 +728,7 @@ def main():
     try:
         fn = sys.argv[1]
     except IndexError:
-        print >> sys.stderr, "usage: ./{} <amira-fn>".format(__file__)
+        print("usage: ./{} <amira-fn>".format(__file__),sys.stderr)
         return 1
     
     h = AmiraHeader.from_file(fn, verbose=False)
@@ -768,7 +748,11 @@ def main():
                 print("")
     
     print(h.designation)
+    #pylint: disable=E1101
     print(h.data_pointers.attrs)
+    #pylint: enable=E1101
+    if hasattr(h,"Lattice"):
+        print(h.Lattice.Data)
 
     return 0
 
