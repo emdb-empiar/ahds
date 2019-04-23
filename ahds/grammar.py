@@ -165,7 +165,7 @@ else:
     _stream_delimiters = [
         re.compile(r"(?:^|\n)@(?P<stream>\d+)\n",flags=re.S),
         re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(r"|".join(_hyper_surface_entities))),
-        re.compile(r"^\s*}',re.I") # NOTE this is appried to reverese slice of stream_data therefore ^
+        re.compile(r"^\s*}'",re.I) # NOTE this is applied to reverese slice of stream_data therefore ^
     ]
 
 
