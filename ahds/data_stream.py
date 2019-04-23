@@ -29,12 +29,12 @@ from skimage.measure._find_contours import find_contours
 try:
     from .ahds_common import (
         _dict_iter_keys, _dict_iter_items, _dict_iter_values, Block, ListBlock,_AnyBlockProxy,
-        xrange,_doraise,_decode_string,mixed_property,deprecated
+        xrange,_doraise,_decode_string,deprecated
     )
 except:
     from ahds_common import (
         _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,ListBlock,_AnyBlockProxy,
-        xrange,_doraise,_decode_string,mixed_property,deprecated
+        xrange,_doraise,_decode_string,deprecated
     )
 
 try:
@@ -156,8 +156,7 @@ except ImportError:
         from warnings import warn
         
         warn("using pure-Python (instead of Python C-extension) implementation of byterle_decoder")
-        
-        #input_data = struct.unpack('<{}B'.format(len(data)), data)
+
         input_data = np.frombuffer(data,dtype=_np_ubytelitle,count = len(data))
         output = np.zeros(count, dtype=np.uint8)
         i = 0
@@ -232,33 +231,34 @@ class Image(object):
     """Encapsulates individual images"""
     def __init__(self, z, array):
         self.z = z
-        self.__array = array
-        self.__byte_values = np.unique(self.__array)
-    @property
-    def byte_values(self):
-        return self.__byte_values
-    @property
-    def array(self):
-        """Accessor to underlying array data"""
-        return self.__array
+        self._array = array
+        self._byte_values = np.unique(self._array)
+
+    def __getattribute__(self,attr):
+        if attr in ("array","byte_values"):
+            return super(Image,self).__getattribute__("_"+attr)
+        if attr in ("as_contours","as_segments"):
+            return super(Image,self).__getattribute__("_"+attr)()
+        return super(Image,self).__getattribute__(attr)
+
     def equalise(self):
         """Increase the dynamic range of the image"""
-        multiplier = 255 // len(self.__byte_values)
-        return self.__array * multiplier
-    @property
-    def as_contours(self):
+        multiplier = 255 // len(self._byte_values)
+        return self._array * multiplier
+
+    def _as_contours(self):
         """A dictionary of lists of contours keyed by byte_value"""
         contours = dict()
         _maskbase = np.array([False,True])
-        _indexbase = np.zeros(self.__array.shape,dtype = np.int8)
-        for byte_value in self.__byte_values[self.__byte_values != 0 ]:
-            mask = _maskbase[np.equal(self.__array,byte_value,out = _indexbase)]
+        _indexbase = np.zeros(self._array.shape,dtype = np.int8)
+        for byte_value in self._byte_values[self._byte_values != 0 ]:
+            mask = _maskbase[np.equal(self._array,byte_value,out = _indexbase)]
             found_contours = find_contours(mask, 254, fully_connected='high') # a list of array
             contours[byte_value] = ContourSet(found_contours)
         return contours
-    @property
-    def as_segments(self):
+    def _as_segments(self):
         return {self.z: self.as_contours}
+
     def show(self):
         """Display the image"""
         with_matplotlib = True
@@ -291,6 +291,7 @@ class Image(object):
             io.show()
     def __repr__(self):
         return "<Image with dimensions {}>".format(self.array.shape)
+
     def __str__(self):
         return "<Image with dimensions {}>".format(self.array.shape)
 
@@ -299,8 +300,13 @@ class ImageSet(UserList):
     """Encapsulation for set of ``Image`` objects"""
     def __getitem__(self, index):
         return Image(index, self.data[index])
-    @property
-    def segments(self):
+
+    def __getattribute__(self,attr):
+        if attr in ("segments",):
+            return super(ImageSet,self).__getattribute__("_" + attr)()
+        return super(ImageSet,self).__getattribute__(attr)
+
+    def _segments(self):
         """A dictionary of lists of contours keyed by z-index"""
         segments = dict()
         for i in xrange(len(self)):
@@ -350,51 +356,53 @@ class Contour(object):
 class AmiraDataStream(Block):
     """Base class for all Amira DataStreams"""
 
-    __slots__ = ( "_stream_data","_decoded_length","_loader","_decoder","_itemsize","_decoded_data" )
+    __slots__ = ( "stream_data","_decoded_length","_loader","_decoder","_itemsize","data" )
     def __init__(self,name,loader,*args,**kwargs):
         super(AmiraDataStream,self).__init__(name)
         self._decoded_length = 0
         self._loader = loader
 
-    @mixed_property
-    def stream_data(self):
+    def __getattribute__(self,name):
+        if name in ("encoded_data","decoded_data","decoded_length"):
+            return super(AmiraDataStream,self).__getattribute__(name)()
+        try:
+            return super(AmiraDataStream,self).__getattribute__(name)
+        except AttributeError:
+            if name not in ("stream_data","data"):
+                raise
+            return super(AmiraDataStream,self).__getattribute__("_load_"+name)()
+
+
+    def _load_stream_data(self):
         """All the raw data from the file for the data stream"""
         try:
-            return self._stream_data
-        except AttributeError:
-            et,ev,eb = sys.exc_info()
-            try:
-                self._loader.load_stream(self)
-                return self._stream_data
-            except Exception as reason:
-                _doraise(ev,eb,et,reason)
+            self._loader.load_stream(self)
+        except Exception as reason:
+            raise AttributeError("'{}' type object does not have a 'stream_data' property".format(self.__class__),reason)
+        return super(AmiraDataStream,self).__getattribute__("stream_data")
 
     @deprecated("will be removed in future versions use stream_data instead to access raw data")
-    @mixed_property
     def encoded_data(self):
         """Encoded raw data in this stream"""
         return None
 
     @deprecated("will be removed in future versions use data instead to access decoded numpy arrays")
-    @mixed_property
     def decoded_data(self):
         """Decoded data for this stream"""
         return None
 
-    @mixed_property
-    def data(self):
+    def _load_data(self):
         """Decoded numpy array for this stream"""
         return None
 
     @deprecated("may be removed in future versions use <stream>.data.size instead")
-    @mixed_property
     def decoded_length(self):
         """The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)"""
         return self._decoded_length
 
     def __repr__(self):
         try:
-            return "{} object of {:,} bytes".format(self.__class__, len(self._stream_data))
+            return "{} object of {:,} bytes".format(self.__class__, len(super(AmiraDataStream,self).__getattribute__("stream_data")))
         except AttributeError:
             return "{} object of {:,} bytes".format(self.__class__,0)
 
@@ -405,10 +413,10 @@ class AmiraMeshDataStream(AmiraDataStream):
     def __init__(self, *args, **kwargs):
         super(AmiraMeshDataStream, self).__init__(*args, **kwargs)
 
-    def add_attr(self,name,value):
+    def add_attr(self,name,value,isparent=False):
         if name == 'dimension':
             value = np.int64(value)
-            super(AmiraMeshDataStream,self).add_attr(name,value)
+            super(AmiraMeshDataStream,self).add_attr(name,value,isparent)
             _array = getattr(self,'array',None)
             if _array is None: # or isinstance(_array,_AnyBlockProxy):
                 self._decoded_length = np.prod(value)
@@ -419,7 +427,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                 return
             self._decoded_length = np.prod(value) * np.prod(_array.dimension)
             return
-        super(AmiraMeshDataStream,self).add_attr(name,value)
+        super(AmiraMeshDataStream,self).add_attr(name,value,isparent)
         if name == 'array':
             _array_dim = getattr(value,'dimension',None)
             if _array_dim is None: # or isinstance(_array_dim,_AnyBlockProxy):
@@ -439,65 +447,54 @@ class AmiraMeshDataStream(AmiraDataStream):
             return
 
     @deprecated("use <AmiraMeshDataStream instance>.stream_data instead")
-    @mixed_property
     def encoded_data(self):
-        try:
-            return self._stream_data
-        except AttributeError:
+        try :
             return self.stream_data
+        except AttributeError as reason:
+            raise AttributeError("'{}' type object does not have a 'encoded_data' property".format(self.__class__))
+
     @deprecated("use <AmiraMeshHxSurfaceDataStream instance>.data instead")
-    @mixed_property
     def decoded_data(self):
         try:
-            return self._decoded_data
-        except AttributeError:
             return self.data
+        except AttributeError as reason:
+            raise AttributeError("'{}' type object does not have a 'decoded_data' property".format(self.__class__))
 
-    @mixed_property
-    def data(self):
+    def _load_data(self):
         #pylint: disable=E1101
-        try:
-            return self._decoded_data
-        except AttributeError:
-            et,ev,eb = sys.exc_info()
-            if np.isscalar(self.dimension):
-                if np.isscalar(self.array.dimension):
-                    _final_shape = [self.array.dimension,self.dimension]
-                elif self.dimension < 2:
-                    _final_shape = self.array.dimension
-                else:
-                    _final_shape = np.append(self.array.dimension,self.dimension)
-            elif np.isscalar(self.array.dimension):
-                if self.array.dimension < 2:
-                    _final_shape = self.dimension
-                else:
-                    _final_shape = np.insert(self.dimension,0,self.array.dimension)
+        _parentarray = getattr(self,'array',None)
+        if  _parentarray is None:
+            # not the terminal leave
+            raise AttributeError("'{}' type object does not have a 'data' property".format(self.__class__))
+        if np.isscalar(self.dimension):
+            if np.isscalar(_parentarray.dimension):
+                _final_shape = [_parentarray.dimension,self.dimension]
+            elif self.dimension < 2:
+                _final_shape = _parentarray.dimension
             else:
-                _final_shape = np.append(self.array_dimension,self.dimension)
-            try:
-                self._decoded_data = self._decoder(
-                    #pylint: disable=E1136
-                    self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
-                    #pylint: enable=E1136
-                    #dtype=self._loader.type_map[self.type],
-                    count= self._decoded_length
-                ).reshape(_final_shape)
-                return self._decoded_data
-            except Exception as reason:
-                _doraise(ev,eb,et,reason)
-            #return self._decoded_data
+                _final_shape = np.append(_parentarray.dimension,self.dimension)
+        elif np.isscalar(_parentarray.dimension):
+            if _parentarray.dimension < 2:
+                _final_shape = self.dimension
+            else:
+                _final_shape = np.insert(self.dimension,0,_parentarray.dimension)
+        else:
+            _final_shape = np.append(self.array_dimension,self.dimension)
+        self.data = self._decoder(
+            #pylint: disable=E1136
+            self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
+            #pylint: enable=E1136
+            #dtype=self._loader.type_map[self.type],
+            count= self._decoded_length
+        ).reshape(_final_shape)
+        return self.data
         #pylint: enable=E1101
 
     def to_images(self):
         if self.array.name not in ['Lattice']:
             raise ValueError("Unable to determine size of image stack")
-        try:
             #X, Y, Z = self.array.dimension
-            return ImageSet(np.swapaxes(self._decoded_data,0,self.array.dimension.size - 1))
-        except AttributeError:
-            if not hasattr(self,'_decoded_data'):
-                return ImageSet(np.swapaxes(self.data,0,self.array.dimension.size - 1))
-            raise ValueError("Unable to determine data size")
+        return ImageSet(np.swapaxes(self.data,0,self.array.dimension.size - 1))
         #imgs = ImageSet(image_data[:])
         #return imgs
 
@@ -505,13 +502,8 @@ class AmiraMeshDataStream(AmiraDataStream):
         """Return a 3D volume of the data"""
         if self.array.name not in ['Latice']:
             raise ValueError("Unable to determine size of 3D volume")
-        try:
-            #X, Y, Z = self.header.definitions.Lattice
-            return np.swapaxes(self._decoded_data,0,self.array.dimension.size - 1)
-        except AttributeError:
-            if not hasattr(self,'_decoded_data'):
-                return np.swapaxes(self.data,0,self.array.dimension.size - 1)
-            raise ValueError("Unable to determine data size")
+        #X, Y, Z = self.header.definitions.Lattice
+        return np.swapaxes(self.data,0,self.array.dimension.size - 1)
 
 class AmiraMeshArrayList(ListBlock):
     __slots__ = ("_stashed_by","_stashing_attr")
@@ -524,19 +516,19 @@ class AmiraMeshArrayList(ListBlock):
             name,
             self._stashing_attr is not None or more_alife
         )
-    def __getattr__(self,name):
-        if self._stashing_attr == name:
-            self._stashed_by._stash(self)
-        return super(AmiraMeshArrayList,self).__getattr__(name)
+    def __getattribute__(self,name):
+        if super(AmiraMeshArrayList,self).__getattribute__("_stashing_attr") == name:
+            super(AmiraMeshArrayList,self).__getattribute__("_stashed_by")._stash(self)
+        return super(AmiraMeshArrayList,self).__getattribute__(name)
 
-    def add_attr(self,name,value):
+    def add_attr(self,name,value,isparent=False):
         if name == self._stashing_attr:
             if value != self._stashed_by:
                 raise AttributeError("can't replace automatic attribute '{}'".format(self._stashing_attr))
             return
         if name == 'dimension':
             value = np.int64(value)
-        super(AmiraMeshArrayList,self).add_attr(name,value)
+        super(AmiraMeshArrayList,self).add_attr(name,value,isparent)
 
 
     def _stash(self,by):
@@ -628,8 +620,8 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         self._stashed_items = tuple()
         self._stack_info = None
 
-    def add_attr(self,name,value):
-        super(AmiraMeshSheetDataStream,self).add_attr(name,value)
+    def add_attr(self,name,value,isparent=False):
+        super(AmiraMeshSheetDataStream,self).add_attr(name,value,isparent)
         if name in ['array'] and isinstance(value,AmiraMeshArrayList):
             value._will_stash(self)
             self.add_attr('dimension',len(value))
@@ -680,88 +672,96 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         if len(_names) == 1:
             self.name = _names[0][0]
         self._stack_info = dict(names = _names,dimensions = _dimensions, types = _types)
-        setattr(self,'dimension',( 0 if len(_dimensions) < 1 else ( _dimensions[0][1] + 1 if _dimensions[0][0] == 1 else np.array([_dimensions[0][1] + 1 ,_dimensions[0][0]]) ) ) if len(_dimensions) < 2 else tuple(((_dim[1] + 1 if _idx < 1 else _dim[1] - _dimensions[_idx-1][1],_dim[0]) for _idx,_dim in enumerate(_dimensions))))
+        setattr(
+            self,
+            'dimension',
+            (
+                (
+                    0
+                    if len(_dimensions) < 1 else
+                    (
+                        _dimensions[0][1] + 1 if _dimensions[0][0] == 1 else np.array([_dimensions[0][1] + 1 ,_dimensions[0][0]])
+                    )
+                )
+                if len(_dimensions) < 2 else
+                tuple((
+                    (_dim[1] + 1 if _idx < 1 else _dim[1] - _dimensions[_idx-1][1],_dim[0])
+                    for _idx,_dim in enumerate(_dimensions)
+                ))
+            )
+        )
         setattr(self,'type',(None if len(_types) < 1 else _types[0][0] ) if len(_types) < 2 else tuple((_tp[0] for _tp in _types)))
 
-    @mixed_property
-    def stream_data(self):
-        try:
-            return self._stream_data
-        except AttributeError:
-            if self._stashed_items is None or self._stack_info is None:
-                raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
-            self._stream_data = tuple((
-                _stream.stream_data if isinstance(_stream,AmiraDataStream) else None
-                for _stream in self._stashed_items
-            ))
-            return self._stream_data
+    def _load_stream_data(self):
+        if self._stashed_items is None or self._stack_info is None:
+            raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
+        self.stream_data = tuple((
+            _stream.stream_data if isinstance(_stream,AmiraDataStream) else None
+            for _stream in self._stashed_items
+        ))
+        return self.stream_data
 
 
-    @mixed_property
-    def data(self):
-        try:
-            return self._decoded_data
-        except AttributeError:
-            et,ev,eb = sys.exc_info()
-            _ign = self.stream_data
-            _names = self._stack_info.get("names",None)
-            if _names is None:
-                raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
-            self.array.dimension = np.int64(self.array.dimension)
-            if len(_names) < 2:
-                if len(_names) < 1:
-                    _dim = np.hstack((self.array.dimension,self.dimension))
-                    self._decoded_data = np.zeros(_dim)
-                else:
-                    _dimensions = self._stack_info.get("dimensions",None)
-                    self._decoded_data = (
-                        np.concatenate if (_dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1 ) ) or _dimensions[0][0][0] == 1 else np.stack
-                    )(
-                        [
-                            _stream.data
-                            for _stream in self._stashed_items
-                        ],
-                        axis = self.array.dimension.size
-                    )
-                    #if _dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1):
-                    #    self._decoded_data = np.reshape(self._decoded_data,self._decoded_data.shape[:-1])
+    def _load_data(self):
+        _ign = self.stream_data
+        _names = self._stack_info.get("names",None)
+        if _names is None:
+            raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
+        self.array.dimension = np.int64(self.array.dimension)
+        if len(_names) < 2:
+            if len(_names) < 1:
+                _dim = np.hstack((self.array.dimension,self.dimension))
+                self.data = np.zeros(_dim)
             else:
                 _dimensions = self._stack_info.get("dimensions",None)
-                _types = self._stack_info.get("types",None)
-                _blocks = []
-                _dtypes = []
-                _parentdim = self.array.dimension
-                _axis = _parentdim.size
-                _stashed_items = self._stashed_items
-                for _blockid in xrange(len(_names)):
-                    _name = _names[_blockid]
-                    _dim = _dimensions[_blockid]
-                    _type = _types[_blockid]
-                    if np.all(_dim < 1):
-                        if _blockid < 1:
-                            _type = self._stashed_items[_type[1]+1].data.dtype.str
-                            _count = _type[1] + 1
-                        else:
-                            _type = self._stashed_items[_types[_blockid-1][1]].data.dtype.str
-                            _count = _type[1] - _types[_blockid-1][1]
-                        _dim = np.hstack((_parentdim,_count,0))
-                        _blocks += [np.zeros(_dim,dtype = _type)]
-                        _dtypes += [(_name[0],_type,_dim)]
-                        continue
+                self.data = (
+                    np.concatenate if (_dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1 ) ) or _dimensions[0][0][0] == 1 else np.stack
+                )(
+                    [
+                        _stream.data
+                        for _stream in self._stashed_items
+                    ],
+                    axis = self.array.dimension.size
+                )
+                #if _dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1):
+                #    self._decoded_data = np.reshape(self._decoded_data,self._decoded_data.shape[:-1])
+        else:
+            _dimensions = self._stack_info.get("dimensions",None)
+            _types = self._stack_info.get("types",None)
+            _blocks = []
+            _dtypes = []
+            _parentdim = self.array.dimension
+            _axis = _parentdim.size
+            _stashed_items = self._stashed_items
+            for _blockid in xrange(len(_names)):
+                _name = _names[_blockid]
+                _dim = _dimensions[_blockid]
+                _type = _types[_blockid]
+                if np.all(_dim < 1):
                     if _blockid < 1:
+                        _type = self._stashed_items[_type[1]+1].data.dtype.str
                         _count = _type[1] + 1
                     else:
+                        _type = self._stashed_items[_types[_blockid-1][1]].data.dtype.str
                         _count = _type[1] - _types[_blockid-1][1]
-                    _data = _stashed_items[_name[1]].data
-                    _type = _data.dtype.str
-                    if len(_data.shape) > 1 or _count > 1:
-                        _data = np.repeat(np.expand_dims(_data,axis = _axis),_count,axis=_axis)
-                    _blocks += [_data]
-                    _dtypes += [(_name[0],_type,_data.shape)]
-                self._decoded_data = np.array(_blocks,dtype = _dtypes)
-            self._stashed_items = None
-            self._stack_info = None
-            return self._decoded_data
+                    _dim = np.hstack((_parentdim,_count,0))
+                    _blocks += [np.zeros(_dim,dtype = _type)]
+                    _dtypes += [(_name[0],_type,_dim)]
+                    continue
+                if _blockid < 1:
+                    _count = _type[1] + 1
+                else:
+                    _count = _type[1] - _types[_blockid-1][1]
+                _data = _stashed_items[_name[1]].data
+                _type = _data.dtype.str
+                if len(_data.shape) > 1 or _count > 1:
+                    _data = np.repeat(np.expand_dims(_data,axis = _axis),_count,axis=_axis)
+                _blocks += [_data]
+                _dtypes += [(_name[0],_type,_data.shape)]
+            self.data = np.array(_blocks,dtype = _dtypes)
+        self._stashed_items = None
+        self._stack_info = None
+        return self.data
 
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):
@@ -770,72 +770,66 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
     def __init__(self, *args, **kwargs):
         super(AmiraHxSurfaceDataStream, self).__init__(*args, **kwargs)
 
-    @deprecated("use <AmiraHxSurfaceDataStream instance>.dimension instead)")
-    @mixed_property
-    def count(self):
+    def __setattr__(self,name,value):
+        if name in ("count",):
+            super(AmiraHxSurfaceDataStream,self).__getattribute__(name)(value)
+            return
+        super(AmiraHxSurfaceDataStream,self).__setattr__(name,value)
+
+    @deprecated("use <AmiraHxSurfaceDataStream instance>.dimension instead) or use <AmiraHxSurfaceDataStream instance>.add_attr('dimension',value) for setting instead")
+    def count(self,*args):
         return self.dimension
 
-    @deprecated("use <AmiraHxSurfaceDataStream instance>.add_attr('dimension',value) instead)",setter = True)
-    @count.setter
-    def count(self, value):
-        pass
-
     @deprecated("use <AmiraHxSurfaceDataStream instance>.stream_data instead")
-    @mixed_property
     def encoded_data(self):
         try:
-            return self._stream_data
-        except AttributeError:
             return self.stream_data
+        except AttributeError as reason:
+            raise AttributeError("'{}' type object does not have a 'encoded_data' property".format(self.__class__))
 
     @deprecated("use <AmiraMeshHxSurfaceDataStream instance>.data instead")
-    @mixed_property
     def decoded_data(self):
         try:
-            return self._decoded_data
-        except AttributeError:
             return self.data
+        except AttributeError as reason:
+            raise AttributeError("'{}' type object does not have a 'decoded_data' property".format(self.__class__))
 
-    @mixed_property
-    def data(self):
+    def _load_data(self):
         #pylint: disable=E1101
-        try:
-            return self._decoded_data
-        except AttributeError:
-            et,ev,eb = sys.exc_info()
-            if np.isscalar(self.dimension):
-                if np.isscalar(self.array.dimension):
-                    _final_shape = [self.array.dimension,self.dimension]
-                elif self.dimension < 2:
-                    _final_shape = self.array.dimension
-                else:
-                    _final_shape = np.append(self.array.dimension,self.dimension)
-            elif np.isscalar(self.array.dimension):
-                if self.array.dimension < 2:
-                    _final_shape = self.dimension
-                else:
-                    _final_shape = np.insert(self.dimension,0,self.array.dimension)
+        _parentarray = getattr(self,'array',None)
+        if _parentarray is None:
+            raise AttributeError("'{}' type object does not have a 'data' property".format(self.__class__))
+        if np.isscalar(self.dimension):
+            if np.isscalar(_parentarray.dimension):
+                _final_shape = [_parentarray.dimension,self.dimension]
+            elif self.dimension < 2:
+                _final_shape = _parentarray.dimension
             else:
-                _final_shape = np.append(self.array_dimension,self.dimension)
-            try:
-                self._decoded_data = self._decoder(
-                    self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
-                    #dtype=self._loader.type_map[self.type],
-                    count= self._decoded_length
-                ).reshape(_final_shape)
-                return self._decoded_data
-            except Exception as reason:
-                _doraise(ev,eb,et,reason)
-
+                _final_shape = np.append(_parentarray.dimension,self.dimension)
+        elif np.isscalar(_parentarray.dimension):
+            if _parentarray.dimension < 2:
+                _final_shape = self.dimension
+            else:
+                _final_shape = np.insert(self.dimension,0,_parentarray.dimension)
+        else:
+            _final_shape = np.append(self.array_dimension,self.dimension)
+        self.data = self._decoder(
+            #pylint: disable=E1136
+            self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
+            #pylint: enable=E1136
+            #dtype=self._loader.type_map[self.type],
+            count= self._decoded_length
+        ).reshape(_final_shape)
+        return self.data
         #pylint: enable=E1101
 
-    def add_attr(self,name,value):
+    def add_attr(self,name,value,isparent=False):
         """ see:: ahds_common.Block for details """
         if name == 'dimension':
             # name is dimension try co calculate numver of elements in decoded data
             if type(value) in [str,int,float]:
                 value = np.int64(value)
-            super(AmiraHxSurfaceDataStream,self).add_attr(name,value)
+            super(AmiraHxSurfaceDataStream,self).add_attr(name,value,isparent)
             if hasattr(self,'array'):
                 # dimension is taken from data definition on specific array
                 # multiply number of elements of both to obtain number of decoded
@@ -845,7 +839,7 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             # decoded length is at least the produce of the elements of value
             self._decoded_length = value.prod()
             return
-        super(AmiraHxSurfaceDataStream,self).add_attr(name,value)
+        super(AmiraHxSurfaceDataStream,self).add_attr(name,value,isparent)
         if name == 'array' and hasattr(self,'dimension'):
             # Stream is linked to parent array decoded length is the product of the number
             # elements in array and in single array item defined by data description
@@ -991,7 +985,7 @@ class StreamLoader(object):
         # binary data encoded in bigendian (BINARY) or little endian (BINARY-LITTLER-ENDIAN)
         # use according (True, False) section of _type_map lookuptable above
         _endianess = self._header.format[6:] == "-LITTLE-ENDIAN"
-        if _data_format in ["HxByteRLE","hxbyterle"]:
+        if _data_format is not None and _data_format.lower() == "hxbyterle":
             # 8 bit binary data compressed using rle encoding
             _dtype = _type_map[stream.type]
             return ft.partial(hxbyterle_decode,dtype = _dtype),(_dtype.itemsize * 2 if _dtype.kind in 'cC' else _dtype.itemsize )
@@ -1026,7 +1020,7 @@ class StreamLoader(object):
             #_sheet must be added first to ensure that check for stashability of _array
             # will find it as valid attribute otherwise a TypeError will be issued
             _array.add_attr(child_name,_sheet)
-            _sheet.add_attr('array',_array)
+            _sheet.add_attr('array',_array,True)
         return _array
 
 
@@ -1089,9 +1083,14 @@ class StreamLoader(object):
     def _create_hyper_surface_list_array(self,name):
         raise Exception("hyper surface does not support listlike array structures")
 
-    @property
-    def data_section_start(self):
-        return self._next_datasection
+    def __getattribute__(self,attr):
+        if attr in ("data_section_start",):
+            return super(StreamLoader,self).__getattribute__("_next_datasection")
+        return super(StreamLoader,self).__getattribute__(attr)
+
+    #@property
+    #def data_section_start(self):
+    #    return self._next_datasection
 
     def load_stream(self,data_stream):
         """ loads the data described by the passed data_stream metadata block
@@ -1250,7 +1249,7 @@ class StreamLoader(object):
                         if _current_stream is not None:
                             # attach bytes for last data_stream extending to the end of file
                             # to the corresponding metadata block
-                            _current_stream.add_attr('_stream_data',_stream_data[_block_start:])
+                            _current_stream.add_attr('stream_data',_stream_data[_block_start:])
                         if _block_not_found:
                             raise Exception("File '{}': data_block '{}' for data_stream '{}' not found".format(self._header.filename,_block_name,_stream_name))
                         # enable autoloading of missing attributes by header block
@@ -1283,7 +1282,7 @@ class StreamLoader(object):
 
                         # store the binary data in the _stream_data attribute of the current
                         # stream block
-                        _current_stream.add_attr('_stream_data',_stream_data[_block_start:_match.start()])
+                        _current_stream.add_attr('stream_data',_stream_data[_block_start:_match.start()])
 
                         # try to get the metadata block for the next stream if available
                         _current_stream = self._next_stream(_match_group)
@@ -1363,13 +1362,13 @@ class StreamLoader(object):
                             _current_group.add_attr(_ingroup[0],_current_stream)
                             self._header._check_siblings(_current_stream,_ingroup[0],_current_group,_current_group.block)
                             _current_stream.add_attr('block ',_match_group)
-                            _current_stream.add_attr('array',_current_group)
+                            _current_stream.add_attr('array',_current_group,True)
                         _current_stream.add_attr('type',_ingroup[2])
                         _current_stream.add_attr('dimension',_ingroup[1])
                     _continue_scan_at = _match.end('count')
                     continue
                 if _current_stream is not None:
-                    _current_stream.add_attr('_stream_data',_stream_data[_block_start:_match.start()])
+                    _current_stream.add_attr('stream_data',_stream_data[_block_start:_match.start()])
                     _current_stream = None
                 if not isinstance(_ingroup,dict) or _match_group not in _ingroup or ( _match_group in _hyper_surface_file and self._group_end.match(_stream_data[-len(_stream_data) - _match.start() - 1::-1]) is not None ):
                     # true outer group hit
@@ -1430,7 +1429,7 @@ class StreamLoader(object):
 
                     _current_stream = self.create_stream(_match_group,_current_group)
                     _current_stream.add_attr('block ',_match_group)
-                    _current_stream.add_attr('array',_current_group)
+                    _current_stream.add_attr('array',_current_group,True)
                     _current_group.add_attr(_match_group,_current_stream)
                     self._header._check_siblings(_current_stream,_match_group,_current_group,_current_group.block)
                 _current_stream.add_attr('dimension',_dimension)
@@ -1455,25 +1454,25 @@ class DataStreams(object):
                 if _streamlist is None:
                     continue
                 self.__stream_data[_streamblock] = _streamlist
+    def __getattribute__(self,attr):
+        if attr in ("file","header","stream_data","filetype"):
+            return super(DataStreams,self).__getattribute__(attr)()
+        return super(DataStreams,self).__getattribute__(attr)
 
     @deprecated("use <AmiraHeader>.filename instead")
-    @property
     def file(self):
         return self._header.filename
 
     @deprecated("use AmiraHeader instance directly")
-    @property
     def header(self):
         return self._header
 
     @deprecated("access data of individual streams through corresponding attributes and dedicated stream_data and data attributes of meta data blocks")
-    @property
     def stream_data(self):
         return self.__stream_data
 
 
     @deprecated("use <AmiraHeader>.filetype attribute instead")
-    @property
     def filetype(self):
         return self._header.filetype
 

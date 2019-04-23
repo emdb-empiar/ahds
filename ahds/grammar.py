@@ -145,7 +145,7 @@ if sys.version_info[0] > 2:
     _stream_delimiters = [
         re.compile(b"(?:^|\n)@(?P<stream>\d+)\n",flags=re.S),
         re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(_hyper_surface_entities).encode('ASCII')),
-        re.compile(b"^\s*}',re.I") # NOTE this is appried to reverese slice of stream_data therefore ^
+        re.compile(b"^\s*}",re.I) # NOTE this is applied to reverese slice of stream_data therefore ^
     ]
 
 else:

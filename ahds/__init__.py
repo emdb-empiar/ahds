@@ -31,13 +31,17 @@ class AmiraFile(AmiraHeader):
         super(AmiraFile,self).__init__(fn,*args,**kwargs)
         self._data_streams = None # create wrapper on call to read
 
+    def __getattribute__(self,name):
+        if name in ("header","data_streams"):
+            return super(AmiraFile,self).__getattribute__(name)()
+        return super(AmiraFile,self).__getattribute__(name)
+        
+
     @deprecated("AmiraFile is a subclass of AmiraHeader access header attribures directly from it")        
-    @property
     def header(self):
         return self
 
     @deprecated("data streams are loaded into their metadata blocks when access for the fist time through the dedicated stream_data and data attributes of corresponding metadata blocks")
-    @property
     def data_streams(self):
         return self._data_streams
 
