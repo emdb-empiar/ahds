@@ -22,14 +22,6 @@ if sys.version_info[0] > 2:
         raise v.with_traceback(b)
         #pylint enable=E0001
 
-    class PropertyTriggeredAttributeError(Exception):
-        """ Exception used to rewrite AttributeError exceptions by below mixed_property class
-            Ensuring Attribute errors which occure during excecution of its fget,fset,fdel
-            member are properly preserved while avoiding to trigger a call to __getattr__ of
-            its owning class
-        """
-        pass
-
     def _decode_string(data):
         """ decodes binary ASCII string to python3 UTF-8 standard string """
         try:
@@ -66,14 +58,6 @@ else:
         exec("""raise t, v, b""")
         #pylint enable=E0001
 
-    class PropertyTriggeredAttributeError(BaseException):
-        """ Exception used to rewrite AttributeError exceptions by below mixed_property class
-            Ensuring Attribute errors which occure during excecution of its fget,fset,fdel
-            member are properly preserved while avoiding to trigger a call to __getattr__ of
-            its owning class
-        """
-        pass
-
     def _decode_string(data):
         """ in python2.x no decoding is necessary thur just returns data without any change """
         return data
@@ -93,120 +77,6 @@ else:
 
     _dict_iter_keys = dict.iterkeys
     #pylint: enable=E1101
-
-class mixed_property(property):
-    """ property decorator which rewrites any AttributeError exception occuring during
-        a call to fget, fstet or fdel members to PropertyTriggeredAttributeError. Thereby
-        it ensures that the captured AttributeError does not trigger a call to __getattr__
-        member of its enclosing class while ensuring that it is still reconizeable as 
-        AttributeError """
-
-    def __init__(self,fget = None,fset = None, fdel = None, doc = None):
-        """ see:: @property decorator class documentation """
-        super(mixed_property,self).__init__(fget,fset,fdel,doc)
-
-    def __get__(self,obj,objtype = None):
-        """ modified version of the __get__ member of @property decorator class """
-        if obj is None:
-            return self
-        if self.fget is None:
-            raise AttributeError("unreadable attribute")
-        try:
-            return self.fget(obj)
-        except AttributeError:
-            et,ev,eb = sys.exc_info()
-            ev = PropertyTriggeredAttributeError(ev)
-            _doraise(ev,eb,PropertyTriggeredAttributeError)
-
-    
-    def __set__(self,obj,value):
-        """ modified version of the __set__ member of @property decorator class """
-        if self.fset is None:
-            raise AttributeError("can't set attribute")
-        try:
-            self.fset(obj,value)
-        except AttributeError:
-            et,ev,eb = sys.exc_info()
-            ev = RuntimeError(ev)
-            _doraise(ev,eb,RuntimeError)
-
-    
-    def __delete__(self,obj):
-        """ modified version of the __delete__ member of @property decorator class """
-        if self.fdel is None:
-            raise AttributeError("can't delete attribute")
-        try:
-            self.fdel(obj)
-        except Exception:
-            et,ev,eb = sys.exc_info()
-            if isinstance(ev,AttributeError):
-                et = RuntimeError
-                ev = et(ev)
-            _doraise(ev,eb,et)
-
-class _deprecated_prop(property):
-    """ @property derived decorator class used by the @deprecated decorator method
-        below to issue a DeprecationWarning message when the decorated property is
-        accessed 
-        :param fget: see:: @property decorator
-        :param fset: see:: @property decorator
-        :param fdel: see:: @property decorator
-        :param decorator:: decorator the fset, fget and fdel functions passed to
-            setter, getter and deleter methods have to be decorated with"""
-    def __init__(self,fget = None,fset = None, fdel = None, doc = None,decorator = None):
-        super(_deprecated_prop,self).__init__(fget,fset,fdel,doc)
-        # store the decorator method the passed fset and fdel methods should wrapped
-        # before passed on to the @property decorator getter, setter deleter methods
-        self._decorator = decorator
-
-    def decorator(self):
-        return self._decorator
-
-    def getter(self,fget):
-        """ see:: @property decorator """
-        _newprop = super(_deprecated_prop,self).getter(self._decorator(fget))
-        _newprop._decorator = self._decorator
-        return _newprop
-
-    def setter(self,fset):
-        """ see:: @property decorator """
-        _newprop =  super(_deprecated_prop,self).setter(self._decorator(fset))
-        _newprop._decorator = self._decorator
-        return _newprop
-
-    def deleter(self,fdel):
-        """ see:: @property decorator """
-        _newprop = super(_deprecated_prop,self).deleter(self._decorator(fdel))
-        _newprop._decorator = self._decorator
-        return _newprop
-
-class _deprecated_mixed_prop(mixed_property):
-    """ same as _deprecated_prop excempt that it wraps @mixed_property decorator instead of
-        @property decorator """
-
-    def __init__(self,fget = None,fset = None, fdel = None, doc = None,decorator = None):
-        super(_deprecated_mixed_prop,self).__init__(fget,fset,fdel,doc)
-        self._decorator = decorator
-
-    def decorator(self):
-        return self._decorator
-
-    def getter(self,fget):
-        _newprop = super(_deprecated_mixed_prop,self).getter(self._decorator(fget))
-        _newprop._decorator = self._decorator
-        return _newprop
-
-    def setter(self,fset):
-        _newprop = super(_deprecated_mixed_prop,self).setter(self._decorator(fset))
-        _newprop._decorator = self._decorator
-        return _newprop
-
-    def deleter(self,fdel):
-        _newprop = super(_deprecated_mixed_prop,self).deleter(self._decorator(fdel))
-        _newprop._decorator = self._decorator
-        return _newprop
-
-    
 
 def deprecated(description=None,setter = None,deleter = None):
     """ decorator used to mark methods, classes, classmethods and properies as deprecated
@@ -282,82 +152,6 @@ def deprecated(description=None,setter = None,deleter = None):
             # issue DeprecationWarning specific to class object and its instances
             _deprecated_message = "Class '{}' is deprecated{}".format(func.__qualname__,description)
             _message_filter = re.escape(r"Class '{}' is deprecated".format(func.__qualname__))
-        elif inspect.isdatadescriptor(func) or isinstance(func,property):
-            # issue deprecation warning for property or property alike
-            if isinstance(func,mixed_property):
-                _proptype = _deprecated_mixed_prop
-            elif isinstance(func,property):
-                _proptype = _deprecated_prop
-            else:
-                _proptype = type(func)
-            _decorator = None
-            if isinstance(func,_deprecated_prop) or isinstance(func,_deprecated_mixed_prop):
-                # preserve decorator of _deprecated_prop and _deprecated_mixed_prop 
-                # as the whole property is deprecated and therefore no setter or delter specific
-                # messages are to be printed
-                if func.decorator() is not None:
-                    if isinstance(func.decorator(),ft.partial):
-                        if func.decorator().func == deprecated_decorator:
-                            _decorator = func.decorator()
-                    elif func.decorator() == deprecated_decorator:
-                         _decorator = func.decorator()
-            if deleter: 
-                if func.fdel is None:
-                    raise ValueError("property deleter not set")
-                if setter:
-                    raise ValueError("setter and deleter decorator attribute are mutual exclusive")
-                if isinstance(func.fdel,ft.partial):
-                    if func.fdel.func == deprecated_decorator or func.fdel.func == decorated_deprecated:
-                        # fdel is already marked deprecated no need to decorated it again    
-                        # return func with out any change
-                        return func
-                elif func.fdel == deprecated_decorator or func.fdel == decorated_deprecated:
-                    # fdel is already marked deprecated no need to decorated it again    
-                    # return func with out any change
-                    return func
-                # create deprecation waring specific to <property>.deleter only
-                _depmsg = "Property deleter '{}' is deprecated{}"
-                return _proptype(
-                    fget = func.fget,
-                    fset = func.fset,
-                    fdel = deprecated_decorator(func.fdel,_depmsg),
-                    doc = func.__doc__,
-                    decorator = _decorator
-                )
-            if setter:
-                if func.fset is None:
-                    raise ValueError("property setter is not set")
-                if func.fset == decorated_deprecated or func.fset == deprecated_decorator:
-                    # fset is already marked deprecated no need to decorated it again    
-                    # return func with out any change
-                    return func
-                if isinstance(func.fset,ft.partial):
-                    if func.fset.func == deprecated_decorator or func.fset.func == decorated_deprecated:
-                        # fset is already marked deprecated no need to decorated it again    
-                        # return func with out any change
-                        return func
-                _depmsg = "Property setter '{}' is deprecated{}"
-                # create deprecation waring specific to <property>.setter only
-                return _proptype(
-                    fget = func.fget,
-                    fset = deprecated_decorator(func.fset,_depmsg),
-                    fdel = func.fdel,
-                    doc = func.__doc__,
-                    decorator = _decorator
-                )
-            if isinstance(func.fget,ft.partial):
-                if func.fget.func == deprecated_decorator or func.fget.func == decorated_deprecated:
-                    return func
-            elif func.fget == deprecated_decorator or func.fget == decorated_deprecated:
-                return func
-            _depmsg = "Property '{}' is deprecated{}"
-            return _proptype(
-                fget = deprecated_decorator(func.fget,_depmsg),
-                fset = deprecated_decorator(func.fset,_depmsg) if func.fset is not None else None,
-                fdel = deprecated_decorator(func.fdel,_depmsg) if func.fdel is not None else None,
-                doc = func.__doc__,
-                decorator = ft.partial(deprecated_decorator,msg =  _depmsg)
-            )
         elif inspect.ismethod(func):
             # func is a staticmethod or a classmethod or a classmember issue related DeprecationWarning
             _deprecated_message = "Method '{}' is deprecated{}".format(func.__qualname__,description)
@@ -384,12 +178,15 @@ class Block(object):
     """Generic block to be loaded with attributes"""
     def __init__(self, name):
         self.name = name
+        self._parent = tuple()
         
-    __slots__ = ( "name","__dict__","__weakref__" )
+    __slots__ = ( "name","__dict__","__weakref__","_parent")
 
-    def add_attr(self, name, value):
+    def add_attr(self, name, value,isparent=False):
         """Add an attribute to an ``Block`` object"""
         setattr(self, name, value)
+        if isparent:
+            self._parent = self._parent +(value,)
 
     def move_attr(self,to,name):
         _tomove = getattr(self,name,None)
@@ -400,8 +197,28 @@ class Block(object):
         setattr(self,to,_tomove)
         delattr(self,name)
 
+    def __setattr__(self,name,value):
+        _fcount = 1
+        a=sys._getframe(_fcount)
+        while a.f_code.co_name == "__setattr__":
+            if "self" not in a.f_locals or ( a.f_locals["self"] != self and not isinstance(a.f_locals["self"],Block) ):
+                raise AttributeError("Attribute '{}' is read only",format(name))
+            _fcount += 1
+            a = sys._getframe(_fcount)
+        if "self" not in a.f_locals or ( a.f_locals["self"] != self and not isinstance(a.f_locals["self"],Block) ):
+            raise AttributeError("Attribute '{}' is read only",format(name))
+        super(Block,self).__setattr__(name,value)
+
+    def __getattribute__(self,name):
+        if name in ("attrs","ids"):
+            return super(Block,self).__getattribute__(name)()
+        try:
+            return super(Block,self).__getattribute__(name)
+        except AttributeError:
+            return self._make_proxy_or_attributeerror(name)
+
+
     @deprecated("user dir(<Block object>) instead")
-    @mixed_property
     def attrs(self):
         return [ _attr for _attr in self.__dict__ ]
 
@@ -410,11 +227,6 @@ class Block(object):
             raise AttributeError("-{} instance has not attributes '{}'".format(self.__class__.__name__,name))
         return _AnyBlockProxy(name) if not isinstance(self,_AnyBlockProxy) else self
 
-    def __getattr__(self,name):
-        try:
-            return self.__dict__[name]
-        except KeyError:
-            return self._make_proxy_or_attributeerror(name)
         
     _recurse = {}
     def __str__(self):
@@ -432,7 +244,7 @@ class Block(object):
         indent += " | "
         for _attr,_attrval in _dict_iter_items(self.__dict__):
             if isinstance(_attrval, Block):
-                if _attrval in Block._recurse:
+                if _attrval in self.__class__._recurse or _attrval in self._parent:
                     # print back reference line prefixed by <_attr>: or <_addr>: <_attrval.name> if _attr and _attrvale.name
                     # differt
                     if _attr != _attrval.name:
@@ -449,7 +261,6 @@ class Block(object):
         return string
     
     @deprecated("use indexer of Materials node instead to access materials by their id")
-    @mixed_property
     def ids(self):
         """Convenience method to get the ids for Materials present"""
         assert self.name == "Materials"
@@ -577,7 +388,7 @@ class ListBlock(Block):
         return item in self._list
 
 class _AnyBlockProxy(Block):
-    """ dummy block returned by __getattr__ method of Block in case
+    """ dummy block returned by __getattribute__ method of Block in case
         its __dict__ is emtpy and by ListBlock if both __dict__ and _list are emtpy
         it tries to mimic any type the accessing code might expect from attributes
         and items defined by the loaded AmiraMesh and HyperSurface files 
@@ -587,13 +398,13 @@ class _AnyBlockProxy(Block):
     def __init__(self,name):
         super(_AnyBlockProxy,self).__init__(name)
     
-    def add_attr(self,name,value):
+    def add_attr(self,name,value,isparent=False):
         pass
 
     def __setattr__(self,name,value):
         pass
 
-    def __getattr__(self,name):
+    def __getattribute__(self,name):
         return self
 
     def __getitem__(self,index):
@@ -784,7 +595,7 @@ class _AnyBlockProxy(Block):
     def __nonzero__(self):
         return False
 
-    def __contains__(self):
+    def __contains__(self,item):
         return False
 
     def keys(self):
