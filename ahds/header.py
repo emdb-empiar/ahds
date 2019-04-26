@@ -31,20 +31,20 @@ instance which host all the attributes and data array declarations (definitions)
 the AmiraMesh and HyperSurface files. The data_pointers attribute collects from each
 attribute representing a valid array declaration the defined data definitions and returns the resulting
 list. New code should directly access the Block objects describing the available data directly
-from the corresponding array attribute of the AmiraHeader object.
+from the corresponding array attribute of the AmiraHeader object. 
 
-The blocks defining the available data structures extend the basic Block to the corresponding
+The blocks defining the available data structures extend the basic Block to the corresponding 
 AmiraMeshDataStream and AmiraHxSurfaceDataStream blocks which allow to load and access the correspinding
 data using the data property defined by theses blocks. The additional stream_data, encoded_data and
 decoded_data attributes are deprecated and may be removed in future versions.
 
 The attrs attribute of all Blocks and extended Block objects including AmiraHeader it self
 which allows to query the attributes added during loading is deprecated and may be removed in future version.
-To query which attributes are defined on each block use the builtin dir function instead. To
+To query which attributes are defined on each block use the builtin dir function instead. To 
 access the defined attributes just use them liḱe any other static attribute.
 
 The following attributes are moved from the designation attribute to the basic header block:
-
+        
         *    filetype e.g. ``AmiraMesh`` or ``HyperSurface``
         *    dimensions e.g. ``3D``
         *    format e.g. ``BINARY-LITTLE-ENDIAN``
@@ -319,13 +319,13 @@ class AmiraHeader(Block):
             return super(AmiraHeader,self).__getattribute__(name)
 
     def autoload(self,on):
-        """
+        """ 
         turn on or off automatic loading of attributes from the underlying file
 
         :param book on: Turn auto loading of data streams on (True) or off (False)
             NOTE:: repeated calls to autoload with on set to True accumulate and have to
                    be undone by calling with on = False before streams are again automatically
-                   loaded
+                   loaded 
         """
         if not on:
             self._noload += 1
@@ -336,7 +336,7 @@ class AmiraHeader(Block):
 
     def __len__(self):
         return len(self._parsed_data)
-
+    
     @staticmethod
     def flatten_dict(in_dict):
         block_data = dict()
@@ -345,7 +345,7 @@ class AmiraHeader(Block):
                 block_data[block_keys0] = block[block_keys0]
                 break
         return block_data
-
+    
     def _load(self,_data_section_start):
         # disable automatic  loading of data streams while construction of header
         self.autoload(False)
@@ -356,7 +356,7 @@ class AmiraHeader(Block):
             block_data['designation'] = {"filetype": "AmiraMesh"}
             block_data['array_declarations'] = {}
             block_data['data_definitions'] = {}
-
+        
         self._load_designation(block_data['designation'])
         self._stream_loader = StreamLoader(self,_data_section_start,self._field_data_map)
         # if present load parameters section, it may be missing on Files describing vector fields only
@@ -415,15 +415,15 @@ class AmiraHeader(Block):
         eg. ah.Nodes instead of ah.definitions.Nodes or ah.Tetrahedra instead of ah.defintions.Tetrahedra
         """
         return self
-
-
+    
+            
     @deprecated(" use data attributes of data arrays  instead eg. header.Vertices.Coordinates")
     def data_pointers(self):
         """The list of data pointers together with a name, data type, dimension, 
         index, format and length
 
         NOTE: deprecated access the data defnitions for each data array through the corresponding attributes
-        eg.: ah.Nodes.Coordinates instead of ah.data_pointers.data_pointer1 ah.Tetrahedra.Nodes instead of
+        eg.: ah.Nodes.Coordinates instead of ah.data_pointers.data_pointer1 ah.Tetrahedra.Nodes instead of 
         ah.data_pointers.data_pointer_2 etc.
         """
 
@@ -440,7 +440,7 @@ class AmiraHeader(Block):
         setattr(self,'format',block_data['format'] if 'format' in block_data else None)
         setattr(self,'version',block_data['version'] if 'version' in block_data else None)
         setattr(self,'extra_format',block_data['extra_format'] if 'extra_format' in block_data else None)
-
+               
     def _load_declarations(self, block_data):
         if len(block_data) < 1:
             if self.filetype != "HyperSurface":
@@ -463,7 +463,7 @@ class AmiraHeader(Block):
                     if _column_label is None:# or isinstance(_column_label,_AnyBlockProxy):
                         return name,name
                     return name,_column_label
-
+    
                 _check_dim = (
                     lambda dim:np.all(np.int64(dim) == _numrows),
                     "array_dimension={} does not match number of rows ({}) in spreadsheet",
@@ -516,8 +516,8 @@ class AmiraHeader(Block):
             _base_map[_array_name] = declaration['array_name']
             _finish = _finish + _check_dim[5](_array_name,_block_obj)
             if len(_array_name) > 0 and _array_name[0] in '_ \n\t\f\r':
-                # unhide arrays which start with '__' or '_' most likely these are arrays
-                # which encode HxSpreadSheet column arrays where each column has its own array
+                # unhide arrays which start with '__' or '_' most likely these are arrays 
+                # which encode HxSpreadSheet column arrays where each column has its own array  
                 _finish = _finish + (ft.partial(self.move_attr,to = _array_name.strip('_ \n\t\r\f'),name = _array_name),)
         return _finish
 
@@ -526,7 +526,7 @@ class AmiraHeader(Block):
             # search reverse from tail of name any digit character
             _issibling = _match_sibling.match(name[::-1])
             if _issibling is None:
-                # no counter found
+                # no counter found 
                 return
             # try to load an existing <commonname>List attribute from the specified parent Node
             if isinstance(parent,ListBlock):
@@ -602,7 +602,7 @@ class AmiraHeader(Block):
             if _id_attr is not None and not isinstance(_id_attr,Block):
                 parent[int(_id_attr)] = block_obj
         return block_obj
-
+    
     def _load_definitions(self, block_data):
         if len(block_data) < 1:
             if self.filetype != "HyperSurface":
@@ -653,7 +653,7 @@ class AmiraHeader(Block):
             else:
                 _array_base = data_definition['array_reference'][:-_array_base.end()]
                 _array_obj = getattr(self,_array_base,None)
-                if _array_obj is None or not isinstance(_array_obj,ListBlock):
+                if _array_obj is None or not isinstance(_array_obj,ListBlock):    
                     _array_obj = getattr(self,data_definition['array_reference'],None)
             if _array_obj is None:
                 raise Exception("DataError: array_reference '{}' not found".format(data_definition['array_reference']))
@@ -689,7 +689,7 @@ class AmiraHeader(Block):
                     )
                 )
             elif _data_obj.name != "<FieldData>":
-
+                
                 # current definition would overwrite previous one
                 raise Exception(
                     "DataError: data for block {} ('{}') redefined to '{}'".format(
@@ -707,10 +707,10 @@ class AmiraHeader(Block):
                 _data_obj.add_attr('data_format', data_definition['data_format'])
             if 'data_length' in data_definition:
                 _data_obj.add_attr('data_length', data_definition['data_length'])
-
+    
     def __repr__(self):
         return "<AmiraHeader with {:,} bytes>".format(len(self))
-
+    
     def __str__(self):
         string = "*" * 50 + "\n"
         string += "AMIRA HEADER ({})\n".format(self.name)
@@ -720,7 +720,7 @@ class AmiraHeader(Block):
         string += "{}\n".format(self.parameters) if self.parameters is not None else " +-parameters(<None>)"
         string += "-" * 50 + "\n"
         string += super(AmiraHeader,self).__str__()
-        string += "*" * 50
+        string += "*" * 50    
         return string
 
 
@@ -728,9 +728,9 @@ def main():
     try:
         fn = sys.argv[1]
     except IndexError:
-        print("usage: ./{} <amira-fn>".format(__file__),sys.stderr)
+        print("usage: ./{} <amira-fn>".format(__file__),file = sys.stderr)
         return 1
-
+    
     h = AmiraHeader.from_file(fn, verbose=False)
     print( h )
     print(h.designation)
@@ -746,7 +746,7 @@ def main():
             for id_ in h.parameters.Materials.ids:
                 print( h.parameters.Materials[id_])
                 print("")
-
+    
     print(h.designation)
     #pylint: disable=E1101
     print(h.data_pointers.attrs)
@@ -759,4 +759,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
+    

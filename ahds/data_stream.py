@@ -156,7 +156,7 @@ except ImportError:
         from warnings import warn
         
         warn("using pure-Python (instead of Python C-extension) implementation of byterle_decoder")
-
+        
         input_data = np.frombuffer(data,dtype=_np_ubytelitle,count = len(data))
         output = np.zeros(count, dtype=np.uint8)
         i = 0
@@ -318,13 +318,13 @@ class ImageSet(UserList):
                     if z not in segments[byte_value]:
                         segments[byte_value][z] = contour_set
                     else:
-                        segments[byte_value][z] += contour_set
-
+                        segments[byte_value][z] += contour_set                
+         
         return segments
     def __repr__(self):
         return "<ImageSet with {} images>".format(len(self))
-
-
+    
+    
 class ContourSet(UserList):
     """Encapsulation for a set of ``Contour`` objects"""
     def __getitem__(self, index):
@@ -351,7 +351,7 @@ class Contour(object):
         return self.string_repr(self)
     def __str__(self):
         return self.string_repr(self)
-
+ 
 
 class AmiraDataStream(Block):
     """Base class for all Amira DataStreams"""
@@ -372,6 +372,10 @@ class AmiraDataStream(Block):
                 raise
             return super(AmiraDataStream,self).__getattribute__("_load_"+name)()
 
+    def __setattr__(self,name,value):
+        if name in ('stream_data','data'):
+            raise AttributeError("Attribute '{}' is read only call add_attr to update instead",format(name))
+        super(AmiraDataStream,self).__setattr__(name,value)
 
     def _load_stream_data(self):
         """All the raw data from the file for the data stream"""
@@ -394,7 +398,7 @@ class AmiraDataStream(Block):
     def _load_data(self):
         """Decoded numpy array for this stream"""
         return None
-
+        
     @deprecated("may be removed in future versions use <stream>.data.size instead")
     def decoded_length(self):
         """The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)"""
@@ -434,7 +438,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                 return
             _dimension = getattr(self,'dimension',None)
             if _dimension is None: # or isinstance(_dimension,_AnyBlockProxy):
-                return
+                return 
             #pylint: disable=E1101
             self._decoded_length = np.prod(_array_dim) * np.prod(_dimension)
             #pylint: enable=E1101
@@ -445,7 +449,7 @@ class AmiraMeshDataStream(AmiraDataStream):
         if name == 'data_format' and hasattr(self,'type'):
             self._decoder,self._itemsize = self._loader.select_decoder(self)
             return
-
+            
     @deprecated("use <AmiraMeshDataStream instance>.stream_data instead")
     def encoded_data(self):
         try :
@@ -464,7 +468,7 @@ class AmiraMeshDataStream(AmiraDataStream):
         #pylint: disable=E1101
         _parentarray = getattr(self,'array',None)
         if  _parentarray is None:
-            # not the terminal leave
+            # not the terminal leave 
             raise AttributeError("'{}' type object does not have a 'data' property".format(self.__class__))
         if np.isscalar(self.dimension):
             if np.isscalar(_parentarray.dimension):
@@ -480,13 +484,16 @@ class AmiraMeshDataStream(AmiraDataStream):
                 _final_shape = np.insert(self.dimension,0,_parentarray.dimension)
         else:
             _final_shape = np.append(self.array_dimension,self.dimension)
-        self.data = self._decoder(
-            #pylint: disable=E1136
-            self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
-            #pylint: enable=E1136
-            #dtype=self._loader.type_map[self.type],
-            count= self._decoded_length
-        ).reshape(_final_shape)
+        self.add_attr(
+            "data",
+            self._decoder(
+                #pylint: disable=E1136
+                self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
+                #pylint: enable=E1136
+                #dtype=self._loader.type_map[self.type],
+                count= self._decoded_length
+            ).reshape(_final_shape)
+        )
         return self.data
         #pylint: enable=E1101
 
@@ -508,7 +515,7 @@ class AmiraMeshDataStream(AmiraDataStream):
 class AmiraMeshArrayList(ListBlock):
     __slots__ = ("_stashed_by","_stashing_attr")
     def __init__(self,*args,**kwargs):
-        super(AmiraMeshArrayList,self).__init__(*args,**kwargs)
+        super(AmiraMeshArrayList,self).__init__(*args,**kwargs)    
         self._stashing_attr = None
 
     def _make_proxy_or_attributeerror(self,name,more_alife = False):
@@ -529,14 +536,14 @@ class AmiraMeshArrayList(ListBlock):
         if name == 'dimension':
             value = np.int64(value)
         super(AmiraMeshArrayList,self).add_attr(name,value,isparent)
-
+        
 
     def _stash(self,by):
         try:
             if self._stashed_by != by:
-                raise TypeError("object of type '{}' can only be stashed by stasching child stream".format(self.__class__.__name__))
+                raise TypeError("object of type '{}' can only be stashed by stasching child stream".format(self.__class__.__name__))    
         except AttributeError:
-            raise TypeError("object of type '{}' can only be stashed by stasching child stream".format(self.__class__.__name__))
+            raise TypeError("object of type '{}' can only be stashed by stasching child stream".format(self.__class__.__name__))    
         if self._list is None:
             return tuple()
         _rem = []
@@ -577,8 +584,8 @@ class AmiraMeshArrayList(ListBlock):
         self._stashing_attr = _childattr
         delattr(self,_childattr)
         self._stashed_by.add_attr('dimension',len(self))
-
-
+            
+        
     def __setitem__(self,index,value):
         try:
             super(AmiraMeshArrayList,self).__setitem__(index,value)
@@ -588,7 +595,7 @@ class AmiraMeshArrayList(ListBlock):
             self._stashed_by.add_attr('dimension',len(self._list))
         except AttributeError:
             pass
-
+        
     def __getitem__(self,index):
         try:
             super(AmiraMeshArrayList,self).__getitem__(index)
@@ -672,17 +679,16 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         if len(_names) == 1:
             self.name = _names[0][0]
         self._stack_info = dict(names = _names,dimensions = _dimensions, types = _types)
-        setattr(
-            self,
+        self.add_attr(
             'dimension',
             (
-                (
-                    0
+                ( 
+                    0 
                     if len(_dimensions) < 1 else
                     (
                         _dimensions[0][1] + 1 if _dimensions[0][0] == 1 else np.array([_dimensions[0][1] + 1 ,_dimensions[0][0]])
-                    )
-                )
+                    ) 
+                ) 
                 if len(_dimensions) < 2 else
                 tuple((
                     (_dim[1] + 1 if _idx < 1 else _dim[1] - _dimensions[_idx-1][1],_dim[0])
@@ -690,17 +696,20 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
                 ))
             )
         )
-        setattr(self,'type',(None if len(_types) < 1 else _types[0][0] ) if len(_types) < 2 else tuple((_tp[0] for _tp in _types)))
+        self.add_attr('type',(None if len(_types) < 1 else _types[0][0] ) if len(_types) < 2 else tuple((_tp[0] for _tp in _types)))
 
     def _load_stream_data(self):
         if self._stashed_items is None or self._stack_info is None:
             raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
-        self.stream_data = tuple((
-            _stream.stream_data if isinstance(_stream,AmiraDataStream) else None
-            for _stream in self._stashed_items
-        ))
+        self.add_attr(
+            "stream_data",
+            tuple((
+                _stream.stream_data if isinstance(_stream,AmiraDataStream) else None
+                for _stream in self._stashed_items
+            ))
+        )
         return self.stream_data
-
+                
 
     def _load_data(self):
         _ign = self.stream_data
@@ -711,17 +720,20 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         if len(_names) < 2:
             if len(_names) < 1:
                 _dim = np.hstack((self.array.dimension,self.dimension))
-                self.data = np.zeros(_dim)
+                self.add_attr("data",np.zeros(_dim))
             else:
                 _dimensions = self._stack_info.get("dimensions",None)
-                self.data = (
-                    np.concatenate if (_dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1 ) ) or _dimensions[0][0][0] == 1 else np.stack
-                )(
-                    [
-                        _stream.data
-                        for _stream in self._stashed_items
-                    ],
-                    axis = self.array.dimension.size
+                self.add_attr(
+                    "data",
+                    (
+                        np.concatenate if (_dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1 ) ) or _dimensions[0][0][0] == 1 else np.stack
+                    )(
+                        [
+                            _stream.data
+                            for _stream in self._stashed_items
+                        ],
+                        axis = self.array.dimension.size
+                    )
                 )
                 #if _dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1):
                 #    self._decoded_data = np.reshape(self._decoded_data,self._decoded_data.shape[:-1])
@@ -758,18 +770,18 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
                     _data = np.repeat(np.expand_dims(_data,axis = _axis),_count,axis=_axis)
                 _blocks += [_data]
                 _dtypes += [(_name[0],_type,_data.shape)]
-            self.data = np.array(_blocks,dtype = _dtypes)
+            self.add_attr("data",np.array(_blocks,dtype = _dtypes))
         self._stashed_items = None
         self._stack_info = None
         return self.data
-
+    
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):
     """Base class for all HyperSurface data streams that inherits from ``AmiraDataStream``"""
 
     def __init__(self, *args, **kwargs):
         super(AmiraHxSurfaceDataStream, self).__init__(*args, **kwargs)
-
+        
     def __setattr__(self,name,value):
         if name in ("count",):
             super(AmiraHxSurfaceDataStream,self).__getattribute__(name)(value)
@@ -813,18 +825,21 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
                 _final_shape = np.insert(self.dimension,0,_parentarray.dimension)
         else:
             _final_shape = np.append(self.array_dimension,self.dimension)
-        self.data = self._decoder(
-            #pylint: disable=E1136
-            self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
-            #pylint: enable=E1136
-            #dtype=self._loader.type_map[self.type],
-            count= self._decoded_length
-        ).reshape(_final_shape)
+        self.add_attr(
+            "data",
+            self._decoder(
+                #pylint: disable=E1136
+                self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
+                #pylint: enable=E1136
+                #dtype=self._loader.type_map[self.type],
+                count= self._decoded_length
+            ).reshape(_final_shape)
+        )
         return self.data
         #pylint: enable=E1101
 
     def add_attr(self,name,value,isparent=False):
-        """ see:: ahds_common.Block for details """
+        """ see:: ahds_common.Block for details """ 
         if name == 'dimension':
             # name is dimension try co calculate numver of elements in decoded data
             if type(value) in [str,int,float]:
@@ -832,7 +847,7 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             super(AmiraHxSurfaceDataStream,self).add_attr(name,value,isparent)
             if hasattr(self,'array'):
                 # dimension is taken from data definition on specific array
-                # multiply number of elements of both to obtain number of decoded
+                # multiply number of elements of both to obtain number of decoded 
                 # data elements
                 self._decoded_length = np.prod(value) * np.prod(self.array.dimension)
                 return
@@ -842,7 +857,7 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
         super(AmiraHxSurfaceDataStream,self).add_attr(name,value,isparent)
         if name == 'array' and hasattr(self,'dimension'):
             # Stream is linked to parent array decoded length is the product of the number
-            # elements in array and in single array item defined by data description
+            # elements in array and in single array item defined by data description 
             # corresponding to this stream
             self._decoded_length = np.prod(value.dimension) * np.prod(self.dimension)
             return
@@ -886,17 +901,17 @@ class StreamLoader(object):
         'Surfaces':"Surface{}"
     }
 
-    # regular expression used to locate the start of counter at the tail of
+    # regular expression used to locate the start of counter at the tail of 
     # block name
     # NOTE: this is applied to reversed slice of block Name
-    _locate_counter = re.compile(r'^\d+',re.I)
+    _locate_counter = re.compile(r'^\d+',re.I) 
     def __init__(self,header,data_section_start,field_data_map):
-        """ intializes StreamLoader
+        """ intializes StreamLoader 
         :param AmiraHeader header: the header containing the meta information of the file
         :param int data_section_start: byte index at which the the Label of the first
             data steream is located. For AmiraMesh files this id sthe position of @1 and
             for HyperMesh files it will most likely point to label Vertices section
-        :param dict field_data_map: dictionary relating AmiraMesh block indices to the
+        :param dict field_data_map: dictionary relating AmiraMesh block indices to the 
             corresponding AmiraDataStream block the data has to be assigned to. This
             ensures that intermediat data which occurs before the requested data can be
             properly assigned to its corresponding stream block.
@@ -931,7 +946,7 @@ class StreamLoader(object):
             self._next_stream = self._no_next_block
             # index of next data block to be loaded
             self._last_checked = None
-            # Vertices and Patches labels are used on main level for defining
+            # Vertices and Patches labels are used on main level for defining 
             # list of Coordinates for Veritces and Triangels of individual surface
             # Patches. At the same time they label the list of vertices on Boundary curves
             # and Patches resembling a specific surface. To disitinguish these two cases
@@ -944,9 +959,9 @@ class StreamLoader(object):
 
     def _get_next_block(self,matched=None):
         """ checks if provided index is found within the _field_data_map shared between
-            AmiraHeader and StreamLoader instances
+            AmiraHeader and StreamLoader instances 
             :param int matched: block index to be checked if a metadata block is present
-                or None if id of next not yet loaded block should be returned
+                or None if id of next not yet loaded block should be returned 
                 thereby it is assumed that blocks are stored with increasing indices """
         if matched is None:
             matched = min([ _id for _id in _dict_iter_keys(self._field_data_map) if isinstance(_id,int)]) if self._last_checked is None else self._last_checked
@@ -971,7 +986,7 @@ class StreamLoader(object):
             _dtype = _type_map[False][stream.type]
             return ft.partial(np.frombuffer,dtype=_dtype),-1
         if self._header.format[0] in ['A','a']:
-            # Format is ASCII type use numpy.fromstring function for decoding
+            # Format is ASCII type use numpy.fromstring function for decoding 
             # return functools partial object with dtype parameter preset to the datatype
             # defined by the type attribute
             if self._header.format[1:] not in ["SCII","scii"]:
@@ -1087,13 +1102,13 @@ class StreamLoader(object):
         if attr in ("data_section_start",):
             return super(StreamLoader,self).__getattribute__("_next_datasection")
         return super(StreamLoader,self).__getattribute__(attr)
-
+    
     #@property
     #def data_section_start(self):
     #    return self._next_datasection
 
     def load_stream(self,data_stream):
-        """ loads the data described by the passed data_stream metadata block
+        """ loads the data described by the passed data_stream metadata block 
             and attaches the correponding bytes to the block.
 
             Any data block which is contained in the bytes between the last location
@@ -1113,7 +1128,7 @@ class StreamLoader(object):
         if isinstance(data_stream,AmiraDataStream):
 
             # check if data_stream Block represents array block or one of it's substream
-            # in the latter case recall using array metadata block if it is a
+            # in the latter case recall using array metadata block if it is a 
             # specific AmiraDataStream type block else continue with provided
             # AmiraDataStream instance
             _parent_stream = getattr(data_stream,'array',None)
@@ -1131,15 +1146,15 @@ class StreamLoader(object):
         elif self._header_locked or not isinstance(data_stream,str):
 
             # modification of AmiraMesh header is not allowed or
-            # HyperSuface file has been loaded and thus was locked for further
+            # HyperSuface file has been loaded and thus was locked for further 
             # modification or object passed to data_stream is not string
             raise Exception("File '{}': data_stream for block '{}' not found".format(self._header.filename,data_stream))
         elif data_stream not in _hyper_surface_file:
 
-            # data_tream name ist not found in the _hyper_surface_file structure
+            # data_tream name ist not found in the _hyper_surface_file structure 
             # try to strip the string representing a subblock counter from the passed string
-            # and split eg 'Patch1' into 'Patch' and '1'. Use the basename to obtain the
-            # correponding blockname froom the above _array_group_map structure
+            # and split eg 'Patch1' into 'Patch' and '1'. Use the basename to obtain the 
+            # correponding blockname froom the above _array_group_map structure 
             _counterstart = self.__class__._locate_counter.match(data_stream[::-1])
             _block_name = self.__class__._array_group_map.get(
                 data_stream[:-_counterstart.end()] if _counterstart is not None else data_stream,
@@ -1160,7 +1175,7 @@ class StreamLoader(object):
             _block_name = self.__class__._array_group_map.get(_stream_name,_stream_name)
 
         # turn off automatic loading of missing attributes of the header block to prevent
-        # recursive calls caused by questing presence of header attributes in the
+        # recursive calls caused by questing presence of header attributes in the 
         # below code
         self._header.autoload(False)
 
@@ -1169,8 +1184,8 @@ class StreamLoader(object):
 
             # skip forward to the next byte to be loaded
             # if supported by the input stream do this using seek
-            # else fallback to reading and tossing the already read
-            # bytes
+            # else fallback to reading and tossing the already read 
+            # bytes 
             try:
                 f.seek(self._next_datasection)
             except OSError:
@@ -1183,7 +1198,7 @@ class StreamLoader(object):
             if len(_stream_data) < 1:
                 raise Exception("File '{}': unexpected EOF encountered".format(self._header.filename))
 
-            # intialize machinery for identify individual blocks and the requested block
+            # intialize machinery for identify individual blocks and the requested block 
             # especially.
 
             # first byte within the _stream_data array to be rescanned after expanding
@@ -1193,7 +1208,7 @@ class StreamLoader(object):
             # data section for requested block not yet identified
             _block_not_found = True
 
-            # if not none than currently the content of a specific
+            # if not none than currently the content of a specific 
             # HyperSurface block is read for example of a single Patch
             _ingroup = None
 
@@ -1201,7 +1216,7 @@ class StreamLoader(object):
             _numentries = 0
 
             # index of the next to be read subblock of the curently loaded HyperSurface
-            # section, first index is 1
+            # section, first index is 1 
             _entryid = 0
 
             # initialize reference to metadata block for which the data is expected to
@@ -1209,7 +1224,7 @@ class StreamLoader(object):
             # files this points to the next block following the last loaded
             _current_stream = self._next_stream()
 
-            # byte numer within the _stream_data array where the binary data for the
+            # byte numer within the _stream_data array where the binary data for the 
             # currently loaded block starts.
             _block_start = 0
 
@@ -1221,10 +1236,10 @@ class StreamLoader(object):
             # inspected subblock for example patch 2
             _subgroup_seen = set()
 
-            # load the data
+            # load the data 
             while True:
 
-                # scan the remaining bytes of the _stream_data array for the next
+                # scan the remaining bytes of the _stream_data array for the next 
                 # block index or sectoin name
                 _match = self._section_pattern.search(_stream_data,_continue_scan_at)
                 if _match is None:
@@ -1247,7 +1262,7 @@ class StreamLoader(object):
                         self._next_datasection = None
                         self._last_checked = None
                         if _current_stream is not None:
-                            # attach bytes for last data_stream extending to the end of file
+                            # attach bytes for last data_stream extending to the end of file 
                             # to the corresponding metadata block
                             _current_stream.add_attr('stream_data',_stream_data[_block_start:])
                         if _block_not_found:
@@ -1267,7 +1282,7 @@ class StreamLoader(object):
                     # process main group or AmiraMesh block
                     if _match_group == _block_name:
 
-                        # reached requested block stop loading when follwoing block or end of
+                        # reached requested block stop loading when follwoing block or end of 
                         # file is reached
                         _block_not_found = False
                     if _current_stream is not None:
@@ -1343,7 +1358,7 @@ class StreamLoader(object):
                         self._header.autoload(True)
                         return
                     elif not isinstance(_current_group,Block):
-                        Exception("<Header>.{} AmiraHxSurfaceDataStream or Block type attribute value expected".format(_match_group))
+                        Exception("<Header>.{} AmiraHxSurfaceDataStream or Block type attribute value expected".format(_match_group)) 
                     elif _numentries < 1:
                         if _block_not_found:
                             _continue_scan_at = _match.end('count')
@@ -1371,7 +1386,7 @@ class StreamLoader(object):
                     _current_stream.add_attr('stream_data',_stream_data[_block_start:_match.start()])
                     _current_stream = None
                 if not isinstance(_ingroup,dict) or _match_group not in _ingroup or ( _match_group in _hyper_surface_file and self._group_end.match(_stream_data[-len(_stream_data) - _match.start() - 1::-1]) is not None ):
-                    # true outer group hit
+                    # true outer group hit 
                     # simply rescan matched bit with _ingroup false and let above code handle
                     _continue_scan_at = _match.start()
                     if _entryid < _numentries:
@@ -1384,11 +1399,11 @@ class StreamLoader(object):
                     _entryid = 0
                     _numentry = 0
                     _subgroup_seen.clear()
-                    continue
+                    continue 
                 if _match_group in _subgroup_seen:
                     if len([ True for _key,_val in _dict_iter_items(_ingroup) if not isinstance(_key,str) or _key == _match_group or _key in _subgroup_seen or _val[3] ]) < len(_ingroup) :
                         raise Exception("File '{}': inconsistent '{}' entry {}".format(self._header.filename,_current_group.block,_entryid))
-
+                        
                     _entryid += 1
                     if _entryid > _numentries:
                         raise Exception("File: '{}': additional subgroup ({}/{}) for hyper surface group '{}':".format(self._header.filename,_entryid,_numentries,_ingroup))
@@ -1426,7 +1441,7 @@ class StreamLoader(object):
                     _dimension = np.int64(_data_name[1])
                     _last_group = 'name' if _match.group('name') is not None else 'stream'
                 if _current_stream is None:
-
+                    
                     _current_stream = self.create_stream(_match_group,_current_group)
                     _current_stream.add_attr('block ',_match_group)
                     _current_stream.add_attr('array',_current_group,True)
@@ -1467,7 +1482,7 @@ class DataStreams(object):
     def header(self):
         return self._header
 
-    @deprecated("access data of individual streams through corresponding attributes and dedicated stream_data and data attributes of meta data blocks")
+    @deprecated("access data of individual streams through corresponding attributes and dedicated stream_data and data attributes of meta data blocks") 
     def stream_data(self):
         return self.__stream_data
 
@@ -1475,7 +1490,7 @@ class DataStreams(object):
     @deprecated("use <AmiraHeader>.filetype attribute instead")
     def filetype(self):
         return self._header.filetype
-
+    
     @deprecated
     def __len__(self):
         return len(self.__stream_data)
