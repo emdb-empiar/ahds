@@ -435,11 +435,11 @@ class AmiraHeader(Block):
         return _data_pointers
 
     def _load_designation(self, block_data):
-        setattr(self,'filetype',block_data['filetype'] if 'filetype' in block_data else None)
-        setattr(self,'dimension',block_data['dimension'] if 'dimension' in block_data else None)
-        setattr(self,'format',block_data['format'] if 'format' in block_data else None)
-        setattr(self,'version',block_data['version'] if 'version' in block_data else None)
-        setattr(self,'extra_format',block_data['extra_format'] if 'extra_format' in block_data else None)
+        self.add_attr('filetype',block_data['filetype'] if 'filetype' in block_data else None)
+        self.add_attr('dimension',block_data['dimension'] if 'dimension' in block_data else None)
+        self.add_attr('format',block_data['format'] if 'format' in block_data else None)
+        self.add_attr('version',block_data['version'] if 'version' in block_data else None)
+        self.add_attr('extra_format',block_data['extra_format'] if 'extra_format' in block_data else None)
                
     def _load_declarations(self, block_data):
         if len(block_data) < 1:
@@ -728,7 +728,7 @@ def main():
     try:
         fn = sys.argv[1]
     except IndexError:
-        print("usage: ./{} <amira-fn>".format(__file__),sys.stderr)
+        print("usage: ./{} <amira-fn>".format(__file__),file = sys.stderr)
         return 1
     
     h = AmiraHeader.from_file(fn, verbose=False)

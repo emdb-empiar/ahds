@@ -177,14 +177,14 @@ def deprecated(description=None,setter = None,deleter = None):
 class Block(object):
     """Generic block to be loaded with attributes"""
     def __init__(self, name):
-        self.name = name
+        super(Block,self).__setattr__("name",name)
         self._parent = tuple()
         
     __slots__ = ( "name","__dict__","__weakref__","_parent")
 
     def add_attr(self, name, value,isparent=False):
         """Add an attribute to an ``Block`` object"""
-        setattr(self, name, value)
+        super(Block,self).__setattr__(name, value)
         if isparent:
             self._parent = self._parent +(value,)
 
@@ -194,20 +194,26 @@ class Block(object):
             raise AttributeError("can not move missing attribute '{}' ".format(name))
         if isinstance(_tomove,Block) and _tomove.name == name:
             _tomove.name = to
-        setattr(self,to,_tomove)
+        super(Block,self).__setattr__(to,_tomove)
         delattr(self,name)
 
     def __setattr__(self,name,value):
-        _fcount = 1
-        a=sys._getframe(_fcount)
-        while a.f_code.co_name == "__setattr__":
-            if "self" not in a.f_locals or ( a.f_locals["self"] != self and not isinstance(a.f_locals["self"],Block) ):
-                raise AttributeError("Attribute '{}' is read only",format(name))
-            _fcount += 1
-            a = sys._getframe(_fcount)
-        if "self" not in a.f_locals or ( a.f_locals["self"] != self and not isinstance(a.f_locals["self"],Block) ):
-            raise AttributeError("Attribute '{}' is read only",format(name))
-        super(Block,self).__setattr__(name,value)
+        if name != "__dict__":
+            for _found in (
+                name in _slots 
+                for _slots in (
+                    getattr(_parent,"__slots__",None)
+                    for _parent in super(Block,self).__getattribute__("__class__").__mro__
+                )
+                if _slots is not None
+            ):
+                super(Block,self).__setattr__(name,value)
+                return
+            try:
+                super(Block,self).__getattribute__(name)
+            except AttributeError:
+                raise AttributeError( "New attributes must be added calling add_attr method")
+        raise AttributeError("Attribute '{}' is read only",format(name))
 
     def __getattribute__(self,name):
         if name in ("attrs","ids"):
