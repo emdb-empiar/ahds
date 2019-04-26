@@ -366,7 +366,11 @@ class AmiraDataStream(Block):
             if name not in ("stream_data","data"):
                 raise
             return super(AmiraDataStream,self).__getattribute__("_load_"+name)()
-            
+
+    def __setattr__(self,name,value):
+        if name in ('stream_data','data'):
+            raise AttributeError("Attribute '{}' is read only call add_attr to update instead",format(name))
+        super(AmiraDataStream,self).__setattr__(name,value)
 
     def _load_stream_data(self):
         """All the raw data from the file for the data stream"""
@@ -475,13 +479,16 @@ class AmiraMeshDataStream(AmiraDataStream):
                 _final_shape = np.insert(self.dimension,0,_parentarray.dimension)
         else:
             _final_shape = np.append(self.array_dimension,self.dimension)
-        self.data = self._decoder(
-            #pylint: disable=E1136
-            self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
-            #pylint: enable=E1136
-            #dtype=self._loader.type_map[self.type],
-            count= self._decoded_length
-        ).reshape(_final_shape)
+        self.add_attr(
+            "data",
+            self._decoder(
+                #pylint: disable=E1136
+                self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
+                #pylint: enable=E1136
+                #dtype=self._loader.type_map[self.type],
+                count= self._decoded_length
+            ).reshape(_final_shape)
+        )
         return self.data
         #pylint: enable=E1101
 
@@ -667,8 +674,7 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         if len(_names) == 1:
             self.name = _names[0][0]
         self._stack_info = dict(names = _names,dimensions = _dimensions, types = _types)
-        setattr(
-            self,
+        self.add_attr(
             'dimension',
             (
                 ( 
@@ -685,15 +691,18 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
                 ))
             )
         )
-        setattr(self,'type',(None if len(_types) < 1 else _types[0][0] ) if len(_types) < 2 else tuple((_tp[0] for _tp in _types)))
+        self.add_attr('type',(None if len(_types) < 1 else _types[0][0] ) if len(_types) < 2 else tuple((_tp[0] for _tp in _types)))
 
     def _load_stream_data(self):
         if self._stashed_items is None or self._stack_info is None:
             raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
-        self.stream_data = tuple((
-            _stream.stream_data if isinstance(_stream,AmiraDataStream) else None
-            for _stream in self._stashed_items
-        ))
+        self.add_attr(
+            "stream_data",
+            tuple((
+                _stream.stream_data if isinstance(_stream,AmiraDataStream) else None
+                for _stream in self._stashed_items
+            ))
+        )
         return self.stream_data
                 
 
@@ -706,17 +715,20 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         if len(_names) < 2:
             if len(_names) < 1:
                 _dim = np.hstack((self.array.dimension,self.dimension))
-                self.data = np.zeros(_dim)
+                self.add_attr("data",np.zeros(_dim))
             else:
                 _dimensions = self._stack_info.get("dimensions",None)
-                self.data = (
-                    np.concatenate if (_dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1 ) ) or _dimensions[0][0][0] == 1 else np.stack
-                )(
-                    [
-                        _stream.data
-                        for _stream in self._stashed_items
-                    ],
-                    axis = self.array.dimension.size
+                self.add_attr(
+                    "data",
+                    (
+                        np.concatenate if (_dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1 ) ) or _dimensions[0][0][0] == 1 else np.stack
+                    )(
+                        [
+                            _stream.data
+                            for _stream in self._stashed_items
+                        ],
+                        axis = self.array.dimension.size
+                    )
                 )
                 #if _dimensions[0][0].size == 1 and np.all(_dimensions[0][0] == 1):
                 #    self._decoded_data = np.reshape(self._decoded_data,self._decoded_data.shape[:-1])
@@ -753,7 +765,7 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
                     _data = np.repeat(np.expand_dims(_data,axis = _axis),_count,axis=_axis)
                 _blocks += [_data]
                 _dtypes += [(_name[0],_type,_data.shape)]
-            self.data = np.array(_blocks,dtype = _dtypes)
+            self.add_attr("data",np.array(_blocks,dtype = _dtypes))
         self._stashed_items = None
         self._stack_info = None
         return self.data
@@ -808,13 +820,16 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
                 _final_shape = np.insert(self.dimension,0,_parentarray.dimension)
         else:
             _final_shape = np.append(self.array_dimension,self.dimension)
-        self.data = self._decoder(
-            #pylint: disable=E1136
-            self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
-            #pylint: enable=E1136
-            #dtype=self._loader.type_map[self.type],
-            count= self._decoded_length
-        ).reshape(_final_shape)
+        self.add_attr(
+            "data",
+            self._decoder(
+                #pylint: disable=E1136
+                self.stream_data if self._itemsize < 1 else self.stream_data[:(self._decoded_length * self._itemsize)],
+                #pylint: enable=E1136
+                #dtype=self._loader.type_map[self.type],
+                count= self._decoded_length
+            ).reshape(_final_shape)
+        )
         return self.data
         #pylint: enable=E1101
 
