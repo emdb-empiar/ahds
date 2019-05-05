@@ -29,12 +29,12 @@ from skimage.measure._find_contours import find_contours
 try:
     from .ahds_common import (
         _dict_iter_keys, _dict_iter_items, _dict_iter_values, Block, ListBlock,_AnyBlockProxy,
-        xrange,_doraise,_decode_string,deprecated
+        xrange,_decode_string,deprecated
     )
 except:
     from ahds_common import (
         _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,ListBlock,_AnyBlockProxy,
-        xrange,_doraise,_decode_string,deprecated
+        xrange,_decode_string,deprecated
     )
 
 try:
@@ -379,10 +379,7 @@ class AmiraDataStream(Block):
 
     def _load_stream_data(self):
         """All the raw data from the file for the data stream"""
-        try:
-            self._loader.load_stream(self)
-        except Exception as reason:
-            raise AttributeError("'{}' type object does not have a 'stream_data' property".format(self.__class__),reason)
+        self._loader.load_stream(self)
         return super(AmiraDataStream,self).__getattribute__("stream_data")
 
     @deprecated("will be removed in future versions use stream_data instead to access raw data")
@@ -397,7 +394,10 @@ class AmiraDataStream(Block):
 
     def _load_data(self):
         """Decoded numpy array for this stream"""
-        return None
+        if self.__class__ == "AmiraDataStream":
+            raise NotImplementedError("_load_data must be implemented by subclass of '{}'".format(self.__class__))
+        raise NotImplementedError("_load_data not implemented by class '{}'".format(self.__class__))
+
         
     @deprecated("may be removed in future versions use <stream>.data.size instead")
     def decoded_length(self):
@@ -716,7 +716,7 @@ class AmiraMeshSheetDataStream(AmiraMeshDataStream):
         _names = self._stack_info.get("names",None)
         if _names is None:
             raise TypeError("'{}' type object must be successfully stashed before it's stream_data can be computed".format(self.__class__.__name__))
-        self.array.dimension = np.int64(self.array.dimension)
+        self.array.add_attr("dimension",np.int64(self.array.dimension))
         if len(_names) < 2:
             if len(_names) < 1:
                 _dim = np.hstack((self.array.dimension,self.dimension))
@@ -873,7 +873,18 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             self._decoder,self._itemsize = self._loader.select_decoder(self)
             return
 
+
 _blob_size = 524288
+
+
+class DataStreamNotFoundError(Exception):
+    pass
+
+class NotSupportedError(Exception):
+    pass
+
+class DataStreamError(Exception):
+    pass
 
 class StreamLoader(object):
     __slots__ = (
@@ -935,7 +946,7 @@ class StreamLoader(object):
             # no need to resolve ambiguities
             self._group_end = None
         elif self._header.filetype != "HyperSurface":
-            raise Exception("Filetype '{}' not supported".format(self._header.filetype))
+            raise NotSupportedError("Filetype '{}' not supported".format(self._header.filetype))
         else:
             # select instrumentation for HyperSurface file
             self.create_stream = self._create_hyper_surface_stream
@@ -990,11 +1001,11 @@ class StreamLoader(object):
             # return functools partial object with dtype parameter preset to the datatype
             # defined by the type attribute
             if self._header.format[1:] not in ["SCII","scii"]:
-                raise Exception("File encoding '{}' not supported".format(self._header.format))
+                raise NotSupportedError("File encoding '{}' not supported".format(self._header.format))
             _dtype = _type_map[stream.type]
             return ft.partial(np.fromstring,dtype=_dtype,sep="\n \t"), 0
         if self._header.format[0] not in ['B','b'] or self._header.format[1:6] not in ["INARY","inary"]:
-            raise Exception("File encoding '{}' not supported".format(self._header.format))
+            raise NotSupportedError("File encoding '{}' not supported".format(self._header.format))
         # check if data stream is compressed (HxByteRLE or HxZip)
         _data_format = getattr(stream,"data_format",None)
         # binary data encoded in bigendian (BINARY) or little endian (BINARY-LITTLER-ENDIAN)
@@ -1049,21 +1060,21 @@ class StreamLoader(object):
             raise ValueError("array must be a valide HyperSurface array block")
         _block = array.block
         if _block not in _hyper_surface_file:
-            raise Exception("invalid HyperSurface array block")
+            raise DataStreamError("invalid HyperSurface array block")
         _ingroup = _hyper_surface_file[_block]
         if isinstance(_ingroup,list):
             # either simple list of indices
             if _ingroup[1] is None:
-                raise Exception("cant create AmiraHxSurfaceDataStream within simple parameter '{}'".format(_block))
+                raise DataStreamError("cant create AmiraHxSurfaceDataStream within simple parameter '{}'".format(_block))
             if _ingroup[0] != name:
-                raise Exception("Expected '{}' stream name does not match requested '{}' name".format(_ingroup[0],name))
+                raise DataStreamError("Expected '{}' stream name does not match requested '{}' name".format(_ingroup[0],name))
             return AmiraHxSurfaceDataStream(name,self)
         assert isinstance(_ingroup,dict)
         # stream is part of a list of streams
         if name not in _ingroup:
-            raise Exception("Expected any of '{}' for stream name but got '{}'".format("', '".join([_key for _key in _dict_iter_keys(_ingroup) if isinstance(_key,str)]),name))
+            raise DataStreamError("Expected any of '{}' for stream name but got '{}'".format("', '".join([_key for _key in _dict_iter_keys(_ingroup) if isinstance(_key,str)]),name))
         if isinstance(_ingroup[name],list) and _ingroup[name][1] is None:
-           raise Exception("cant create AmiraHxSurfaceDataStream for simple parameter '{}' of array '{}'".format(name,_block))
+           raise DataStreamError("cant create AmiraHxSurfaceDataStream for simple parameter '{}' of array '{}'".format(name,_block))
         return AmiraHxSurfaceDataStream(name,self)
 
     def _create_hyper_surface_array(self,name):
@@ -1079,11 +1090,11 @@ class StreamLoader(object):
             _group_name = StreamLoader._array_group_map.get(_basename,_basename)
             _subblock = name[-_counterstart.end():]
         if _group_name not in _hyper_surface_file:
-            raise Exception("Invalid HxSurfaceFile array '{}'".format(name))
+            raise DataStreamError("Invalid HxSurfaceFile array '{}'".format(name))
         if isinstance(_hyper_surface_file[_group_name],list):
             # list of indices and vertices encoded within array
             if _hyper_surface_file[name][1] is None:
-                raise Exception("Can't crete AmiraHxSurfaceDataStream for simple parameter '{}'".format(name))
+                raise DataStreamError("Can't crete AmiraHxSurfaceDataStream for simple parameter '{}'".format(name))
             _block_obj = AmiraHxSurfaceDataStream(name,self)
             _block_obj.add_attr("block",name)
             return _block_obj
@@ -1096,7 +1107,7 @@ class StreamLoader(object):
         return _block_obj
 
     def _create_hyper_surface_list_array(self,name):
-        raise Exception("hyper surface does not support listlike array structures")
+        raise DataStreamError("hyper surface does not support listlike array structures")
 
     def __getattribute__(self,attr):
         if attr in ("data_section_start",):
@@ -1148,7 +1159,7 @@ class StreamLoader(object):
             # modification of AmiraMesh header is not allowed or
             # HyperSuface file has been loaded and thus was locked for further 
             # modification or object passed to data_stream is not string
-            raise Exception("File '{}': data_stream for block '{}' not found".format(self._header.filename,data_stream))
+            raise DataStreamNotFoundError("File '{}': data_stream for block '{}' not found".format(self._header.filename,data_stream))
         elif data_stream not in _hyper_surface_file:
 
             # data_tream name ist not found in the _hyper_surface_file structure 
@@ -1161,7 +1172,7 @@ class StreamLoader(object):
                 None
             )
             if _block_name is None:
-                raise Exception("File '{}': data_stream for block '{}' not found".format(self._header.filename,data_stream))
+                raise DataStreamNotFoundError("File '{}': data_stream for block '{}' not found".format(self._header.filename,data_stream))
 
             # store the block name for generating error messages
             _stream_name = data_stream
@@ -1196,7 +1207,7 @@ class StreamLoader(object):
             # read the first blob
             _stream_data = f.read(_blob_size)
             if len(_stream_data) < 1:
-                raise Exception("File '{}': unexpected EOF encountered".format(self._header.filename))
+                raise DataStreamError("File '{}': unexpected EOF encountered".format(self._header.filename))
 
             # intialize machinery for identify individual blocks and the requested block 
             # especially.
@@ -1266,7 +1277,7 @@ class StreamLoader(object):
                             # to the corresponding metadata block
                             _current_stream.add_attr('stream_data',_stream_data[_block_start:])
                         if _block_not_found:
-                            raise Exception("File '{}': data_block '{}' for data_stream '{}' not found".format(self._header.filename,_block_name,_stream_name))
+                            raise DataStreamNotFoundError("File '{}': data_block '{}' for data_stream '{}' not found".format(self._header.filename,_block_name,_stream_name))
                         # enable autoloading of missing attributes by header block
                         self._header.autoload(True)
                         return
@@ -1324,11 +1335,11 @@ class StreamLoader(object):
                     _firstentry_name = self._group_array_map.get(_match_group,_match_group).format(1)
                     _ingroup = _hyper_surface_file.get(_match_group,None)
                     if _ingroup is None:
-                        raise Exception("File '{}': Array group '{}' unknown!".format(self._header.filename,_match_group))
+                        raise DataStreamError("File '{}': Array group '{}' unknown!".format(self._header.filename,_match_group))
                     _current_group = getattr(self._header,_firstentry_name,None)
                     if _current_group is None:
                         if _count is None:
-                            raise Exception("File '{}': Array '{}'({}) counter missing!".format(self._header.filename,_firstentry_name,_match_group))
+                            raise DataStreamError("File '{}': Array '{}'({}) counter missing!".format(self._header.filename,_firstentry_name,_match_group))
                         if isinstance(_ingroup,list) and _ingroup[1] is None:
                             self._header.add_attr(_firstentry_name,int(_count))
                             if _block_not_found:
@@ -1343,7 +1354,7 @@ class StreamLoader(object):
                                 _continue_scan_at = _match.end('count')
                                 _ingroup = None
                                 continue
-                            raise Exception("File '{}': Array '{}'({}) empty!".format(self._header.filename,_firstentry_name,_match_group))
+                            raise DataStreamError("File '{}': Array '{}'({}) empty!".format(self._header.filename,_firstentry_name,_match_group))
                         _current_group = self.create_array(_firstentry_name)
                         self._header.add_attr(_firstentry_name,_current_group)
                         self._header._check_siblings(_current_group,_firstentry_name,self._header,_current_group.block)
@@ -1358,13 +1369,13 @@ class StreamLoader(object):
                         self._header.autoload(True)
                         return
                     elif not isinstance(_current_group,Block):
-                        Exception("<Header>.{} AmiraHxSurfaceDataStream or Block type attribute value expected".format(_match_group)) 
+                        DataStreamError("<Header>.{} AmiraHxSurfaceDataStream or Block type attribute value expected".format(_match_group)) 
                     elif _numentries < 1:
                         if _block_not_found:
                             _continue_scan_at = _match.end('count')
                             _ingroup = None
                             continue
-                        raise Exception("File '{}': Array '{}'({}) empty!".format(self._header.filename,_firstentry_name,_match_group))
+                        raise DataStreamError("File '{}': Array '{}'({}) empty!".format(self._header.filename,_firstentry_name,_match_group))
                     if _firstentry_name == _match_group:
                         _current_group.add_attr('dimension',np.int64(_count))
                         _numentries = 1
@@ -1390,7 +1401,7 @@ class StreamLoader(object):
                     # simply rescan matched bit with _ingroup false and let above code handle
                     _continue_scan_at = _match.start()
                     if _entryid < _numentries:
-                        raise Exception("File: '{}': not enough subgroups ({}/{}) for hyper surface group '{}':".format(self._header.filename,_entryid,_numentries,_ingroup))
+                        raise DataStreamError("File: '{}': not enough subgroups ({}/{}) for hyper surface group '{}':".format(self._header.filename,_entryid,_numentries,_ingroup))
                     if _current_group.block == _block_name:
                         self._next_datasection += _continue_scan_at
                         self._header.autoload(True)
@@ -1402,11 +1413,11 @@ class StreamLoader(object):
                     continue 
                 if _match_group in _subgroup_seen:
                     if len([ True for _key,_val in _dict_iter_items(_ingroup) if not isinstance(_key,str) or _key == _match_group or _key in _subgroup_seen or _val[3] ]) < len(_ingroup) :
-                        raise Exception("File '{}': inconsistent '{}' entry {}".format(self._header.filename,_current_group.block,_entryid))
+                        raise DataStreamError("File '{}': inconsistent '{}' entry {}".format(self._header.filename,_current_group.block,_entryid))
                         
                     _entryid += 1
                     if _entryid > _numentries:
-                        raise Exception("File: '{}': additional subgroup ({}/{}) for hyper surface group '{}':".format(self._header.filename,_entryid,_numentries,_ingroup))
+                        raise DataStreamError("File: '{}': additional subgroup ({}/{}) for hyper surface group '{}':".format(self._header.filename,_entryid,_numentries,_ingroup))
                     _firstentry_name = self._group_array_map.get(_current_group.block).format(_entryid)
                     _common_block = _current_group.block
                     _subgroup_seen.clear()
@@ -1462,13 +1473,14 @@ class DataStreams(object):
             warnings.simplefilter('ignore')
             if self._header.filetype == "AmiraMesh":
                 self.__stream_data = self._header.data_pointers
-            self.__stream_data = datastreams = dict()
-            for _streamblock in _dict_iter_keys(_hyper_surface_file):
-                _streamlist = _streamblock #self._header._stream_loader.__class__._group_array_map.get(_streamblock,_streamblock).format('List')
-                _streamlist = getattr(self._header,_streamlist,None)
-                if _streamlist is None:
-                    continue
-                self.__stream_data[_streamblock] = _streamlist
+            else:
+                self.__stream_data = dict()
+                for _streamblock in _dict_iter_keys(_hyper_surface_file):
+                    _streamlist = _streamblock #self._header._stream_loader.__class__._group_array_map.get(_streamblock,_streamblock).format('List')
+                    _streamlist = getattr(self._header,_streamlist,None)
+                    if _streamlist is None:
+                        continue
+                    self.__stream_data[_streamblock] = _streamlist
     def __getattribute__(self,attr):
         if attr in ("file","header","stream_data","filetype"):
             return super(DataStreams,self).__getattribute__(attr)()

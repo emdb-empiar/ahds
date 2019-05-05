@@ -2,13 +2,13 @@
 # ahds
 
 try:
-    from .header import AmiraHeader
+    from .header import AmiraHeader,AmiraHeaderError
 except:
-    from header import AmiraHeader
+    from header import AmiraHeader,AmiraHeaderError
 try:
-    from .data_stream import DataStreams
+    from .data_stream import DataStreams,DataStreamError,DataStreamNotFoundError,NotSupportedError
 except:
-    from data_stream import DataStreams
+    from data_stream import DataStreams,DataStreamError,DataStreamNotFoundError,NotSupportedError
 try:
     from .ahds_common import deprecated
 except:
@@ -37,11 +37,11 @@ class AmiraFile(AmiraHeader):
         return super(AmiraFile,self).__getattribute__(name)
         
 
-    @deprecated("AmiraFile is a subclass of AmiraHeader access header attribures directly from it")        
+    @deprecated("AmiraFile is a subclass of AmiraHeader access header attributes directly from it")        
     def header(self):
         return self
 
-    @deprecated("data streams are loaded into their metadata blocks when access for the fist time through the dedicated stream_data and data attributes of corresponding metadata blocks")
+    @deprecated("data streams are loaded into their metadata blocks when accessed for the fist time through the dedicated stream_data and data attributes of corresponding metadata blocks")
     def data_streams(self):
         return self._data_streams
 

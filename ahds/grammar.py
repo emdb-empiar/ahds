@@ -121,7 +121,7 @@ _hyper_surface_entities = '|'.join([
 # maximum number of bytes to be rescanned at the end of the already inspected
 # _stream_data array after new bytes have been read from the file. In case within this
 # range a data block marker (@<Num>) or any of the above HyperSurface section keys has
-# areday been successfully identified rescan starts at the byte following this match
+# alreday been successfully identified rescan starts at the byte following this match
 _rescan_overlap = max( (
     max([len(_key)] + ([len(_vk) for _vk in _dict_iter_keys(_val) if isinstance(_vk,str)] if isinstance(_val,dict) else []))
     for _key,_val in _dict_iter_items(_hyper_surface_file)
@@ -224,7 +224,7 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
         elif file_format == "HyperSurface":
             if verbose:
                 print("Using pattern: {}".format(_stream_delimiters[1].pattern),file = sys.stderr)
-            # scan the latests chunk ta for the the first occurance of any of the keys of the above
+            # scan the latests chunk for the the first occurance of any of the keys of the above
             # _hyper_surface_file structure
             m = _stream_delimiters[1].search(data)
             while m is None:

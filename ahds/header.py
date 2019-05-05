@@ -202,16 +202,16 @@ except:
     from grammar import get_parsed_data
 import os.path as path
 try:
-    from .ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock,_doraise
+    from .ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock
 except:
-    from ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock,_doraise
+    from ahds_common import _dict_iter_keys,_dict_iter_items,_dict_iter_values,Block,_AnyBlockProxy,deprecated,ListBlock
 import numpy as np
 import re
 
 try:
-    from .data_stream import StreamLoader
+    from .data_stream import StreamLoader,DataStreamNotFoundError
 except:
-    from data_stream import StreamLoader
+    from data_stream import StreamLoader,DataStreamNotFoundError
 
 import functools as ft
 
@@ -245,6 +245,9 @@ _hyper_surface_base_definitions = [
 # regular expression applied to names of array declarations and corresponding data definitions to identifiy
 # whether they shall be joinded within an additional <commonname>List array attribute. 
 _match_sibling = re.compile(r'^\d+')
+
+class AmiraHeaderError(Exception):
+    pass
 
 class AmiraHeader(Block):
     """Class to encapsulate Amira metadata and accessors to amria data streams"""
@@ -298,7 +301,7 @@ class AmiraHeader(Block):
             return super(AmiraHeader,self).__getattribute__("_"+name)
         try:
             return super(AmiraHeader,self).__getattribute__(name)
-        except AttributeError:
+        except AttributeError as attributenotfound:
             if self._noload:
                 # autoload is already off reraise AttributeError
                 raise
@@ -308,14 +311,14 @@ class AmiraHeader(Block):
             self.autoload(False)
             try:
                 self._stream_loader.load_stream(name)
-            except Exception as cause:
-                # turn on autoload again before reraising the AttributeError attaching
-                # the exception named by cause to it
+            except DataStreamNotFoundError:
+                raise attributenotfound
+            finally:
+                # turn on autoload again before reraising the error triggered by loader
+                # or continuing
                 self.autoload(True)
-                _doraise(ev,eb,et,cause)
             # turn on autoload again and try to return the newly loaded attribute
             # from the __dict__ of the base class
-            self.autoload(True)
             return super(AmiraHeader,self).__getattribute__(name)
 
     def autoload(self,on):
@@ -423,7 +426,7 @@ class AmiraHeader(Block):
         index, format and length
 
         NOTE: deprecated access the data defnitions for each data array through the corresponding attributes
-        eg.: ah.Nodes.Coordinates instead of ah.data_pointers.data_pointer1 ah.Tetrahedra.Nodes instead of 
+        eg.: ah.Nodes.Coordinates instead of ah.data_pointers.data_pointer_1 ah.Tetrahedra.Nodes instead of 
         ah.data_pointers.data_pointer_2 etc.
         """
 
@@ -444,7 +447,7 @@ class AmiraHeader(Block):
     def _load_declarations(self, block_data):
         if len(block_data) < 1:
             if self.filetype != "HyperSurface":
-                raise Exception("no array declarations found for '{}' type file '{}'".format(self.filetype,self.path))
+                raise AmiraHeaderError("no array declarations found for '{}' type file '{}'".format(self.filetype,self.path))
             block_data = _hyper_surface_declarations
         elif self.filetype == 'HyperSurface':
             raise ("array declarations found on file '{}' designated having '{}' file type".format(self.path,self.filetype))
@@ -475,7 +478,7 @@ class AmiraHeader(Block):
             else:
                 _check_dim = (
                     lambda dim:True,
-                    Exception("strange"),
+                    AmiraHeaderError("strange"),
                     lambda name:name,
                     self._stream_loader.create_array,
                     lambda name,counter,formatter:(name,formatter.format(name,counter)),
@@ -484,7 +487,7 @@ class AmiraHeader(Block):
         else:
                 _check_dim = (
                     lambda dim:True,
-                    Exception("strange"),
+                    AmiraHeaderError("strange"),
                     lambda name:name,
                     self._stream_loader.create_array,
                     lambda name,counter,formatter:(name,formatter.format(name,counter)),
@@ -499,7 +502,7 @@ class AmiraHeader(Block):
             if _equalnamed is not None: # and not isinstance(_equalnamed,_AnyBlockProxy):
                 try:
                     if np.all(_equalnamed.dimension != declaration['array_dimension']):
-                       raise Exception("either HxSpreadSheet with equal named columns of different length can't handle")
+                       raise AmiraHeaderError("either HxSpreadSheet with equal named columns of different length can't handle")
                     _rename = self._array_data_rename.get(_array_name,None)
                     if _rename is None:
                         self._array_data_rename[_array_name] = {
@@ -507,7 +510,7 @@ class AmiraHeader(Block):
                         }
                     continue # already defined if data has also equal names just renumber definitions
                 except AttributeError:
-                    raise Exception("definition name colides with some static non block attribute")
+                    raise AmiraHeaderError("definition name colides with some static non block attribute")
             #_array_name = declaration['array_name']
             _block_obj = _check_dim[3](_array_name)
             self.add_attr(_array_name,_block_obj)
@@ -541,7 +544,7 @@ class AmiraHeader(Block):
                     parent.add_attr(_list_name,_siblinglist)
                 elif not isinstance(_siblinglist,ListBlock):
                     # an attribute with name of list exists but does not resemble a ListBlock
-                    raise Exception("convertion of Block({0}) to ListBlock({0}) not supported".format(_list_name))
+                    raise AmiraHeaderError("conversion of Block({0}) to ListBlock({0}) not supported".format(_list_name))
             # insert new block in addition into the corresponding list
             _siblinglist[int(name[-_issibling.end():])] = block_obj
     
@@ -606,7 +609,7 @@ class AmiraHeader(Block):
     def _load_definitions(self, block_data):
         if len(block_data) < 1:
             if self.filetype != "HyperSurface":
-                raise Exception("no data definitons found for '{}' type file '{}'".format(self.filetype,self.path))
+                raise AmiraHeaderError("no data definitons found for '{}' type file '{}'".format(self.filetype,self.path))
             # load empty or debuging defintions for HyperSurface file
             block_data = _hyper_surface_base_definitions
         for data_definition in block_data:
@@ -632,7 +635,7 @@ class AmiraHeader(Block):
                     _data_obj.add_attr("fields",_fields_list)
                 elif _data_obj.type != _data_type or _data_obj.dimension != _data_dimension:
                     # datatype or data dimension specified for Field annotation does not match definition for underlying data
-                    raise Exception(
+                    raise AmiraHeaderError(
                         "DataError: Field datatype '{}' and dimension={} do not match with other fields defined on same data array {}".format(
                             _data_type,_data_dimension,_data_obj.type_block_index
                         )
@@ -656,7 +659,7 @@ class AmiraHeader(Block):
                 if _array_obj is None or not isinstance(_array_obj,ListBlock):    
                     _array_obj = getattr(self,data_definition['array_reference'],None)
             if _array_obj is None:
-                raise Exception("DataError: array_reference '{}' not found".format(data_definition['array_reference']))
+                raise AmiraHeaderError("DataError: array_reference '{}' not found".format(data_definition['array_reference']))
             # assume data_dimension to be one if not explicitly specified and load corresponding data type
             _data_dimension = data_definition.get('data_dimension',1)
             _data_type = data_definition['data_type']
@@ -683,7 +686,7 @@ class AmiraHeader(Block):
                 self._field_data_map[_block_index] = _data_obj
             elif _data_obj.type != _data_type or _data_obj.dimension != _data_dimension:
                 # data_type or data_dimension does not match with the type or dimension specified by corresponding Field annotation
-                raise Exception(
+                raise AmiraHeaderError(
                     "DataError: data definition stub ({0} [{1}]) created for block {4} by preceeding field definition not matching required datatype '{2}' and dimension={3}".format(
                         _data_type,_data_dimension,_data_obj.type,_data_obj.dimension,_block_index
                     )
@@ -691,7 +694,7 @@ class AmiraHeader(Block):
             elif _data_obj.name != "<FieldData>":
                 
                 # current definition would overwrite previous one
-                raise Exception(
+                raise AmiraHeaderError(
                     "DataError: data for block {} ('{}') redefined to '{}'".format(
                         _block_index,_data_obj.name,_data_name + "({})".format(data_definition['data_name'])
                     )
