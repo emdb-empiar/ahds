@@ -12,16 +12,6 @@ import re
 if sys.version_info[0] > 2:
     # All defnitions for Python3 and newer which differ from their counterparts in Python2.x
 
-
-    def _doraise(v,b=None,t=None,cause = None):
-        """ reraise passed exception attaching provided exceptoin as cause to it """    
-        #pylint disable=E0001
-        if cause is not None:
-            e = v.with_traceback(b)
-            raise e from cause
-        raise v.with_traceback(b)
-        #pylint enable=E0001
-
     def _decode_string(data):
         """ decodes binary ASCII string to python3 UTF-8 standard string """
         try:
@@ -46,20 +36,9 @@ if sys.version_info[0] > 2:
 
 else:
     # All defnitions for Python3 and newer which differ from their counterparts in Python2.x
-    def _doraise(v,b=None,t=None,cause = None):
-        """ reraise passed exception attaching provided exceptoin as cause to it """    
-        if t is None:
-            #pylint disable=E0001
-            exec("""raise v.__class__, v""")
-            #pylint enable=E0001
-        if cause is not None:
-            setattr(v,'cause',cause)
-        #pylint disable=E0001
-        exec("""raise t, v, b""")
-        #pylint enable=E0001
 
     def _decode_string(data):
-        """ in python2.x no decoding is necessary thur just returns data without any change """
+        """ in python2.x no decoding is necessary thus just returns data without any change """
         return data
 
     # try to define xrange alias pointing to the builtin xrange
@@ -78,19 +57,9 @@ else:
     _dict_iter_keys = dict.iterkeys
     #pylint: enable=E1101
 
-def deprecated(description=None,setter = None,deleter = None):
+def deprecated(description=None):
     """ decorator used to mark methods, classes, classmethods and properies as deprecated
         :param str description: the additional information printed along with the DeprecationWarning
-        :param bool setter: flag indicating that deprecation warning should only affect @<property>.setter.
-            is ignored if decorator is not applied to @<property>.setter decorator
-        :param bool deleter: flag indicating that deprecation warning should only affect @<property>.deleter.
-            is ignored if decorator is not applied to @<property>.deleter decorator
-
-        NOTE: If applied to @proerty decorator definig getter of <property> than DeprecationWarning will be
-            issued on setter and deleter implicity stating that the whole property is deprecated. If
-            applied to setter or deleter only whith corresponding flags set to True will limit DeprecationWarning
-            to setter or deleter only. Setting both flags to True at the same time will trigger a ValueError
-            exception
     """
 
     # check if description prarameter is set and whether it is a valid string
@@ -142,13 +111,10 @@ def deprecated(description=None,setter = None,deleter = None):
                 stacklevel = _select_level + 1
             )
             return func(*args,**kwargs)
-        if msg is not None:
-            # recalled by _deprecated_prop or _deprecated_mixed_prop setter, getter or deleter methods 
-            # to wrap the new fset, fget or fdel method or by the below code to define the initial getter
-            # if appied to the @property @mixed_property decorators
-            _deprecated_message = msg.format(func.__qualname__,description)
-            _message_filter = re.escape(msg.format(func.__qualname__,r''))
-        elif inspect.isclass(func):
+        #if msg is not None:
+        #    _deprecated_message = msg.format(func.__qualname__,description)
+        #    _message_filter = re.escape(msg.format(func.__qualname__,r''))
+        if inspect.isclass(func):
             # issue DeprecationWarning specific to class object and its instances
             _deprecated_message = "Class '{}' is deprecated{}".format(func.__qualname__,description)
             _message_filter = re.escape(r"Class '{}' is deprecated".format(func.__qualname__))
@@ -189,6 +155,7 @@ class Block(object):
             self._parent = self._parent +(value,)
 
     def move_attr(self,to,name):
+        """Rename attribute having name to"""
         _tomove = getattr(self,name,None)
         if _tomove is None or isinstance(_tomove,_AnyBlockProxy):
             raise AttributeError("can not move missing attribute '{}' ".format(name))
@@ -198,14 +165,24 @@ class Block(object):
         delattr(self,name)
 
     def __setattr__(self,name,value):
+        """set or update attribute which is not stored within __dict__.
+        
+        Attributes stored within dict are dynamic and have to be defined or updated using add_attr.
+        any other attributes which are declared by __slots__ structure can be freely accessed unless
+        access and modification is restricted by python code conventions like using '_' to define
+        protected and private attributes which should only be touched by class and its subclassess.
+
+        In case a public attributed is declared on slots structure the declaring class it self has
+        to take care of proper readonly, read/write rules by overloading __setattr__ method.
+        """
         if name != "__dict__":
-            for _found in (
-                name in _slots 
+            for _ in (
+                True
                 for _slots in (
                     getattr(_parent,"__slots__",None)
                     for _parent in super(Block,self).__getattribute__("__class__").__mro__
                 )
-                if _slots is not None
+                if _slots is not None and name in _slots
             ):
                 super(Block,self).__setattr__(name,value)
                 return
@@ -288,6 +265,41 @@ class Block(object):
         ):
             return _attrval
         return None
+
+    def __contains__(self,attr):
+        """Check if specified attribute is defined on block.
+
+           Compared to hasattr this does not trigger load on demmand mechanism for attributes.
+           Exception are attributes defined by HyperSurface files which are designed using the
+           load all at once paradigm. In case of HyperSurface files stream_data for intermittend
+           blocks and attributes are loaded while searching for quested attribute.
+        """
+        if attr in self.__dict__:
+            # atribute already loaded from header or previous call
+            # just report its existance
+            return True
+        if attr in ("__slots__","__class__","__dict__"):
+            # attribute 
+            return True
+        for _ in (
+            True
+            for _slots in (
+                getattr(_parent,"__slots__",None)
+                for _parent in super(Block,self).__getattribute__("__class__").__mro__
+            )
+            if _slots is not None and attr in _slots 
+        ):
+            # attribute is declared by __slots__ structure it is either present or
+            # becomes available as soon as it is first time accessed
+            return True
+        # final possiblity attribute is defined by HyperMesh file and has to be read
+        # once before knowing whether present or not
+        try:
+            _attrvalue = self.__getattribute__(attr)
+        except AttributeError as _inspectondebug:
+            return False
+        return True
+        
 
 class ListBlock(Block):
     """Generic block defining List of Blocks. Indexed and named attributes may be mixed allowing to acces 
@@ -391,13 +403,21 @@ class ListBlock(Block):
             yield _item
 
     def __contains__(self,item):
-        return item in self._list
+        """check whether item is contained in list or if resembling name of attribute is defined on list block"""
+        if self._list is not None and item in self._list:
+            return True
+        return isinstance(item,str) and super(ListBlock,self).__contains__(item)
 
 class _AnyBlockProxy(Block):
     """ dummy block returned by __getattribute__ method of Block in case
         its __dict__ is emtpy and by ListBlock if both __dict__ and _list are emtpy
         it tries to mimic any type the accessing code might expect from attributes
-        and items defined by the loaded AmiraMesh and HyperSurface files 
+        and items defined by the loaded AmiraMesh and HyperSurface files
+
+        It's main purpos is to keep linters like pylint happy while chekcing code which
+        is only excuted when specific amira file could successfully be loaded.
+        But linter has no idea which file that could be or what additional attributes
+        it might define.
     """
 
     __slots__ = tuple()
