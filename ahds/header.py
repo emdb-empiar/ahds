@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # amira_header.py
 """
-Module to convert parsed data from an Amira header into a set of nested objects. The key class is :py:class:``AmiraHeader``.
+Module to convert parsed data from an Amira header into a set of nested objects. The key class is :py:class:`ahds.header.AmiraHeader`.
 
 Usage:
 
@@ -11,9 +11,9 @@ Usage:
     >>> ah = AmiraHeader.from_file('file.am')
     >>> print ah
 
-Each nested object is constructed from the :py:class:``Block`` class defined.
+Each nested object is constructed from the :py:class:`ahds.header.Block` class defined.
 
-There are four top-level attributes that every ``AmiraHeader`` will have:
+There are four top-level attributes that every :py:class:`ahds.header.AmiraHeader` will have:
 
 *    designation
 
@@ -53,7 +53,7 @@ class Block(object):
         self.attrs = list()
         
     def add_attr(self, name, value):
-        """Add an attribute to an ``Block`` object"""
+        """Add an attribute to an :py:class:`ahds.header.Block` object"""
         setattr(self, name, value)
         self.attrs.append(name)
         
@@ -68,7 +68,7 @@ class Block(object):
     
     @property
     def ids(self):
-        """Convenience method to get the ids for Materials present"""
+        """Convenience method to get the IDs for Materials present"""
         assert self.name == "Materials"
         ids = list()
         for attr in self.attrs:
@@ -100,10 +100,10 @@ class AmiraHeader(object):
         
     @classmethod
     def from_file(cls, fn, *args, **kwargs):
-        """Constructor to build an AmiraHeader object from a file
+        """Constructor to build an :py:class:`ahds.header.AmiraHeader` object from a file
         
         :param str fn: Amira file
-        :return ah: object of class ``AmiraHeader`` containing header metadata
+        :return ah: object of class :py:class:`ahds.header.AmiraHeader` containing header metadata
         :rtype: ah: :py:class:`ahds.header.AmiraHeader`
         """
         return AmiraHeader(get_parsed_data(fn, *args, **kwargs))

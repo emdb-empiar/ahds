@@ -1,52 +1,168 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>ahds package &mdash; Amira Header and Data Reader 0.1 documentation</title>
-    
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="Amira Header and Data Reader 0.1 documentation" href="index.html" />
-    <link rel="prev" title="ahds" href="overview.html" />
-   
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ahds package &mdash; Amira Header and Data Streams 0.1 documentation</title>
+  
 
-  </head>
-  <body role="document">  
+  
+  
+  
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ahds" href="overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Amira Header and Data Streams
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ahds package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ahds.grammar">ahds.grammar module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ahds.header">ahds.header module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ahds.data_stream">ahds.data_stream module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Amira Header and Data Streams</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>ahds package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ahds.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="module-ahds">
 <span id="ahds-package"></span><h1>ahds package<a class="headerlink" href="#module-ahds" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ahds.AmiraFile">
 <em class="property">class </em><code class="descclassname">ahds.</code><code class="descname">AmiraFile</code><span class="sig-paren">(</span><em>fn</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds.html#AmiraFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.AmiraFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Convenience class to handle Amira files</p>
-<p>This class aggregates user-level classes from the <a class="reference internal" href="#module-ahds.header" title="ahds.header"><code class="xref py py-mod docutils literal"><span class="pre">ahds.header</span></code></a> and <a class="reference internal" href="#module-ahds.data_stream" title="ahds.data_stream"><code class="xref py py-mod docutils literal"><span class="pre">ahds.data_stream</span></code></a> modules
-into a single class with a simple interface <code class="xref py py-meth docutils literal"><span class="pre">AmiraFile.header()</span></code> for the header and <code class="xref py py-attr docutils literal"><span class="pre">AmiraFile.data_streams</span></code> 
+<p>This class aggregates user-level classes from the <a class="reference internal" href="#module-ahds.header" title="ahds.header"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ahds.header</span></code></a> and <a class="reference internal" href="#module-ahds.data_stream" title="ahds.data_stream"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ahds.data_stream</span></code></a> modules
+into a single class with a simple interface <code class="xref py py-meth docutils literal notranslate"><span class="pre">AmiraFile.header()</span></code> for the header and <code class="xref py py-attr docutils literal notranslate"><span class="pre">AmiraFile.data_streams</span></code> 
 data streams attribute.</p>
 </dd></dl>
 
@@ -56,27 +172,27 @@ data streams attribute.</p>
 <dl class="class">
 <dt id="ahds.grammar.AmiraDispatchProcessor">
 <em class="property">class </em><code class="descclassname">ahds.grammar.</code><code class="descname">AmiraDispatchProcessor</code><a class="reference internal" href="_modules/ahds/grammar.html#AmiraDispatchProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.AmiraDispatchProcessor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">simpleparse.dispatchprocessor.DispatchProcessor</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">simpleparse.dispatchprocessor.DispatchProcessor</span></code></p>
 <p>Class defining methods to handle each token specified in the grammar</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ahds.grammar.detect_format">
-<code class="descclassname">ahds.grammar.</code><code class="descname">detect_format</code><span class="sig-paren">(</span><em>fn</em>, <em>format_bytes=50</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#detect_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.detect_format" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ahds.grammar.</code><code class="descname">detect_format</code><span class="sig-paren">(</span><em>fn</em>, <em>format_bytes=50</em>, <em>verbose=False</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#detect_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.detect_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect Amira file format (AmiraMesh or HyperSurface)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; file name</li>
-<li><strong>format_bytes</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; number of bytes in which to search for the format [default: 50]</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; verbose (default) or not</li>
+<li><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – file name</li>
+<li><strong>format_bytes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – number of bytes in which to search for the format [default: 50]</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – verbose (default) or not</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return str file_format:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">either <code class="docutils literal"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal"><span class="pre">HyperSurface</span></code></p>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">either <code class="docutils literal notranslate"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal notranslate"><span class="pre">HyperSurface</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -85,21 +201,21 @@ data streams attribute.</p>
 
 <dl class="function">
 <dt id="ahds.grammar.get_header">
-<code class="descclassname">ahds.grammar.</code><code class="descname">get_header</code><span class="sig-paren">(</span><em>fn</em>, <em>file_format</em>, <em>header_bytes=20000</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#get_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.get_header" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ahds.grammar.</code><code class="descname">get_header</code><span class="sig-paren">(</span><em>fn</em>, <em>file_format</em>, <em>header_bytes=20000</em>, <em>verbose=False</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#get_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.get_header" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply rules for detecting the boundary of the header</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; file name</li>
-<li><strong>file_format</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; either <code class="docutils literal"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal"><span class="pre">HyperSurface</span></code></li>
-<li><strong>header_bytes</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; number of bytes in which to search for the header [default: 20000]</li>
+<li><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – file name</li>
+<li><strong>file_format</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – either <code class="docutils literal notranslate"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal notranslate"><span class="pre">HyperSurface</span></code></li>
+<li><strong>header_bytes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – number of bytes in which to search for the header [default: 20000]</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return str data:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">the header as per the <code class="docutils literal"><span class="pre">file_format</span></code></p>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">the header as per the <code class="docutils literal notranslate"><span class="pre">file_format</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -114,10 +230,10 @@ data streams attribute.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; file name</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – file name</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return list parsed_data:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">structured metadata</td>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">structured metadata</td>
 </tr>
 </tbody>
 </table>
@@ -125,16 +241,16 @@ data streams attribute.</p>
 
 <dl class="function">
 <dt id="ahds.grammar.parse_header">
-<code class="descclassname">ahds.grammar.</code><code class="descname">parse_header</code><span class="sig-paren">(</span><em>data</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#parse_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.parse_header" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ahds.grammar.</code><code class="descname">parse_header</code><span class="sig-paren">(</span><em>data</em>, <em>verbose=False</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#parse_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.parse_header" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse the data using the grammar specified in this module</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; delimited data to be parsed for metadata</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – delimited data to be parsed for metadata</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return list parsed_data:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">structured metadata</td>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">structured metadata</td>
 </tr>
 </tbody>
 </table>
@@ -143,25 +259,25 @@ data streams attribute.</p>
 </div>
 <div class="section" id="module-ahds.header">
 <span id="ahds-header-module"></span><h2>ahds.header module<a class="headerlink" href="#module-ahds.header" title="Permalink to this headline">¶</a></h2>
-<p>Module to convert parsed data from an Amira header into a set of nested objects. The key class is :py:class:<code class="docutils literal"><span class="pre">AmiraHeader</span></code>.</p>
+<p>Module to convert parsed data from an Amira header into a set of nested objects. The key class is <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a>.</p>
 <p>Usage:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">amira.header</span> <span class="kn">import</span> <span class="n">AmiraHeader</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">amira.header</span> <span class="k">import</span> <span class="n">AmiraHeader</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ah</span> <span class="o">=</span> <span class="n">AmiraHeader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s1">&#39;file.am&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">ah</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">ah</span>
 </pre></div>
 </div>
-<p>Each nested object is constructed from the :py:class:<code class="docutils literal"><span class="pre">Block</span></code> class defined.</p>
-<p>There are four top-level attributes that every <code class="docutils literal"><span class="pre">AmiraHeader</span></code> will have:</p>
+<p>Each nested object is constructed from the <a class="reference internal" href="#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a> class defined.</p>
+<p>There are four top-level attributes that every <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> will have:</p>
 <ul class="simple">
 <li>designation</li>
 <li>definitions</li>
 <li>parameters</li>
 <li>data_pointers</li>
 </ul>
-<p>Each attribute can be queried using the <code class="docutils literal"><span class="pre">attrs</span></code> attribute.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">ah</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">attrs</span>
+<p>Each attribute can be queried using the <code class="docutils literal notranslate"><span class="pre">attrs</span></code> attribute.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">ah</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">attrs</span>
 <span class="go">[&#39;data_pointer_1&#39;, &#39;data_pointer_2&#39;, &#39;data_pointer_3&#39;, &#39;data_pointer_4&#39;, &#39;data_pointer_5&#39;, &#39;data_pointer_6&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">ah</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">ah</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">data_pointer_1</span>
 <span class="go">data_pointer_1</span>
 <span class="go">pointer_name: VERTEX</span>
 <span class="go">data_format: None</span>
@@ -172,11 +288,11 @@ data streams attribute.</p>
 <span class="go">data_length: None</span>
 </pre></div>
 </div>
-<p>Data pointers are identified by the name <code class="docutils literal"><span class="pre">data_pointer_&lt;n&gt;</span></code>.</p>
+<p>Data pointers are identified by the name <code class="docutils literal notranslate"><span class="pre">data_pointer_&lt;n&gt;</span></code>.</p>
 <dl class="class">
 <dt id="ahds.header.AmiraHeader">
 <em class="property">class </em><code class="descclassname">ahds.header.</code><code class="descname">AmiraHeader</code><span class="sig-paren">(</span><em>parsed_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/header.html#AmiraHeader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.header.AmiraHeader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class to encapsulate Amira metadata</p>
 <dl class="attribute">
 <dt id="ahds.header.AmiraHeader.data_pointers">
@@ -189,7 +305,7 @@ index, format and length</p>
 <dt id="ahds.header.AmiraHeader.definitions">
 <code class="descname">definitions</code><a class="headerlink" href="#ahds.header.AmiraHeader.definitions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Definitions consist of a key-value pair specified just after the 
-designation preceded by the key-word &#8216;define&#8217;</p>
+designation preceded by the key-word ‘define’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -198,27 +314,27 @@ designation preceded by the key-word &#8216;define&#8217;</p>
 <dd><p>Designation of the Amira file defined in the first row</p>
 <p>Designations consist of some or all of the following data:</p>
 <ul class="simple">
-<li>filetype e.g. <code class="docutils literal"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal"><span class="pre">HyperSurface</span></code></li>
-<li>dimensions e.g. <code class="docutils literal"><span class="pre">3D</span></code></li>
-<li>format e.g. <code class="docutils literal"><span class="pre">BINARY-LITTLE-ENDIAN</span></code></li>
-<li>version e.g. <code class="docutils literal"><span class="pre">2.1</span></code></li>
-<li>extra format e.g. <code class="docutils literal"><span class="pre">&lt;hxsurface&gt;</span></code></li>
+<li>filetype e.g. <code class="docutils literal notranslate"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal notranslate"><span class="pre">HyperSurface</span></code></li>
+<li>dimensions e.g. <code class="docutils literal notranslate"><span class="pre">3D</span></code></li>
+<li>format e.g. <code class="docutils literal notranslate"><span class="pre">BINARY-LITTLE-ENDIAN</span></code></li>
+<li>version e.g. <code class="docutils literal notranslate"><span class="pre">2.1</span></code></li>
+<li>extra format e.g. <code class="docutils literal notranslate"><span class="pre">&lt;hxsurface&gt;</span></code></li>
 </ul>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="ahds.header.AmiraHeader.from_file">
 <em class="property">classmethod </em><code class="descname">from_file</code><span class="sig-paren">(</span><em>fn</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/header.html#AmiraHeader.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.header.AmiraHeader.from_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructor to build an AmiraHeader object from a file</p>
+<dd><p>Constructor to build an <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object from a file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Amira file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Amira file</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return ah:</th><td class="field-body">object of class <code class="docutils literal"><span class="pre">AmiraHeader</span></code> containing header metadata</td>
+<tr class="field-even field"><th class="field-name">Return ah:</th><td class="field-body">object of class <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> containing header metadata</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ah: <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal"><span class="pre">ahds.header.AmiraHeader</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ah: <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -242,18 +358,18 @@ e.g. colour, data pointer etc.</p>
 <dl class="class">
 <dt id="ahds.header.Block">
 <em class="property">class </em><code class="descclassname">ahds.header.</code><code class="descname">Block</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/header.html#Block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.header.Block" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Generic block to be loaded with attributes</p>
 <dl class="method">
 <dt id="ahds.header.Block.add_attr">
 <code class="descname">add_attr</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/header.html#Block.add_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.header.Block.add_attr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add an attribute to an <code class="docutils literal"><span class="pre">Block</span></code> object</p>
+<dd><p>Add an attribute to an <a class="reference internal" href="#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a> object</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="ahds.header.Block.ids">
 <code class="descname">ids</code><a class="headerlink" href="#ahds.header.Block.ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience method to get the ids for Materials present</p>
+<dd><p>Convenience method to get the IDs for Materials present</p>
 </dd></dl>
 
 </dd></dl>
@@ -261,10 +377,13 @@ e.g. colour, data pointer etc.</p>
 </div>
 <div class="section" id="module-ahds.data_stream">
 <span id="ahds-data-stream-module"></span><h2>ahds.data_stream module<a class="headerlink" href="#module-ahds.data_stream" title="Permalink to this headline">¶</a></h2>
+<p>data_stream</p>
+<p>The following image shows the class hierarchy for data streams.</p>
+<img alt="_images/ahds_AmiraMeshDataStream_classes1.png" src="_images/ahds_AmiraMeshDataStream_classes1.png" />
 <dl class="class">
 <dt id="ahds.data_stream.AmiraDataStream">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">AmiraDataStream</code><span class="sig-paren">(</span><em>amira_header</em>, <em>data_pointer</em>, <em>stream_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#AmiraDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.AmiraDataStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Base class for all Amira DataStreams</p>
 <dl class="attribute">
 <dt id="ahds.data_stream.AmiraDataStream.data_pointer">
@@ -293,7 +412,7 @@ e.g. colour, data pointer etc.</p>
 <dl class="attribute">
 <dt id="ahds.data_stream.AmiraDataStream.header">
 <code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.AmiraDataStream.header" title="Permalink to this definition">¶</a></dt>
-<dd><p>An :py:class:<code class="docutils literal"><span class="pre">ahds.header.AmiraHeader</span></code> object</p>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -307,8 +426,8 @@ e.g. colour, data pointer etc.</p>
 <dl class="class">
 <dt id="ahds.data_stream.AmiraHxSurfaceDataStream">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">AmiraHxSurfaceDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#AmiraHxSurfaceDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.AmiraHxSurfaceDataStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.AmiraDataStream" title="ahds.data_stream.AmiraDataStream"><code class="xref py py-class docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream</span></code></a></p>
-<p>Base class for all HyperSurface data streams that inherits from <code class="docutils literal"><span class="pre">AmiraDataStream</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.AmiraDataStream" title="ahds.data_stream.AmiraDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.AmiraDataStream</span></code></a></p>
+<p>Base class for all HyperSurface data streams that inherits from <a class="reference internal" href="#ahds.data_stream.AmiraDataStream" title="ahds.data_stream.AmiraDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.AmiraDataStream</span></code></a></p>
 <dl class="attribute">
 <dt id="ahds.data_stream.AmiraHxSurfaceDataStream.data_pointer">
 <code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.AmiraHxSurfaceDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
@@ -336,7 +455,7 @@ e.g. colour, data pointer etc.</p>
 <dl class="attribute">
 <dt id="ahds.data_stream.AmiraHxSurfaceDataStream.header">
 <code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.AmiraHxSurfaceDataStream.header" title="Permalink to this definition">¶</a></dt>
-<dd><p>An :py:class:<code class="docutils literal"><span class="pre">ahds.header.AmiraHeader</span></code> object</p>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -350,7 +469,7 @@ e.g. colour, data pointer etc.</p>
 <dl class="class">
 <dt id="ahds.data_stream.AmiraMeshDataStream">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">AmiraMeshDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#AmiraMeshDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.AmiraMeshDataStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.AmiraDataStream" title="ahds.data_stream.AmiraDataStream"><code class="xref py py-class docutils literal"><span class="pre">ahds.data_stream.AmiraDataStream</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.AmiraDataStream" title="ahds.data_stream.AmiraDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.AmiraDataStream</span></code></a></p>
 <p>Class encapsulating an AmiraMesh data stream</p>
 <dl class="attribute">
 <dt id="ahds.data_stream.AmiraMeshDataStream.data_pointer">
@@ -367,7 +486,7 @@ e.g. colour, data pointer etc.</p>
 <dl class="attribute">
 <dt id="ahds.data_stream.AmiraMeshDataStream.header">
 <code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.AmiraMeshDataStream.header" title="Permalink to this definition">¶</a></dt>
-<dd><p>An :py:class:<code class="docutils literal"><span class="pre">ahds.header.AmiraHeader</span></code> object</p>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -376,33 +495,117 @@ e.g. colour, data pointer etc.</p>
 <dd><p>All the raw data from the file</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="ahds.data_stream.AmiraMeshDataStream.to_volume">
+<code class="descname">to_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#AmiraMeshDataStream.to_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.AmiraMeshDataStream.to_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a 3D volume of the data</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.BoundaryCurvesDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">BoundaryCurvesDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#BoundaryCurvesDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.BoundaryCurvesDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.ValuedDataStream" title="ahds.data_stream.ValuedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.ValuedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.BoundaryCurvesDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.BoundaryCurvesDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.BoundaryCurvesDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.BoundaryCurvesDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.BoundaryCurvesDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.BoundaryCurvesDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.BoundaryCurvesDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.BoundaryCurvesDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="ahds.data_stream.Contour">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">Contour</code><span class="sig-paren">(</span><em>z</em>, <em>array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#Contour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.Contour" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Encapsulates the array representing a contour</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="ahds.data_stream.ContourSet">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">ContourSet</code><span class="sig-paren">(</span><em>initlist=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#ContourSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.ContourSet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/userdict.html#UserList.UserList" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">UserList.UserList</span></code></a></p>
-<p>Encapsulation for a set of <code class="docutils literal"><span class="pre">Contour</span></code> objects</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserList.UserList</span></code></p>
+<p>Encapsulation for a set of <a class="reference internal" href="#ahds.data_stream.Contour" title="ahds.data_stream.Contour"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.Contour</span></code></a> objects</p>
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ContourSet.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.append(object) – append object to the end of the sequence</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &#x2192; integer -- return number of occurrences of value<a class="headerlink" href="#ahds.data_stream.ContourSet.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ContourSet.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.extend(iterable) – extend sequence by appending elements from the iterable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.index">
+<code class="descname">index</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &#x2192; integer -- return first index of value.<a class="headerlink" href="#ahds.data_stream.ContourSet.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>i</em>, <em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ContourSet.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.insert(index, object) – insert object before index</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.pop">
+<code class="descname">pop</code><span class="sig-paren">(</span><span class="optional">[</span><em>index</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; item -- remove and return item at index (default last).<a class="headerlink" href="#ahds.data_stream.ContourSet.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise IndexError if list is empty or index is out of range.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ContourSet.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.remove(value) – remove first occurrence of value.
+Raise ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ContourSet.reverse">
+<code class="descname">reverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ContourSet.reverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.reverse() – reverse <em>IN PLACE</em></p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="ahds.data_stream.DataStreams">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">DataStreams</code><span class="sig-paren">(</span><em>fn</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#DataStreams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.DataStreams" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class to encapsulate all the above functionality</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="ahds.data_stream.Image">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">Image</code><span class="sig-paren">(</span><em>z</em>, <em>array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.Image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Encapsulates individual images</p>
 <dl class="attribute">
 <dt id="ahds.data_stream.Image.array">
@@ -433,12 +636,450 @@ e.g. colour, data pointer etc.</p>
 <dl class="class">
 <dt id="ahds.data_stream.ImageSet">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">ImageSet</code><span class="sig-paren">(</span><em>initlist=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#ImageSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.ImageSet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/userdict.html#UserList.UserList" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">UserList.UserList</span></code></a></p>
-<p>Encapsulation for set of <code class="docutils literal"><span class="pre">Image</span></code> objects</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserList.UserList</span></code></p>
+<p>Encapsulation for set of <a class="reference internal" href="#ahds.data_stream.Image" title="ahds.data_stream.Image"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.Image</span></code></a> objects</p>
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ImageSet.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.append(object) – append object to the end of the sequence</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &#x2192; integer -- return number of occurrences of value<a class="headerlink" href="#ahds.data_stream.ImageSet.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ImageSet.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.extend(iterable) – extend sequence by appending elements from the iterable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.index">
+<code class="descname">index</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &#x2192; integer -- return first index of value.<a class="headerlink" href="#ahds.data_stream.ImageSet.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>i</em>, <em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ImageSet.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.insert(index, object) – insert object before index</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.pop">
+<code class="descname">pop</code><span class="sig-paren">(</span><span class="optional">[</span><em>index</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; item -- remove and return item at index (default last).<a class="headerlink" href="#ahds.data_stream.ImageSet.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise IndexError if list is empty or index is out of range.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ImageSet.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.remove(value) – remove first occurrence of value.
+Raise ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ahds.data_stream.ImageSet.reverse">
+<code class="descname">reverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ahds.data_stream.ImageSet.reverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>S.reverse() – reverse <em>IN PLACE</em></p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="ahds.data_stream.ImageSet.segments">
 <code class="descname">segments</code><a class="headerlink" href="#ahds.data_stream.ImageSet.segments" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dictionary of lists of contours keyed by z-index</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.LoadedDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">LoadedDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#LoadedDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.LoadedDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.AmiraHxSurfaceDataStream" title="ahds.data_stream.AmiraHxSurfaceDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.AmiraHxSurfaceDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.LoadedDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.LoadedDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.LoadedDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.LoadedDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.LoadedDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.LoadedDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.LoadedDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.LoadedDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.NBranchingPointsDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">NBranchingPointsDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#NBranchingPointsDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.NBranchingPointsDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.ValuedDataStream" title="ahds.data_stream.ValuedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.ValuedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.NBranchingPointsDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.NBranchingPointsDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NBranchingPointsDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.NBranchingPointsDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NBranchingPointsDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.NBranchingPointsDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NBranchingPointsDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.NBranchingPointsDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.NVerticesOnCurvesDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">NVerticesOnCurvesDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#NVerticesOnCurvesDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.NVerticesOnCurvesDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.ValuedDataStream" title="ahds.data_stream.ValuedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.ValuedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.NVerticesOnCurvesDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.NVerticesOnCurvesDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NVerticesOnCurvesDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.NVerticesOnCurvesDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NVerticesOnCurvesDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.NVerticesOnCurvesDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NVerticesOnCurvesDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.NVerticesOnCurvesDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.NamedDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">NamedDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#NamedDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.NamedDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.VoidDataStream" title="ahds.data_stream.VoidDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.VoidDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.NamedDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.NamedDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NamedDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.NamedDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NamedDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.NamedDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.NamedDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.NamedDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.PatchesBoundaryIDDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">PatchesBoundaryIDDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#PatchesBoundaryIDDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.PatchesBoundaryIDDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.ValuedDataStream" title="ahds.data_stream.ValuedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.ValuedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBoundaryIDDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.PatchesBoundaryIDDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBoundaryIDDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.PatchesBoundaryIDDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBoundaryIDDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.PatchesBoundaryIDDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBoundaryIDDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.PatchesBoundaryIDDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.PatchesBranchingPointsDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">PatchesBranchingPointsDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#PatchesBranchingPointsDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.PatchesBranchingPointsDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.ValuedDataStream" title="ahds.data_stream.ValuedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.ValuedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBranchingPointsDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.PatchesBranchingPointsDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBranchingPointsDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.PatchesBranchingPointsDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBranchingPointsDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.PatchesBranchingPointsDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesBranchingPointsDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.PatchesBranchingPointsDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.PatchesDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">PatchesDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#PatchesDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.PatchesDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.LoadedDataStream" title="ahds.data_stream.LoadedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.LoadedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.PatchesDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.PatchesDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.PatchesDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.PatchesDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.PatchesInnerRegionDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">PatchesInnerRegionDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#PatchesInnerRegionDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.PatchesInnerRegionDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.NamedDataStream" title="ahds.data_stream.NamedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.NamedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesInnerRegionDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.PatchesInnerRegionDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesInnerRegionDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.PatchesInnerRegionDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesInnerRegionDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.PatchesInnerRegionDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesInnerRegionDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.PatchesInnerRegionDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.PatchesOuterRegionDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">PatchesOuterRegionDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#PatchesOuterRegionDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.PatchesOuterRegionDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.NamedDataStream" title="ahds.data_stream.NamedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.NamedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesOuterRegionDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.PatchesOuterRegionDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesOuterRegionDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.PatchesOuterRegionDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesOuterRegionDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.PatchesOuterRegionDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesOuterRegionDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.PatchesOuterRegionDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.PatchesTrianglesDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">PatchesTrianglesDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#PatchesTrianglesDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.PatchesTrianglesDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.LoadedDataStream" title="ahds.data_stream.LoadedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.LoadedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesTrianglesDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.PatchesTrianglesDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesTrianglesDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.PatchesTrianglesDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesTrianglesDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.PatchesTrianglesDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.PatchesTrianglesDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.PatchesTrianglesDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.ValuedDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">ValuedDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#ValuedDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.ValuedDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.VoidDataStream" title="ahds.data_stream.VoidDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.VoidDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.ValuedDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.ValuedDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.ValuedDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.ValuedDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.ValuedDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.ValuedDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.ValuedDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.ValuedDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.VerticesDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">VerticesDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#VerticesDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.VerticesDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.LoadedDataStream" title="ahds.data_stream.LoadedDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.LoadedDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.VerticesDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.VerticesDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.VerticesDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.VerticesDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.VerticesDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.VerticesDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.VerticesDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.VerticesDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ahds.data_stream.VoidDataStream">
+<em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">VoidDataStream</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#VoidDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.VoidDataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ahds.data_stream.AmiraHxSurfaceDataStream" title="ahds.data_stream.AmiraHxSurfaceDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.AmiraHxSurfaceDataStream</span></code></a></p>
+<dl class="attribute">
+<dt id="ahds.data_stream.VoidDataStream.data_pointer">
+<code class="descname">data_pointer</code><a class="headerlink" href="#ahds.data_stream.VoidDataStream.data_pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data pointer for this data stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.VoidDataStream.decoded_length">
+<code class="descname">decoded_length</code><a class="headerlink" href="#ahds.data_stream.VoidDataStream.decoded_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.VoidDataStream.header">
+<code class="descname">header</code><a class="headerlink" href="#ahds.data_stream.VoidDataStream.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ahds.data_stream.VoidDataStream.stream_data">
+<code class="descname">stream_data</code><a class="headerlink" href="#ahds.data_stream.VoidDataStream.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the raw data from the file</p>
 </dd></dl>
 
 </dd></dl>
@@ -453,13 +1094,13 @@ e.g. colour, data pointer etc.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>output_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of items when <code class="docutils literal"><span class="pre">data</span></code> is uncompressed</li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; a raw stream of data to be unpacked</li>
+<li><strong>output_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – the number of items when <code class="docutils literal notranslate"><span class="pre">data</span></code> is uncompressed</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – a raw stream of data to be unpacked</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return numpy.array output:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">an array of <code class="docutils literal"><span class="pre">numpy.uint8</span></code></p>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">an array of <code class="docutils literal notranslate"><span class="pre">numpy.uint8</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -475,13 +1116,13 @@ e.g. colour, data pointer etc.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the number of items when <code class="docutils literal"><span class="pre">data</span></code> is uncompressed</li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; a raw stream of data to be unpacked</li>
+<li><strong>data_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – the number of items when <code class="docutils literal notranslate"><span class="pre">data</span></code> is uncompressed</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – a raw stream of data to be unpacked</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return numpy.array output:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">an array of <code class="docutils literal"><span class="pre">numpy.uint8</span></code></p>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">an array of <code class="docutils literal notranslate"><span class="pre">numpy.uint8</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -497,14 +1138,14 @@ e.g. colour, data pointer etc.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data_pointer</strong> (<code class="docutils literal"><span class="pre">ahds.header.Block</span></code>) &#8211; metadata for the <code class="docutils literal"><span class="pre">data_pointer</span></code> attribute for this data stream</li>
-<li><strong>definitions</strong> (<code class="docutils literal"><span class="pre">ahds.header.Block</span></code>) &#8211; definitions specified in the header</li>
-<li><strong>data</strong> (<em>bytes</em>) &#8211; raw binary data to be unpacked</li>
+<li><strong>data_pointer</strong> (<a class="reference internal" href="#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a>) – metadata for the <code class="docutils literal notranslate"><span class="pre">data_pointer</span></code> attribute for this data stream</li>
+<li><strong>definitions</strong> (<a class="reference internal" href="#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a>) – definitions specified in the header</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – raw binary data to be unpacked</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return list output:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">unpacked data</p>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">unpacked data</p>
 </td>
 </tr>
 </tbody>
@@ -514,20 +1155,20 @@ e.g. colour, data pointer etc.</p>
 <dl class="function">
 <dt id="ahds.data_stream.unpack_binary">
 <code class="descclassname">ahds.data_stream.</code><code class="descname">unpack_binary</code><span class="sig-paren">(</span><em>data_pointer</em>, <em>definitions</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#unpack_binary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.unpack_binary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unpack binary data using <code class="docutils literal"><span class="pre">struct.unpack</span></code></p>
+<dd><p>Unpack binary data using <code class="docutils literal notranslate"><span class="pre">struct.unpack</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data_pointer</strong> (<code class="docutils literal"><span class="pre">ahds.header.Block</span></code>) &#8211; metadata for the <code class="docutils literal"><span class="pre">data_pointer</span></code> attribute for this data stream</li>
-<li><strong>definitions</strong> (<code class="docutils literal"><span class="pre">ahds.header.Block</span></code>) &#8211; definitions specified in the header</li>
-<li><strong>data</strong> (<em>bytes</em>) &#8211; raw binary data to be unpacked</li>
+<li><strong>data_pointer</strong> (<a class="reference internal" href="#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a>) – metadata for the <code class="docutils literal notranslate"><span class="pre">data_pointer</span></code> attribute for this data stream</li>
+<li><strong>definitions</strong> (<a class="reference internal" href="#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a>) – definitions specified in the header</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – raw binary data to be unpacked</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Return tuple output:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">unpacked data</p>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">unpacked data</p>
 </td>
 </tr>
 </tbody>
@@ -538,66 +1179,50 @@ e.g. colour, data pointer etc.</p>
 </div>
 
 
+           </div>
+           
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">ahds package</a><ul>
-<li><a class="reference internal" href="#module-ahds.grammar">ahds.grammar module</a></li>
-<li><a class="reference internal" href="#module-ahds.header">ahds.header module</a></li>
-<li><a class="reference internal" href="#module-ahds.data_stream">ahds.data_stream module</a></li>
-</ul>
-</li>
-</ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="overview.html" title="previous chapter">ahds</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/ahds.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="overview.html" class="btn btn-neutral float-left" title="ahds" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, EMBL-EBI
+
     </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2017, Paul K. Korir, PhD.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
-      
-      |
-      <a href="_sources/ahds.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
     
-  </body>
+   
+
+</body>
 </html>

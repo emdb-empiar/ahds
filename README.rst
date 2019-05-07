@@ -1,5 +1,5 @@
 ==============================================
-ahds
+``ahds``
 ==============================================
 
 .. contents:: Table of Contents
@@ -7,26 +7,26 @@ ahds
 ----------------------------------------------
 Overview
 ----------------------------------------------
-ahds (Amira (R) header and data streams) is a Python package to parse and handle Amira (R) files. It was developed to facilitate reading of Amira (R) files as part of the EMDB-SFF toolkit. 
+``ahds`` (Amira (R) header and data streams) is a Python package to parse and handle Amira (R) files. It was developed to facilitate reading of Amira (R) files as part of the EMDB-SFF toolkit.
 
 Use Cases
 ==============================================
 * 	Detect and parse Amira (R) headers and return structured data
 
-* 	Decode data (HxRLEByte, HxZip)
+* 	Decode data (``HxRLEByte``, ``HxZip``)
 
 * 	Easy extensibility to handle previously unencountered data streams
 
-ahds was written and is maintained by Paul K. Korir.
+``ahds`` was written and is maintained by Paul K. Korir.
 
 ----------------------------------------------
 Dependencies
 ---------------------------------------------- 
-* 	SimpleParse (tested with 2.1.1 - install from source from the SimpleParse site; FAILs with 2.2.0)
+* 	`SimpleParse <http://simpleparse.sourceforge.net>`_ (tested with 2.1.1 - install from source from the SimpleParse site; FAILs with 2.2.0)
 
-* 	numpy (tested with 1.11.2)
+* 	`numpy <https://www.numpy.org>`_ (tested with 1.11.2)
 
-* 	scikit-image (tested with 0.11.3)
+* 	`scikit-image <https://scikit-image.org>`_ (tested with 0.11.3)
 
 ----------------------------------------------
 License			
@@ -56,7 +56,7 @@ Future Plans
 ----------------------------------------------
 Background and Definitions
 ----------------------------------------------
-ahds presently handles two types of Amira (R) files:
+``ahds`` presently handles two types of Amira (R) files:
 
 * 	`AmiraMesh` files, which typically but not necessarily have a ``.am`` extension, and
 
@@ -76,13 +76,13 @@ Headers in Detail
 ==============================================
 AmiraMesh and HyperSurface headers can be divided into four main sections:
 
-* 	designation
+* 	**designation**
 
-* 	definitions
+* 	**definitions**
 
-* 	parameters, and
+* 	**parameters**, and
 
-* 	data pointers.
+* 	**data pointers**.
 
 The `designation` is the first line and conveys several important details about the format and structure of the file such as:
 
@@ -189,17 +189,17 @@ HyperSurface data streams structured to have the following sections:
 HyperSurface data streams can be either plain ASCII or binary.
 
 ----------------------------------------------
-ahds Modules
+``ahds`` Modules
 ----------------------------------------------
-ahds has three main modules:
+``ahds`` has three main modules:
 
-* 	ahds.grammar specifies an EBNF grammar 
+* 	:py:mod:`ahds.grammar` specifies an EBNF grammar
 
-* 	ahds.header
+* 	:py:mod:`ahds.header`
 
-* 	ahds.data_stream
+* 	:py:mod:`ahds.data_stream`
 
-These modules are tied into a user-level class called AmiraFile that does all the work for you.
+These modules are tied into a user-level class called :py:class:`ahds.AmiraFile` that does all the work for you.
 
 .. code:: python
 
@@ -255,23 +255,23 @@ These modules are tied into a user-level class called AmiraFile that does all th
 	[(560.0, 243.0, 60.96875), (560.0, 242.9166717529297, 61.0), (559.5, 243.0, 61.0), (561.0, 243.0, 60.95833206176758), (561.0, 242.5, 61.0), (561.0384521484375, 243.0, 61.0), (559.0, 244.0, 60.94444274902344), (559.0, 243.5, 61.0), (558.9722290039062, 244.0, 61.0), (560.0, 244.0, 60.459999084472656)]
 
 
-ahds.grammar
+:py:mod:`ahds.grammar`
 ==============================================
-This module describes the header grammar for Amira (R) (AmiraMesh and HyperSurface) files and so depends on simpleparse Python package. It defines a single class (AmiraDispatchProcessor) and four functions.
+This module describes the header grammar for Amira (R) (AmiraMesh and HyperSurface) files and so depends on :py:mod:`simpleparse` Python package. It defines a single class (:py:class:`ahds.grammar.AmiraDispatchProcessor`) and four functions.
 
-AmiraDispatchProcessor is a subclass of simpleparse.dispatchprocessor which implements the core functionality required to use the grammar. Each grammar token has a corresponding method defined on this class which determines how the data associated with that token will be rendered. Data can be rendered as a single or multimap, string, number, or in custom format.
+:py:class:`ahds.grammar.AmiraDispatchProcessor` is a subclass of :py:class:`simpleparse.dispatchprocessor` which implements the core functionality required to use the grammar. Each grammar token has a corresponding method defined on this class which determines how the data associated with that token will be rendered. Data can be rendered as a single or multimap, string, number, or in custom format.
 
-* 	``ahds.grammar.get_parsed_data(fn, *args, **kwargs)`` is the user-level function that takes a filename and returns structured parsed data. It depends on the other three functions defined:
+* 	:py:func:`ahds.grammar.get_parsed_data(fn, *args, **kwargs)` is the user-level function that takes a filename and returns structured parsed data. It depends on the other three functions defined:
 
-* 	``ahds.grammar.detect_format(fn, format_bytes=50, verbose=False)`` returns either ``AmiraMesh`` or ``HyperSurface`` given a file name and arguments,
+* 	:py:func:`ahds.grammar.detect_format(fn, format_bytes=50, verbose=False)` returns either ``AmiraMesh`` or ``HyperSurface`` given a file name and arguments,
 
-* 	``get_header(fn, file_format, header_bytes=20000, verbose=False)`` returns the header portion based on the file format determined by detect_format(...), and
+* 	:py:func:`ahds.grammar.get_header(fn, file_format, header_bytes=20000, verbose=False)` returns the header portion based on the file format determined by detect_format(...), and
 
-* 	``parse_header(data, verbose=False)`` converts the raw header data returned by get_header(...) into a structured header based on AmiraDispatchProcessor.
+* 	:py:func:`ahds.grammar.parse_header(data, verbose=False)` converts the raw header data returned by :py:func:`ahds.grammar.get_header(...)` into a structured header based on AmiraDispatchProcessor.
 
-ahds.header
+:py:mod:`ahds.header`
 ==============================================
-This module converts the structured header from the ``ahds.grammar`` module into an object with the sections of the header (designation, definitions, parameters and data pointers) and corresponding structured data available as attributes. That is it converts the header
+This module converts the structured header from the :py:mod:`ahds.grammar` module into an object with the sections of the header (``designation``, ``definitions``, ``parameters ``and ``data pointers``) and corresponding structured data available as attributes. That is, it converts the header:
 
 ::
 
@@ -313,7 +313,7 @@ This module converts the structured header from the ``ahds.grammar`` module into
 	
 	Lattice { byte Labels } @1(HxByteRLE,4014522)
  
-into an AmiraHeader object.
+into an :py:class:`ahds.header.AmiraHeader` object.
 
 .. code:: python
 
@@ -362,17 +362,17 @@ into an AmiraHeader object.
 	>>> amira_header.data_pointers.data_pointer_1.data_length
 	4014522
 
-This module consists of two main classes: ``ahds.header.AmiraHeader`` is the user-level class and ``ahds.header.Block`` which is a container class for a block of structured data from an Amira (R) header.
+This module consists of two main classes: :py:class:`ahds.header.AmiraHeader` is the user-level class and :py:class:`ahds.header.Block` which is a container class for a block of structured data from an Amira (R) header.
 
-AmiraHeader has one constructor: ``AmiraHeader.from_file(fn, *args, **kwargs)`` which takes an Amira (R) file by name and arguments and returns an ``AmiraHeader`` object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: AmiraHeader(parsed_data) which returns an AmiraHeader object configured appropriately. 
+AmiraHeader has one constructor: :py:func:`ahds.header.AmiraHeader.from_file(fn, *args, **kwargs)` which takes an Amira (R) file by name and arguments and returns an :py:class:`ahds.header.AmiraHeader` object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: :py:class:`ahds.header.AmiraHeader(parsed_data)` which returns an :py:class:`ahds.header.AmiraHeader` object configured appropriately.
 
-* 	The raw data structured data is available as read-only property: AmiraHeader.raw_header
+* 	The raw data structured data is available as read-only property: :py:attr:`ahds.header.AmiraHeader.raw_header`
 
-* 	Internally the AmiraHeader class implements a set of private methods which individually load the four data sections (designation, definitions, parameters, and data pointers).
+* 	Internally the :py:class:`ahds.header.AmiraHeader` class implements a set of private methods which individually load the four data sections (``designation``, ``definitions``, ``parameters``, and ``data pointers``).
 
-The ``Block`` class is a container class which converts structured groups to attributes and has two main attributes: 
+The :py:class:`ahds.header.Block` class is a container class which converts structured groups to attributes and has two main attributes:
 
-* 	Block.name provides the name of the current block
+* 	:py:attr:`ahds.header.Block.name` provides the name of the current block
 
 .. code:: python
 
@@ -383,7 +383,7 @@ The ``Block`` class is a container class which converts structured groups to att
 	>>> amira_header.parameters.Materials.Exterior.name
 	'Exterior'
 
-* 	Block.attrs provides the attributes available on this Block
+* 	:py:attr:`ahds.header.Block.attrs` provides the attributes available on this :py:class:`ahds.header.Block`
 
 .. code:: python
 
@@ -407,7 +407,7 @@ The ``Block`` class is a container class which converts structured groups to att
 	>>> amira_header.parameters.Materials[4].name
 	'Mitochondria_'
 
-ahds.data_stream
+:py:mod:`ahds.data_stream`
 ==============================================
 This is most complex module implementing a hierarchy of classes describing various data streams within Amira (R) files. It has 22 classes and five functions
 
@@ -429,7 +429,7 @@ There are three categories of classes:
 
 	* 	Classes abstracting contours
 
-The user-level DataStreams class is the preferred way to use the module. It takes the name of an Amira (R) file and encapsulates an iterator of data streams.
+The user-level :py:class:`ahds.data_stream.DataStreams` class is the preferred way to use the module. It takes the name of an Amira (R) file and encapsulates an iterator of data streams.
 
 .. code:: python
 
@@ -447,13 +447,13 @@ Functions
 ----------------------------------------------
 The functions implemented in this module decode data streams.
 
-*	``ahds.data_stream.hxbyterle_decode`` decodes HxByteRLE data streams
+*	:py:func:`ahds.data_stream.hxbyterle_decode` decodes ``HxByteRLE`` data streams
 
-* 	``ahds.data_stream.hxzip_decode(data_size, data)`` unzips zlib-compressed data streams
+* 	:py:func:`ahds.data_stream.hxzip_decode(data_size, data)` unzips zlib-compressed data streams
 
-*	``ahds.data_stream.unpack_binary(data_pointer, definitions, data)`` unpacks the structured data stream according to the attributes specified in the data’s data pointer
+*	:py:func:`ahds.data_stream.unpack_binary(data_pointer, definitions, data)` unpacks the structured data stream according to the attributes specified in the data’s data pointer
 
-* 	``ahds.data_stream.unpack_ascii(data)`` converts rows of ASCII data into numerical data
+* 	:py:func:`ahds.data_stream.unpack_ascii(data)` converts rows of ASCII data into numerical data
 
 Classes in Detail
 ----------------------------------------------
@@ -462,64 +462,66 @@ DataStreams class
 ``````````````````````````````````````````````
 The following attributes are available on objects of this class:
 
-* 	``ahds.data_stream.DataStreams.file`` - filename of Amira (R) file
+* 	:py:attr:`ahds.data_stream.DataStreams.file` - filename of Amira (R) file
 
-*	``ahds.data_stream.DataStreams.header`` - an object of class ahds.header.AmiraHeader encapsulating the header data in four sections (designation, definitions, parameters, and data pointers)
+*	:py:attr:`ahds.data_stream.DataStreams.header` - an object of class :py:class:`ahds.header.AmiraHeader` encapsulating the header data in four sections (``designation``, ``definitions``, ``parameters``, and ``data pointers``)
 
-*	``ahds.data_stream.DataStreams.filetype`` - the filetype as specified in (ii) above.
+*	:py:attr:`ahds.data_stream.DataStreams.filetype` - the filetype as specified in (ii) above.
 
-*	``ahds.data_stream.DataStreams.stream_data`` - all raw data from the file (including the header)
+*	:py:attr:`ahds.data_stream.DataStreams.stream_data` - all raw data from the file (including the header)
 
 *	``len(DataStreams)`` - the number of data streams contained
 
-*	``ahds.data_stream.DataStreams[<index>]`` - returns the data stream of the index specified (as defined in the data_pointers section of the header object
+*	:py:class:`ahds.data_stream.DataStreams[<index>]` - returns the data stream of the index specified (as defined in the data_pointers section of the header object
 
 Classes describing Amira (R) data streams
 ``````````````````````````````````````````````
 The following diagrams illustrates the hierarchy of classes:
 
+.. image:: ahds_AmiraMeshDataStream_classes.png
+
 Classes describing Amira (R) data streams
 
 
-*	``ahds.data_stream.AmiraDataStream`` is the base class for all data stream classes and defines the following attributes:
+*	:py:class:`ahds.data_stream.AmiraDataStream` is the base class for all data stream classes and defines the following attributes:
 
-	*	``ahds.data_stream.AmiraDataStream.header`` - an ahds.header.AmiraHeader object
+	*	:py:attr:`ahds.data_stream.AmiraDataStream.header` - an :py:class:`ahds.header.AmiraHeader` object
 	
-	*	``ahds.data_stream.AmiraDataStream.data_pointer`` - the ahds.header.AmiraHeader.data_pointers.data_pointer_X for this data stream
+	*	:py:attr:`ahds.data_stream.AmiraDataStream.data_pointer` - the :py:attr:`ahds.header.AmiraHeader.data_pointers.data_pointer_X` for this data stream
 	
-	*	``ahds.data_stream.AmiraDataStream.stream_data`` - the raw file data
+	*	:py:attr:`ahds.data_stream.AmiraDataStream.stream_data` - the raw file data
 	
-	*	``ahds.data_stream.AmiraDataStream.encoded_data`` - the encoded data for this stream; None for VoidDataStream subclasses
+	*	:py:attr:`ahds.data_stream.AmiraDataStream.encoded_data` - the encoded data for this stream; ``None`` for ``VoidDataStream`` subclasses
 	
-	*	``ahds.data_stream.AmiraDataStream.decoded_data`` - the decoded data for this stream; None for VoidDataStream subclasses
+	*	:py:attr:`ahds.data_stream.AmiraDataStream.decoded_data` - the decoded data for this stream; ``None`` for ``VoidDataStream`` subclasses
 	
-	*	``ahds.data_stream.AmiraDataStream.decoded_length`` - the number of items (tuples, integers) in decoded data
+	*	:py:attr:`ahds.data_stream.AmiraDataStream.decoded_length` - the number of items (tuples, integers) in decoded data
 	
-The two main subclasses of AmiraDataStream are ``ahds.data_stream.AmiraMeshDataStream``, which is a concrete class representing all AmiraMesh data streams, and ``ahds.data_stream.AmiraHxSurfaceDataStream``, which abstractly defines HyperSurface data streams.
+The two main subclasses of :py:class:`ahds.data_stream.AmiraDataStream` are :py:class:`ahds.data_stream.AmiraMeshDataStream`, which is a concrete class representing all AmiraMesh data streams, and :py:class:`ahds.data_stream.AmiraHxSurfaceDataStream`, which abstractly defines HyperSurface data streams.
 
 There are two main AmiraHxSurfaceDataStream subclasses:
 
-*	``ahds.data_stream.VoidDataStream`` represents AmiraHxSurfaceDataStream data streams that only have a name and value but no actual encoded data (on the following line). There are two subclasses:
+*	:py:class:`ahds.data_stream.VoidDataStream` represents :py:class:`ahds.data_stream.AmiraHxSurfaceDataStream` data streams that only have a name and value but no actual encoded data (on the following line). There are two subclasses:
 
-	*	``ahds.data_stream.NamedDataStream`` subclasses have a strings after data stream name. The two concrete subclasses are:
+	*	:py:class:`ahds.data_stream.NamedDataStream` subclasses have a strings after data stream name. The two concrete subclasses are:
 	
-		*	``ahds.data_stream.PatchesInnerRegionDataStream`` for the name of an inner region of a patch (see PatchesDataStream), and
+		*	:py:class:`ahds.data_stream.PatchesInnerRegionDataStream` for the name of an inner region of a patch (see :py:class:`PatchesDataStream`), and
 		
-		*	``ahds.data_stream.PatchesOuterRegionDataStream`` for corresponding name of the outer region of a patch.
+		*	:py:class:`ahds.data_stream.PatchesOuterRegionDataStream` for corresponding name of the outer region of a patch.
 	
-	*	``ahds.data_stream.ValuedDataStream`` have an integer value after the data stream name. The three concrete subclasses are:
+	*	:py:class:`ahds.data_stream.ValuedDataStream` have an integer value after the data stream name. The three concrete subclasses are:
 	
-		*	``ahds.data_stream.PatchesBoundaryIDDataStream`` hold the boundary ID of a patch,
+		*	:py:class:`ahds.data_stream.PatchesBoundaryIDDataStream` hold the boundary ID of a patch,
 		
-		*	``ahds.data_stream.PatchesBranchingPointsDataStream`` stores the number of branching points, and
+		*	:py:class:`ahds.data_stream.PatchesBranchingPointsDataStream` stores the number of branching points, and
 		
-		*	``ahds.data_stream.PatchesDataStream`` with the number of patches, which is a special ValueDataStream that contains an iterable of patches each containing a ``Patches<X>DataStream`` objects.
+		*	:py:class:`ahds.data_stream.PatchesDataStream` with the number of patches, which is a special :py:class:`ahds.data_stream.ValueDataStream` that contains an iterable of patches each containing a ``Patches<X>DataStream`` objects.
 		
-	*	``ahds.data_stream.LoadedDataStream`` represent AmiraHxSurfaceDataStream data streams that have a name, a value and encoded data. The two main concrete subclasses are:
+	*	:py:class:`ahds.data_stream.LoadedDataStream` represent :py:class:`ahds.data_stream.AmiraHxSurfaceDataStream` data streams that have a name, a value and encoded data. The two main concrete subclasses are:
 	
-		*	``ahds.data_stream.VerticesDataStream`` represents data streams with float-triples, and
+		*	:py:class:`ahds.data_stream.VerticesDataStream` represents data streams with float-triples, and
 		
-		*	``ahds.data_stream.PatchesTrianglesDataStream`` represents data streams within a patch with triples of 1-based indices (triangles) of vertices specified in the VerticesDataStream.
+		*	:py:class:`ahds.data_stream.PatchesTrianglesDataStream` represents data streams within a patch with triples of 1-based indices (triangles) of vertices specified in the :py:class:`ahds.data_stream.VerticesDataStream`.
 		
 
 Conversion classes
@@ -528,7 +530,7 @@ There are two groups of conversion classes which only apply to (some) AmiraMesh 
 Conversion classes
 
 
-*	Image conversion classes consist of a image container class ImageSet and an Image class. ImageSet objects that can be iterated to give Image objects are returned from the AmiraMeshDataStream.to_images() method call.
+*	Image conversion classes consist of a image container class :py:class:`ahds.data_stream.ImageSet` and an :py:class:`ahds.data_stream.Image` class. ImageSet objects that can be iterated to give :py:class:`ahds.data_stream.Image` objects are returned from the :py:meth:`ahds.data_stream.AmiraMeshDataStream.to_images()` method call.
 
 ..	code:: python
 
@@ -546,7 +548,7 @@ Conversion classes
 	<Image with dimensions (971, 862)>
 	<Image with dimensions (971, 862)>
 
-*	Contour conversion classes convert individual images into sets of contours (ContourSet) iterable as individual Contours objects. They are obtained from calls to the Image.as_contours property. Furthermore, the Image.as_segments property call returns a dictionary of the corresponding ContourSet object indexed by the z plane.
+*	Contour conversion classes convert individual images into sets of contours (:py:class:`ahds.data_stream.ContourSet`) iterable as individual :py:class:`ahds.data_stream.Contours` objects. They are obtained from calls to the :py:attr:`ahds.data_stream.Image.as_contours` property. Furthermore, the :py:attr:`ahds.data_stream.Image.as_segments` property call returns a dictionary of the corresponding :py:class:`ahds.data_stream.ContourSet` object indexed by the *z* plane.
 
 ..	code:: python
 
