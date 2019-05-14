@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # ahds
 
-import header
-import data_stream
+from . import header
+from . import data_stream
 
 
 class AmiraFile(object):

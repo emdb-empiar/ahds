@@ -3,6 +3,7 @@
 """
 Grammar to parse headers in Amira files
 """
+from __future__ import print_function
 
 import sys
 import re
@@ -26,7 +27,7 @@ class AmiraDispatchProcessor(DispatchProcessor):
     def format(self, (tag, left, right, taglist), buffer_):
         return getString((tag, left, right, taglist), buffer_)
     def version(self, (tag, left, right, taglist), buffer_):
-        return getString((tag, left, right, taglist), buffer_)    
+        return getString((tag, left, right, taglist), buffer_)
     def extra_format(self, (tag, left, right, taglist), buffer_):
         return getString((tag, left, right, taglist), buffer_)
     def comment(self, (tag, left, right, taglist), buffer_):  # @UnusedVariable
@@ -225,20 +226,20 @@ def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
     """
     assert format_bytes > 0
     assert verbose in [True, False]
-    
+
     with open(fn, 'rb') as f:
         rough_header = f.read(format_bytes)
-        
+
         if re.match(r'.*AmiraMesh.*', rough_header):
             file_format = "AmiraMesh"
         elif re.match(r'.*HyperSurface.*', rough_header):
             file_format = "HyperSurface"
         else:
             file_format = "Undefined"
-    
+
     if verbose:
-        print >> sys.stderr,  "{} file detected...".format(file_format)
-    
+        print("{} file detected...".format(file_format), file=sys.stderr)
+
     return file_format
 
 
@@ -252,17 +253,17 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
     """
     assert header_bytes > 0
     assert file_format in ['AmiraMesh', 'HyperSurface']
-    
+
     with open(fn, 'rb') as f:
         rough_header = f.read(header_bytes)
-        
+
         if file_format == "AmiraMesh":
             if verbose:
-                print >> sys.stderr, "Using pattern: (?P<data>.*)\\n@1"
+                print("Using pattern: (?P<data>.*)\\n@1", file=sys.stderr)
             m = re.search(r'(?P<data>.*)\n@1', rough_header, flags=re.S)
         elif file_format == "HyperSurface":
             if verbose:
-                print >> sys.stderr, "Using pattern: (?P<data>.*)\\nVertices [0-9]*\\n"
+                print("Using pattern: (?P<data>.*)\\nVertices [0-9]*\\n", file=sys.stderr)
             m = re.search(r'(?P<data>.*)\nVertices [0-9]*\n', rough_header, flags=re.S)
         elif file_format == "Undefined":
             raise ValueError("Unable to parse undefined file")
@@ -271,7 +272,7 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
     data = m.group('data')
 #     print data
 #     print
-    
+
     return data
 
 
@@ -283,22 +284,22 @@ def parse_header(data, verbose=False, *args, **kwargs):
     """
     # the parser
     if verbose:
-        print >> sys.stderr, "Creating parser object..."
+        print("Creating parser object...", file=sys.stderr)
     parser = Parser(amira_header_grammar)
-    
+
     # the processor
     if verbose:
-        print >> sys.stderr, "Defining dispatch processor..."
+        print("Defining dispatch processor...", file=sys.stderr)
     amira_processor = AmiraDispatchProcessor()
-    
+
     # parsing
     if verbose:
-        print >> sys.stderr, "Parsing data..."
+        print("Parsing data...", file=sys.stderr)
     success, parsed_data, next_item = parser.parse(data, production='amira', processor=amira_processor)
-    
+
     if success:
         if verbose:
-            print >> sys.stderr, "Successfully parsed data..."
+            print("Successfully parsed data...", file=sys.stderr)
         return parsed_data
     else:
         raise TypeError("Parse: {}\nNext: {}\n".format(parsed_data, next_item))
@@ -318,7 +319,7 @@ def get_parsed_data(fn, *args, **kwargs):
 
 def main():
     import argparse
-    
+
     parser = argparse.ArgumentParser(prog='amira_grammar_parser', description='Parser for Amira headers')
     parser.add_argument('amira_fn', help="name of an Amira file with extension .am or .surf")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='verbose output')
@@ -326,25 +327,25 @@ def main():
     parser.add_argument('-P', '--show-parsed', action='store_true', default=False, help='show parsed header')
     parser.add_argument('-f', '--format-bytes', type=int, default=50, help='bytes to search for file format')
     parser.add_argument('-r', '--header-bytes', type=int, default=20000, help='bytes to search for header')
-    
+
     args = parser.parse_args()
 
     # get file format
     file_format = detect_format(args.amira_fn, format_bytes=args.format_bytes, verbose=args.verbose)
-    
+
     # get the exact header
     data = get_header(args.amira_fn, file_format, header_bytes=args.header_bytes, verbose=args.verbose)
-    
+
     if args.show_header:
-        print >> sys.stderr, 'raw data:'
-        print >> sys.stderr, data
-        print >> sys.stderr, ''
+        print("raw data:", file=sys.stderr)
+        print(data, file=sys.stderr)
+        print("", file=sys.stderr)
 
     # parse the header    
     parsed_data = parse_header(data, verbose=args.verbose)
 
     if args.show_parsed:
-        print >> sys.stderr, 'parsed data:'
+        print("parsed data:", file=sys.stderr)
         pprint(parsed_data, width=318, stream=sys.stderr)
 
     return 0

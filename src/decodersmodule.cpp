@@ -27,19 +27,7 @@ static PyMethodDef HxMethods[] = {
 	{NULL, NULL, 0, NULL}
 };
 
-PyMODINIT_FUNC
-initdecoders(void)
-{
-	PyObject *m;
 
-	m = Py_InitModule("decoders", HxMethods);
-	if (m == NULL) {
-	    return;
-	}
-
-	// for numpy
-	import_array();
-}
 
 static PyObject *
 decoders_byterle_decode(PyObject *self, PyObject *args)
@@ -133,4 +121,45 @@ set_multiple_same(uchar *output, uchar value, ulong start_index, ulong end_index
 		output[i] = value;
 	}
 }
+
+#if PY_MAJOR_VERSION >= 3
+// module struct
+static struct PyModuleDef decoders = {
+    PyModuleDef_HEAD_INIT,
+    "decoders",
+    "Amira Decoders",
+    -1,
+    HxMethods
+};
+
+// init
+PyMODINIT_FUNC
+PyInit_decoders(void) {
+    PyObject *m;
+
+    m = PyModule_Create(&decoders);
+    if (m == NULL);
+        return NULL;
+
+    // for numpy
+    import_array();
+    return m;
+}
+#else
+// Python 2 has no module structure needed
+// init
+PyMODINIT_FUNC
+initdecoders(void)
+{
+	PyObject *m;
+
+	m = Py_InitModule("decoders", HxMethods);
+	if (m == NULL) {
+	    return;
+	}
+
+	// for numpy
+	import_array();
+}
+#endif
 

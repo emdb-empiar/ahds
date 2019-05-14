@@ -1,0 +1,33 @@
+# AmiraMesh 3D BINARY 2.0
+# CreationDate: Fri Jun  2 10:03:59 2006
+
+
+define Lattice 319 286 280
+
+Parameters {
+    Materials {
+        Exterior {
+        }
+        Inside {
+            Color 0.64 0 0.8
+        }
+        Spikes {
+            Id 3,
+            Color 0.16 0.481757 0.8
+        }
+    }
+    Seeds {
+        Slice0142 {
+            S0172x0109 2 0 2000 12,
+            S0172x0119 2 0 2000 12
+        }
+    }
+    Content "319x286x280 byte, uniform coordinates",
+    BoundingBox 118 436 281 566 0 279,
+    CoordType "uniform"
+}
+
+Lattice { byte Labels } @1(HxByteRLE,404583)
+
+# Data section follows
+@1

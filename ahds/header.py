@@ -7,7 +7,7 @@ Usage:
 
 ::
 
-    >>> from amira.header import AmiraHeader
+    >>> from ahds.header import AmiraHeader
     >>> ah = AmiraHeader.from_file('file.am')
     >>> print ah
 
@@ -42,21 +42,25 @@ Each attribute can be queried using the ``attrs`` attribute.
 Data pointers are identified by the name ``data_pointer_<n>``.
 
 """
+from __future__ import print_function
+
 import sys
+
 from .grammar import get_parsed_data
 
 
 class Block(object):
     """Generic block to be loaded with attributes"""
+
     def __init__(self, name):
         self.name = name
         self.attrs = list()
-        
+
     def add_attr(self, name, value):
         """Add an attribute to an :py:class:`ahds.header.Block` object"""
         setattr(self, name, value)
         self.attrs.append(name)
-        
+
     def __str__(self):
         string = "{}\n".format(self.name)
         for attr in self.attrs:
@@ -65,7 +69,7 @@ class Block(object):
             else:
                 string += "{}: {}\n".format(attr, getattr(self, attr))
         return string
-    
+
     @property
     def ids(self):
         """Convenience method to get the IDs for Materials present"""
@@ -76,7 +80,7 @@ class Block(object):
             if hasattr(attr_obj, 'Id'):
                 ids.append(getattr(attr_obj, 'Id'))
         return ids
-    
+
     def __getitem__(self, index):
         """Convenience method to get an attribute with 'Id' for a Material"""
         assert self.name == "Materials"
@@ -87,17 +91,18 @@ class Block(object):
                 if getattr(attr_obj, 'Id') == index:
                     return attr_obj
                 else:
-                    continue # next attr
+                    continue  # next attr
         else:
             return None
-    
+
 
 class AmiraHeader(object):
     """Class to encapsulate Amira metadata"""
+
     def __init__(self, parsed_data):
         self._parsed_data = parsed_data
         self._load()
-        
+
     @classmethod
     def from_file(cls, fn, *args, **kwargs):
         """Constructor to build an :py:class:`ahds.header.AmiraHeader` object from a file
@@ -106,34 +111,35 @@ class AmiraHeader(object):
         :return ah: object of class :py:class:`ahds.header.AmiraHeader` containing header metadata
         :rtype: ah: :py:class:`ahds.header.AmiraHeader`
         """
-        return AmiraHeader(get_parsed_data(fn, *args, **kwargs))
-    
+        return cls(get_parsed_data(fn, *args, **kwargs))
+
     @property
     def raw_header(self):
         """Show the raw header data"""
         return self._parsed_data
-    
+
     def __len__(self):
         return len(self._parsed_data)
-    
+
     @staticmethod
     def flatten_dict(in_dict):
         block_data = dict()
         for block in in_dict:
             block_data[block.keys()[0]] = block[block.keys()[0]]
         return block_data
-    
+
     def _load(self):
         # first flatten the dict
         block_data = self.flatten_dict(self._parsed_data)
-        
-#         pprint(block_data, width=147)
-                
+
+        #         pprint(block_data, width=147)
+
         self._load_designation(block_data['designation'])
         self._load_definitions(block_data['definitions'])
         self._load_data_pointers(block_data['data_pointers'])
         self._load_parameters(block_data['parameters'])
-#         self._load_date()
+
+    #         self._load_date()
 
     @property
     def designation(self):
@@ -152,28 +158,28 @@ class AmiraHeader(object):
         *    extra format e.g. ``<hxsurface>``
         """
         return self._designation
-    
+
     @property
     def definitions(self):
         """Definitions consist of a key-value pair specified just after the 
         designation preceded by the key-word 'define'      
         """
         return self._definitions
-    
+
     @property
     def parameters(self):
         """The set of parameters for each of the segments specified 
         e.g. colour, data pointer etc.
         """
         return self._parameters
-    
+
     @property
     def data_pointers(self):
         """The list of data pointers together with a name, data type, dimension, 
         index, format and length
         """
         return self._data_pointers
-    
+
     def _load_designation(self, block_data):
         self._designation = Block('designation')
         if 'filetype' in block_data:
@@ -195,50 +201,60 @@ class AmiraHeader(object):
         if 'extra_format' in block_data:
             self._designation.add_attr('extra_format', block_data['extra_format'])
         else:
-            self._designation.add_attr('extra_format', None)     
-               
+            self._designation.add_attr('extra_format', None)
+
     def _load_definitions(self, block_data):
         self._definitions = Block('definitions')
         for definition in block_data:
             self._definitions.add_attr(definition['definition_name'], definition['definition_value'])
-    
+
     def _load_parameters(self, block_data):
         self._parameters = Block('parameters')
         for parameter in block_data:
             if 'nested_parameter' in parameter:
                 nested_parameter = parameter['nested_parameter']
-                self._parameters.add_attr(nested_parameter['nested_parameter_name'], Block(nested_parameter['nested_parameter_name']))
+                self._parameters.add_attr(nested_parameter['nested_parameter_name'],
+                                          Block(nested_parameter['nested_parameter_name']))
                 nested_parameter_obj = getattr(self._parameters, nested_parameter['nested_parameter_name'])
                 for nested_parameter_value in nested_parameter['nested_parameter_values']:
                     if 'attributes' in nested_parameter_value:
                         if nested_parameter_value['attributes']:
-                            nested_parameter_obj.add_attr(nested_parameter_value['name'], Block(nested_parameter_value['name']))
+                            nested_parameter_obj.add_attr(nested_parameter_value['name'],
+                                                          Block(nested_parameter_value['name']))
                             nested_parameter_value_obj = getattr(nested_parameter_obj, nested_parameter_value['name'])
                             for attribute in nested_parameter_value['attributes']:
-                                nested_parameter_value_obj.add_attr(attribute['attribute_name'], attribute['attribute_value'])
+                                nested_parameter_value_obj.add_attr(attribute['attribute_name'],
+                                                                    attribute['attribute_value'])
                         else:
                             nested_parameter_obj.add_attr(nested_parameter_value['name'], None)
                     elif 'nested_attributes' in nested_parameter_value:
-                        nested_parameter_obj.add_attr(nested_parameter_value['name'], Block(nested_parameter_value['name']))
+                        nested_parameter_obj.add_attr(nested_parameter_value['name'],
+                                                      Block(nested_parameter_value['name']))
                         for nested_attribute in nested_parameter_value['nested_attributes']:
                             nested_attribute_obj = getattr(nested_parameter_obj, nested_parameter_value['name'])
-                            nested_attribute_obj.add_attr(nested_attribute['nested_attribute_name'], Block(nested_attribute['nested_attribute_name']))
-                            nested_attribute_value_obj = getattr(nested_attribute_obj, nested_attribute['nested_attribute_name'])
+                            nested_attribute_obj.add_attr(nested_attribute['nested_attribute_name'],
+                                                          Block(nested_attribute['nested_attribute_name']))
+                            nested_attribute_value_obj = getattr(nested_attribute_obj,
+                                                                 nested_attribute['nested_attribute_name'])
                             for nested_attribute_value in nested_attribute['nested_attribute_values']:
-                                nested_attribute_value_obj.add_attr(nested_attribute_value['nested_attribute_value_name'], nested_attribute_value['nested_attribute_value_value'])
+                                nested_attribute_value_obj.add_attr(
+                                    nested_attribute_value['nested_attribute_value_name'],
+                                    nested_attribute_value['nested_attribute_value_value'])
                     else:
-                        nested_parameter_obj.add_attr(nested_parameter_value['name'], nested_parameter_value['inline_parameter_value'])
+                        nested_parameter_obj.add_attr(nested_parameter_value['name'],
+                                                      nested_parameter_value['inline_parameter_value'])
             if 'inline_parameter' in parameter:
                 inline_parameter = parameter['inline_parameter']
-                self._parameters.add_attr(inline_parameter['inline_parameter_name'], inline_parameter['inline_parameter_value'])
-    
+                self._parameters.add_attr(inline_parameter['inline_parameter_name'],
+                                          inline_parameter['inline_parameter_value'])
+
     def _load_data_pointers(self, block_data):
         self._data_pointers = Block('data_pointers')
         for data_pointer in block_data:
             data_pointer_name = "data_pointer_{}".format(data_pointer['data_index'])
             self._data_pointers.add_attr(data_pointer_name, Block(data_pointer_name))
             pointer_obj = getattr(self._data_pointers, data_pointer_name)
-            
+
             if 'pointer_name' in data_pointer:
                 pointer_obj.add_attr('pointer_name', data_pointer['pointer_name'])
             else:
@@ -267,10 +283,10 @@ class AmiraHeader(object):
                 pointer_obj.add_attr('data_length', data_pointer['data_length'])
             else:
                 pointer_obj.add_attr('data_length', None)
-    
+
     def __repr__(self):
         return "<AmiraHeader with {:,} bytes>".format(len(self))
-    
+
     def __str__(self):
         string = "*" * 50 + "\n"
         string += "AMIRA HEADER\n"
@@ -282,7 +298,7 @@ class AmiraHeader(object):
         string += "{}\n".format(self.parameters)
         string += "-" * 50 + "\n"
         string += "{}\n".format(self.data_pointers)
-        string += "*" * 50    
+        string += "*" * 50
         return string
 
 
@@ -290,24 +306,24 @@ def main():
     try:
         fn = sys.argv[1]
     except IndexError:
-        print >> sys.stderr, "usage: ./{} <amira-fn>".format(__file__)
+        print("usage: ./{} <amira-fn>".format(__file__), file=sys.stderr)
         return 1
-    
+
     h = AmiraHeader.from_file(fn, verbose=False)
-#     print h.parameters
-#     print h.parameters.attrs
-#     print h.parameters.Materials, type(h.parameters.Materials)
-#     print h.parameters.Materials.attrs
-#     print h.parameters.Materials.Exterior
-#     print h.parameters.Materials.ids
-#     print h.parameters.Materials[1].attrs
+    #     print h.parameters
+    #     print h.parameters.attrs
+    #     print h.parameters.Materials, type(h.parameters.Materials)
+    #     print h.parameters.Materials.attrs
+    #     print h.parameters.Materials.Exterior
+    #     print h.parameters.Materials.ids
+    #     print h.parameters.Materials[1].attrs
     for id_ in h.parameters.Materials.ids:
-        print h.parameters.Materials[id_]
         print
-    
+        h.parameters.Materials[id_]
+        print
+
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-    

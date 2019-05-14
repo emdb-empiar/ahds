@@ -177,31 +177,31 @@ class Image(object):
 
     def __init__(self, z, array):
         self.z = z
-        self.__array = array
-        self.__byte_values = set(self.__array.flatten().tolist())
+        self._array = array
+        self._byte_values = set(self._array.flatten().tolist())
 
     @property
     def byte_values(self):
-        return self.__byte_values
+        return self._byte_values
 
     @property
     def array(self):
         """Accessor to underlying array data"""
-        return self.__array
+        return self._array
 
     def equalise(self):
         """Increase the dynamic range of the image"""
-        multiplier = 255 // len(self.__byte_values)
-        return self.__array * multiplier
+        multiplier = 255 // len(self._byte_values)
+        return self._array * multiplier
 
     @property
     def as_contours(self):
         """A dictionary of lists of contours keyed by byte_value"""
         contours = dict()
-        for byte_value in self.__byte_values:
+        for byte_value in self._byte_values:
             if byte_value == 0:
                 continue
-            mask = (self.__array == byte_value) * 255
+            mask = (self._array == byte_value) * 255
             found_contours = find_contours(mask, 254, fully_connected='high')  # a list of array
             contours[byte_value] = ContourSet(found_contours)
         return contours
@@ -291,13 +291,13 @@ class Contour(object):
 
     def __init__(self, z, array):
         self.z = z
-        self.__array = array
+        self._array = array
 
     def __len__(self):
-        return len(self.__array)
+        return len(self._array)
 
     def __iter__(self):
-        return iter(self.__array)
+        return iter(self._array)
 
     @staticmethod
     def string_repr(self):
@@ -321,25 +321,25 @@ class AmiraDataStream(object):
     find_type = FIND['decimal']
 
     def __init__(self, amira_header, data_pointer, stream_data):
-        self.__amira_header = amira_header
-        self.__data_pointer = data_pointer
-        self.__stream_data = stream_data
-        self.__decoded_length = 0
+        self._amira_header = amira_header
+        self._data_pointer = data_pointer
+        self._stream_data = stream_data
+        self._decoded_length = 0
 
     @property
     def header(self):
         """An :py:class:`ahds.header.AmiraHeader` object"""
-        return self.__amira_header
+        return self._amira_header
 
     @property
     def data_pointer(self):
         """The data pointer for this data stream"""
-        return self.__data_pointer
+        return self._data_pointer
 
     @property
     def stream_data(self):
         """All the raw data from the file"""
-        return self.__stream_data
+        return self._stream_data
 
     @property
     def encoded_data(self):
@@ -354,11 +354,11 @@ class AmiraDataStream(object):
     @property
     def decoded_length(self):
         """The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)"""
-        return self.__decoded_length
+        return self._decoded_length
 
     @decoded_length.setter
     def decoded_length(self, value):
-        self.__decoded_length = value
+        self._decoded_length = value
 
     def __repr__(self):
         return "{} object of {:,} bytes".format(self.__class__, len(self.stream_data))
@@ -434,47 +434,47 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
     def __init__(self, *args, **kwargs):
         self.regex = r"%s (?P<%s>%s+)\n" % (self.match, self.match.lower(), self.find_type)
         super(AmiraHxSurfaceDataStream, self).__init__(*args, **kwargs)
-        self.__match = re.search(self.regex, self.stream_data)
-        self.__name = None
-        self.__count = None
-        self.__start_offset = None
-        self.__end_offset = None
+        self._match = re.search(self.regex, self.stream_data)
+        self._name = None
+        self._count = None
+        self._start_offset = None
+        self._end_offset = None
 
     @property
     def name(self):
-        return self.__name
+        return self._name
 
     @name.setter
     def name(self, value):
-        self.__name = value
+        self._name = value
 
     @property
     def count(self):
-        return self.__count
+        return self._count
 
     @count.setter
     def count(self, value):
-        self.__count = value
+        self._count = value
 
     @property
     def start_offset(self):
-        return self.__start_offset
+        return self._start_offset
 
     @start_offset.setter
     def start_offset(self, value):
-        self.__start_offset = value
+        self._start_offset = value
 
     @property
     def end_offset(self):
-        return self.__end_offset
+        return self._end_offset
 
     @end_offset.setter
     def end_offset(self, value):
-        self.__end_offset = value
+        self._end_offset = value
 
     @property
     def match_object(self):
-        return self.__match
+        return self._match
 
     def __str__(self):
         return """\
@@ -584,7 +584,7 @@ class PatchesDataStream(LoadedDataStream):
 
     def __init__(self, *args, **kwargs):
         super(PatchesDataStream, self).__init__(*args, **kwargs)
-        self.__patches = dict()
+        self._patches = dict()
         for _ in xrange(self.count):
             #  in order of appearance
             inner_region = PatchesInnerRegionDataStream(self.header, None, self.stream_data[self.start_offset:])
@@ -599,22 +599,22 @@ class PatchesDataStream(LoadedDataStream):
                 'BranchingPoints': branching_points,
                 'Triangles': triangles,
             }
-            if inner_region.name not in self.__patches:
-                self.__patches[inner_region.name] = [patch]
+            if inner_region.name not in self._patches:
+                self._patches[inner_region.name] = [patch]
             else:
-                self.__patches[inner_region.name] += [patch]
+                self._patches[inner_region.name] += [patch]
             # start searching from the end of the last search
-            self.start_offset = self.__patches[inner_region.name][-1]['Triangles'].end_offset
+            self.start_offset = self._patches[inner_region.name][-1]['Triangles'].end_offset
             self.end_offset = None
 
     def __iter__(self):
-        return iter(self.__patches.keys())
+        return iter(self._patches.keys())
 
     def __getitem__(self, index):
-        return self.__patches[index]
+        return self._patches[index]
 
     def __len__(self):
-        return len(self.__patches)
+        return len(self._patches)
 
     @property
     def encoded_data(self):
@@ -630,78 +630,78 @@ class DataStreams(object):
 
     def __init__(self, fn, *args, **kwargs):
         # private attrs
-        self.__fn = fn  #  property
-        self.__amira_header = header.AmiraHeader.from_file(fn)  # property
-        self.__data_streams = dict()
-        self.__filetype = None
-        self.__stream_data = None
-        self.__data_streams = self.__configure()
+        self._fn = fn  #  property
+        self._amira_header = header.AmiraHeader.from_file(fn)  # property
+        self._data_streams = dict()
+        self._filetype = None
+        self._stream_data = None
+        self._data_streams = self._configure()
 
-    def __configure(self):
-        with open(self.__fn, 'rb') as f:
-            self.__stream_data = f.read().strip('\n')
-            if self.__amira_header.designation.filetype == "AmiraMesh":
-                self.__filetype = "AmiraMesh"
+    def _configure(self):
+        with open(self._fn, 'rb') as f:
+            self._stream_data = f.read().strip('\n')
+            if self._amira_header.designation.filetype == "AmiraMesh":
+                self._filetype = "AmiraMesh"
                 i = 0
-                while i < len(self.__amira_header.data_pointers.attrs) - 1:  # refactor
-                    data_pointer = getattr(self.__amira_header.data_pointers, 'data_pointer_{}'.format(i + 1))
-                    self.__data_streams[i + 1] = AmiraMeshDataStream(self.__amira_header, data_pointer,
-                                                                     self.__stream_data)
+                while i < len(self._amira_header.data_pointers.attrs) - 1:  # refactor
+                    data_pointer = getattr(self._amira_header.data_pointers, 'data_pointer_{}'.format(i + 1))
+                    self._data_streams[i + 1] = AmiraMeshDataStream(self._amira_header, data_pointer,
+                                                                     self._stream_data)
                     i += 1
                 AmiraMeshDataStream.last_stream = True
-                data_pointer = getattr(self.__amira_header.data_pointers, 'data_pointer_{}'.format(i + 1))
-                self.__data_streams[i + 1] = AmiraMeshDataStream(self.__amira_header, data_pointer, self.__stream_data)
+                data_pointer = getattr(self._amira_header.data_pointers, 'data_pointer_{}'.format(i + 1))
+                self._data_streams[i + 1] = AmiraMeshDataStream(self._amira_header, data_pointer, self._stream_data)
                 # reset AmiraMeshDataStream.last_stream
                 AmiraMeshDataStream.last_stream = False
-            elif self.__amira_header.designation.filetype == "HyperSurface":
-                self.__filetype = "HyperSurface"
-                if self.__amira_header.designation.format == "BINARY":
-                    self.__data_streams['Vertices'] = VerticesDataStream(self.__amira_header, None, self.__stream_data)
-                    self.__data_streams['NBranchingPoints'] = NBranchingPointsDataStream(self.__amira_header, None,
-                                                                                         self.__stream_data)
-                    self.__data_streams['NVerticesOnCurves'] = NVerticesOnCurvesDataStream(self.__amira_header, None,
-                                                                                           self.__stream_data)
-                    self.__data_streams['BoundaryCurves'] = BoundaryCurvesDataStream(self.__amira_header, None,
-                                                                                     self.__stream_data)
-                    self.__data_streams['Patches'] = PatchesDataStream(self.__amira_header, None, self.__stream_data)
-                elif self.__amira_header.designation.format == "ASCII":
-                    self.__data_streams['Vertices'] = VerticesDataStream(self.__amira_header, None, self.__stream_data)
-                    print self.__data_streams['Vertices']
-        #                     f.seek(self.__data_streams['Vertices'].start_offset)
+            elif self._amira_header.designation.filetype == "HyperSurface":
+                self._filetype = "HyperSurface"
+                if self._amira_header.designation.format == "BINARY":
+                    self._data_streams['Vertices'] = VerticesDataStream(self._amira_header, None, self._stream_data)
+                    self._data_streams['NBranchingPoints'] = NBranchingPointsDataStream(self._amira_header, None,
+                                                                                         self._stream_data)
+                    self._data_streams['NVerticesOnCurves'] = NVerticesOnCurvesDataStream(self._amira_header, None,
+                                                                                           self._stream_data)
+                    self._data_streams['BoundaryCurves'] = BoundaryCurvesDataStream(self._amira_header, None,
+                                                                                     self._stream_data)
+                    self._data_streams['Patches'] = PatchesDataStream(self._amira_header, None, self._stream_data)
+                elif self._amira_header.designation.format == "ASCII":
+                    self._data_streams['Vertices'] = VerticesDataStream(self._amira_header, None, self._stream_data)
+                    print self._data_streams['Vertices']
+        #                     f.seek(self._data_streams['Vertices'].start_offset)
         #                     print f.readline(),
         #                     print f.readline(),
         #                     print f.readline(),
         #                     print f.readline(),
-        return self.__data_streams
+        return self._data_streams
 
     @property
     def file(self):
-        return self.__fn
+        return self._fn
 
     @property
     def header(self):
-        return self.__amira_header
+        return self._amira_header
 
     @property
     def stream_data(self):
-        return self.__stream_data
+        return self._stream_data
 
     @property
     def filetype(self):
-        return self.__filetype
+        return self._filetype
 
     def __iter__(self):
-        return iter(self.__data_streams.values())
+        return iter(self._data_streams.values())
 
     def __len__(self):
-        return len(self.__data_streams)
+        return len(self._data_streams)
 
     def __getitem__(self, key):
-        return self.__data_streams[key]
+        return self._data_streams[key]
 
     def __repr__(self):
         return "{} object with {} stream(s): {}".format(
             self.__class__,
             len(self),
-            ", ".join(map(str, self.__data_streams.keys())),
+            ", ".join(map(str, self._data_streams.keys())),
         )
