@@ -59,9 +59,11 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 	int count=1, repeat=0; // count/repeat: true = 1; false = 0
 	uchar no=0;
 
-	while (i < input_size) {
-		if (count) {
+	// two state machine that oscillates between getting counts and getting data
+	while (i < input_size) { // while we still have some input
+		if (count) { // get count
 			no = input[i];
+			// determine if this is a repeat or a non-repeat
 			if (no > 127) {
 				no &= 0x7f; // 2's complement
 				count = 0;
@@ -74,15 +76,18 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 				repeat = 0;
 			}
 		}
-		else {
+		else { // get data
 			if (repeat) {
-				uchar value[no];
-				get_multiple(input, value, i, i+no);
-				repeat = 0;
-				count = 1;
-				set_multiple_diff(output, value, j, j+no);
-				i += no;
-				j += no;
+				if (no > 0) {
+					// uchar value[no];
+					uchar *value = (uchar *)malloc(no*sizeof(uchar));
+					get_multiple(input, value, i, i+no);
+					repeat = 0;
+					count = 1;
+					set_multiple_diff(output, value, j, j+no);
+					i += no;
+					j += no;
+				}
 			}
 			else {
 				uchar value;
