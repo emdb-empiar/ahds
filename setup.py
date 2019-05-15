@@ -23,6 +23,7 @@ setup(
     author_email="pkorir@ebi.ac.uk, paul.korir@gmail.com",
     description="Python package to parse and provide access to headers and data streams in Amira(R) files",
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     url="https://github.com/emdb-empiar/ahds.git",
     license="Apache License",
     keywords="header, parser, data streams",
