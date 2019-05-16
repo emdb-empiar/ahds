@@ -19,6 +19,7 @@ import mock
 MOCK_MODULES = ['simpleparse.parser']
 
 for mod_name in MOCK_MODULES:
+    print "Mocking {}...".format(mod_name)
     sys.modules[mod_name] = mock.Mock()
 
 # If extensions (or modules to document with autodoc) are in another directory,

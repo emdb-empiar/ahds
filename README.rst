@@ -2,6 +2,10 @@
 ``ahds``
 ==============================================
 
+.. image:: https://readthedocs.org/projects/ahds/badge/?version=latest
+    :target: https://ahds.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 .. contents:: Table of Contents
 
 ----------------------------------------------
