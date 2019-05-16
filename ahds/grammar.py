@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # amira_grammar_parser.py
 """
-Grammar to parse headers in Amira files
+Grammar to parse headers in Amira (R) files
 """
 from __future__ import print_function
 
@@ -148,7 +148,7 @@ class AmiraDispatchProcessor(DispatchProcessor):
         return dispatchList(self, taglist, buffer_)
 
 
-# Amira Header Grammar
+# Amira (R) Header Grammar
 amira_header_grammar = r'''
 amira                        :=    designation, tsn, comment*, tsn*, definitions, tsn*, parameters*, tsn, data_pointers, tsn
 
@@ -217,7 +217,7 @@ number_seq                   :=    number, (ts, number)*
 
 
 def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
-    """Detect Amira file format (AmiraMesh or HyperSurface)
+    """Detect Amira (R) file format (AmiraMesh or HyperSurface)
     
     :param str fn: file name
     :param int format_bytes: number of bytes in which to search for the format [default: 50]
@@ -320,8 +320,8 @@ def get_parsed_data(fn, *args, **kwargs):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(prog='amira_grammar_parser', description='Parser for Amira headers')
-    parser.add_argument('amira_fn', help="name of an Amira file with extension .am or .surf")
+    parser = argparse.ArgumentParser(prog='amira_grammar_parser', description='Parser for Amira (R) headers')
+    parser.add_argument('amira_fn', help="name of an Amira (R) file with extension .am or .surf")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='verbose output')
     parser.add_argument('-H', '--show-header', action='store_true', default=False, help='show raw header')
     parser.add_argument('-P', '--show-parsed', action='store_true', default=False, help='show parsed header')

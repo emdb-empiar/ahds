@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ahds &mdash; Amira Header and Data Streams 0.1 documentation</title>
+  <title>ahds &mdash; ahds 0.1 documentation</title>
   
 
   
@@ -24,7 +24,6 @@
         <script type="text/javascript" src="../_static/jquery.js"></script>
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -48,7 +47,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> Amira Header and Data Streams
+            <a href="../index.html" class="icon icon-home"> ahds
           
 
           
@@ -84,7 +83,7 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../ahds.html">ahds package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ahds.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code> package</a></li>
 </ul>
 
             
@@ -99,7 +98,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">Amira Header and Data Streams</a>
+          <a href="../index.html">ahds</a>
         
       </nav>
 
@@ -151,12 +150,12 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1"># ahds</span>
 
-<span class="kn">import</span> <span class="nn">header</span>
-<span class="kn">import</span> <span class="nn">data_stream</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">header</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">data_stream</span>
 
 
 <div class="viewcode-block" id="AmiraFile"><a class="viewcode-back" href="../ahds.html#ahds.AmiraFile">[docs]</a><span class="k">class</span> <span class="nc">AmiraFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience class to handle Amira files</span>
+    <span class="sd">&quot;&quot;&quot;Convenience class to handle Amira (R) files</span>
 <span class="sd">    </span>
 <span class="sd">    This class aggregates user-level classes from the :py:mod:`ahds.header` and :py:mod:`ahds.data_stream` modules</span>
 <span class="sd">    into a single class with a simple interface :py:meth:`AmiraFile.header` for the header and :py:attr:`AmiraFile.data_streams` </span>

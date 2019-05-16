@@ -2,6 +2,8 @@
 ``ahds``
 ==============================================
 
+.. include:: <isonum.txt>
+
 .. image:: https://readthedocs.org/projects/ahds/badge/?version=latest
     :target: https://ahds.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
@@ -11,12 +13,16 @@
 ----------------------------------------------
 Overview
 ----------------------------------------------
-``ahds`` (Amira (R) header and data streams) is a Python package to parse and handle Amira (R) files. 
-It was developed to facilitate reading of Amira (R) files as part of the EMDB-SFF toolkit.
+``ahds`` is a Python package to parse and handle Amira |reg| files.
+It was developed to facilitate reading of Amira |reg| files as part of the EMDB-SFF toolkit.
+
+.. note::
+
+    Amira |reg| is a trademark of Thermo Fisher Scientific. This package is in no way affiliated with with Thermo Fisher Scientific.
 
 Use Cases
 ==============================================
-*     Detect and parse Amira (R) headers and return structured data
+*     Detect and parse Amira |reg| headers and return structured data
 
 *     Decode data (``HxRLEByte``, ``HxZip``)
 
@@ -63,12 +69,12 @@ License
 ----------------------------------------------
 Future Plans
 ----------------------------------------------
-*    Write out valid Amira (R) files
+*    Write out valid Amira |reg| files
 
 ----------------------------------------------
 Background and Definitions
 ----------------------------------------------
-``ahds`` presently handles two types of Amira (R) files:
+``ahds`` presently handles two types of Amira |reg| files:
 
 *     `AmiraMesh` files, which typically but not necessarily have a ``.am`` extension, and
 
