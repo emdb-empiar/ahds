@@ -27,7 +27,6 @@ Use Cases
 --------------------------------------------
 Installation
 --------------------------------------------
-
 Presently, ``ahds`` only works with Python 2.7 but will soon work on Python 3. Please begin by 
 installing ``numpy<1.16`` using 
 
