@@ -24,14 +24,22 @@ Use Cases
 
 ``ahds`` was written and is maintained by Paul K. Korir.
 
-----------------------------------------------
-Dependencies
-----------------------------------------------
-*     `SimpleParse <http://simpleparse.sourceforge.net>`_ (tested with 2.1.1 - install from source from the SimpleParse site; FAILs with 2.2.0)
+--------------------------------------------
+Installation
+--------------------------------------------
 
-*     `numpy <https://www.numpy.org>`_ (tested with 1.11.2)
+Presently, ``ahds`` only works with Python 2.7 but will soon work on Python 3. Please begin by 
+installing ``numpy<1.16`` using 
 
-*     `scikit-image <https://scikit-image.org>`_ (tested with 0.11.3)
+::
+
+    pip install numpy<1.16
+
+because it is needed to run ``setup.py``. Afterwards you may run
+
+::
+
+    pip install ahds
 
 ----------------------------------------------
 License
