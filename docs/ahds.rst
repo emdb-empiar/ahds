@@ -1,13 +1,13 @@
-ahds package
-===============
+``ahds`` package
+================
 
 .. automodule:: ahds
 	:members:
 	:show-inheritance:
 
 
-ahds.grammar module
--------------------
+``ahds.grammar`` module
+-----------------------
 
 .. automodule:: ahds.grammar
 	:members:
@@ -15,8 +15,8 @@ ahds.grammar module
 	:inherited-members:
 
 
-ahds.header module
-------------------
+``ahds.header`` module
+----------------------
 
 .. automodule:: ahds.header
 	:members:
@@ -24,8 +24,8 @@ ahds.header module
 	:inherited-members:
 
 
-ahds.data_stream module
------------------------
+``ahds.data_stream`` module
+---------------------------
 
 .. automodule:: ahds.data_stream
 	:members:

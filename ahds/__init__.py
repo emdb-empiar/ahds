@@ -4,9 +4,10 @@
 from . import header
 from . import data_stream
 
+AHDS_VERSION = '0.1.9.post0'
 
 class AmiraFile(object):
-    """Convenience class to handle Amira files
+    """Convenience class to handle Amira (R) files
     
     This class aggregates user-level classes from the :py:mod:`ahds.header` and :py:mod:`ahds.data_stream` modules
     into a single class with a simple interface :py:meth:`AmiraFile.header` for the header and :py:attr:`AmiraFile.data_streams` 

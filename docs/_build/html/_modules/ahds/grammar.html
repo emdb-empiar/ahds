@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ahds.grammar &mdash; Amira Header and Data Streams 0.1 documentation</title>
+  <title>ahds.grammar &mdash; ahds 0.1 documentation</title>
   
 
   
@@ -24,7 +24,6 @@
         <script type="text/javascript" src="../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -48,7 +47,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> Amira Header and Data Streams
+            <a href="../../index.html" class="icon icon-home"> ahds
           
 
           
@@ -84,7 +83,7 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../ahds.html">ahds package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ahds.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code> package</a></li>
 </ul>
 
             
@@ -99,7 +98,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Amira Header and Data Streams</a>
+          <a href="../../index.html">ahds</a>
         
       </nav>
 
@@ -153,8 +152,9 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1"># amira_grammar_parser.py</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Grammar to parse headers in Amira files</span>
+<span class="sd">Grammar to parse headers in Amira (R) files</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -178,7 +178,7 @@
     <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">getString</span><span class="p">((</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">getString</span><span class="p">((</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">)</span>    
+        <span class="k">return</span> <span class="n">getString</span><span class="p">((</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">extra_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">getString</span><span class="p">((</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">taglist</span><span class="p">),</span> <span class="n">buffer_</span><span class="p">):</span>  <span class="c1"># @UnusedVariable</span>
@@ -299,7 +299,7 @@
         <span class="k">return</span> <span class="n">dispatchList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">taglist</span><span class="p">,</span> <span class="n">buffer_</span><span class="p">)</span></div>
 
 
-<span class="c1"># Amira Header Grammar</span>
+<span class="c1"># Amira (R) Header Grammar</span>
 <span class="n">amira_header_grammar</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">amira                        :=    designation, tsn, comment*, tsn*, definitions, tsn*, parameters*, tsn, data_pointers, tsn</span>
 
@@ -368,7 +368,7 @@
 
 
 <div class="viewcode-block" id="detect_format"><a class="viewcode-back" href="../../ahds.html#ahds.grammar.detect_format">[docs]</a><span class="k">def</span> <span class="nf">detect_format</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">format_bytes</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Detect Amira file format (AmiraMesh or HyperSurface)</span>
+    <span class="sd">&quot;&quot;&quot;Detect Amira (R) file format (AmiraMesh or HyperSurface)</span>
 <span class="sd">    </span>
 <span class="sd">    :param str fn: file name</span>
 <span class="sd">    :param int format_bytes: number of bytes in which to search for the format [default: 50]</span>
@@ -377,20 +377,20 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">format_bytes</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="k">assert</span> <span class="n">verbose</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]</span>
-    
+
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">rough_header</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">format_bytes</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*AmiraMesh.*&#39;</span><span class="p">,</span> <span class="n">rough_header</span><span class="p">):</span>
             <span class="n">file_format</span> <span class="o">=</span> <span class="s2">&quot;AmiraMesh&quot;</span>
         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*HyperSurface.*&#39;</span><span class="p">,</span> <span class="n">rough_header</span><span class="p">):</span>
             <span class="n">file_format</span> <span class="o">=</span> <span class="s2">&quot;HyperSurface&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">file_format</span> <span class="o">=</span> <span class="s2">&quot;Undefined&quot;</span>
-    
+
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>  <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> file detected...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_format</span><span class="p">)</span>
-    
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> file detected...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_format</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">file_format</span></div>
 
 
@@ -404,17 +404,17 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">header_bytes</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="k">assert</span> <span class="n">file_format</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;AmiraMesh&#39;</span><span class="p">,</span> <span class="s1">&#39;HyperSurface&#39;</span><span class="p">]</span>
-    
+
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">rough_header</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">header_bytes</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">file_format</span> <span class="o">==</span> <span class="s2">&quot;AmiraMesh&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Using pattern: (?P&lt;data&gt;.*)</span><span class="se">\\</span><span class="s2">n@1&quot;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using pattern: (?P&lt;data&gt;.*)</span><span class="se">\\</span><span class="s2">n@1&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;data&gt;.*)\n@1&#39;</span><span class="p">,</span> <span class="n">rough_header</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">file_format</span> <span class="o">==</span> <span class="s2">&quot;HyperSurface&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Using pattern: (?P&lt;data&gt;.*)</span><span class="se">\\</span><span class="s2">nVertices [0-9]*</span><span class="se">\\</span><span class="s2">n&quot;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using pattern: (?P&lt;data&gt;.*)</span><span class="se">\\</span><span class="s2">nVertices [0-9]*</span><span class="se">\\</span><span class="s2">n&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;data&gt;.*)\nVertices [0-9]*\n&#39;</span><span class="p">,</span> <span class="n">rough_header</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">file_format</span> <span class="o">==</span> <span class="s2">&quot;Undefined&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to parse undefined file&quot;</span><span class="p">)</span>
@@ -423,7 +423,7 @@
     <span class="n">data</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
 <span class="c1">#     print data</span>
 <span class="c1">#     print</span>
-    
+
     <span class="k">return</span> <span class="n">data</span></div>
 
 
@@ -435,22 +435,22 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># the parser</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Creating parser object...&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating parser object...&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="n">amira_header_grammar</span><span class="p">)</span>
-    
+
     <span class="c1"># the processor</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Defining dispatch processor...&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Defining dispatch processor...&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
     <span class="n">amira_processor</span> <span class="o">=</span> <span class="n">AmiraDispatchProcessor</span><span class="p">()</span>
-    
+
     <span class="c1"># parsing</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Parsing data...&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Parsing data...&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
     <span class="n">success</span><span class="p">,</span> <span class="n">parsed_data</span><span class="p">,</span> <span class="n">next_item</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">production</span><span class="o">=</span><span class="s1">&#39;amira&#39;</span><span class="p">,</span> <span class="n">processor</span><span class="o">=</span><span class="n">amira_processor</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;Successfully parsed data...&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Successfully parsed data...&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parsed_data</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parse: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Next: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parsed_data</span><span class="p">,</span> <span class="n">next_item</span><span class="p">))</span></div>
@@ -470,33 +470,33 @@
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="kn">import</span> <span class="nn">argparse</span>
-    
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s1">&#39;amira_grammar_parser&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Parser for Amira headers&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;amira_fn&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;name of an Amira file with extension .am or .surf&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s1">&#39;amira_grammar_parser&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Parser for Amira (R) headers&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;amira_fn&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;name of an Amira (R) file with extension .am or .surf&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;verbose output&#39;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-H&#39;</span><span class="p">,</span> <span class="s1">&#39;--show-header&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;show raw header&#39;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-P&#39;</span><span class="p">,</span> <span class="s1">&#39;--show-parsed&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;show parsed header&#39;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="s1">&#39;--format-bytes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;bytes to search for file format&#39;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-r&#39;</span><span class="p">,</span> <span class="s1">&#39;--header-bytes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">20000</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;bytes to search for header&#39;</span><span class="p">)</span>
-    
+
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="c1"># get file format</span>
     <span class="n">file_format</span> <span class="o">=</span> <span class="n">detect_format</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">amira_fn</span><span class="p">,</span> <span class="n">format_bytes</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">format_bytes</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-    
+
     <span class="c1"># get the exact header</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">get_header</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">amira_fn</span><span class="p">,</span> <span class="n">file_format</span><span class="p">,</span> <span class="n">header_bytes</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">header_bytes</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">show_header</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s1">&#39;raw data:&#39;</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">data</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;raw data:&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
 
     <span class="c1"># parse the header    </span>
     <span class="n">parsed_data</span> <span class="o">=</span> <span class="n">parse_header</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">show_parsed</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s1">&#39;parsed data:&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parsed data:&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
         <span class="n">pprint</span><span class="p">(</span><span class="n">parsed_data</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">318</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="mi">0</span>

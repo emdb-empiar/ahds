@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # amira_header.py
 """
-Module to convert parsed data from an Amira header into a set of nested objects. The key class is :py:class:`ahds.header.AmiraHeader`.
+Module to convert parsed data from an Amira (R) header into a set of nested objects. The key class is :py:class:`ahds.header.AmiraHeader`.
 
 Usage:
 
@@ -97,7 +97,7 @@ class Block(object):
 
 
 class AmiraHeader(object):
-    """Class to encapsulate Amira metadata"""
+    """Class to encapsulate Amira (R) metadata"""
 
     def __init__(self, parsed_data):
         self._parsed_data = parsed_data
@@ -107,7 +107,7 @@ class AmiraHeader(object):
     def from_file(cls, fn, *args, **kwargs):
         """Constructor to build an :py:class:`ahds.header.AmiraHeader` object from a file
         
-        :param str fn: Amira file
+        :param str fn: Amira (R) file
         :return ah: object of class :py:class:`ahds.header.AmiraHeader` containing header metadata
         :rtype: ah: :py:class:`ahds.header.AmiraHeader`
         """
@@ -143,7 +143,7 @@ class AmiraHeader(object):
 
     @property
     def designation(self):
-        """Designation of the Amira file defined in the first row
+        """Designation of the Amira (R) file defined in the first row
         
         Designations consist of some or all of the following data:
         

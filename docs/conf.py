@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Amira Header and Data Reader documentation build configuration file, created by
+# ahds documentation build configuration file, created by
 # sphinx-quickstart on Mon Feb 13 16:55:45 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -56,7 +56,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Amira Header and Data Streams'
+project = u'ahds'
 copyright = u'2017, EMBL-EBI'
 author = u'Paul K. Korir, PhD'
 
@@ -211,7 +211,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'AmiraHeaderandDataReaderdoc'
+htmlhelp_basename = 'ahdsdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -233,7 +233,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'AmiraHeaderandDataStreams.tex', u'Amira Header and Data Streams Documentation',
+    (master_doc, 'ahds.tex', u'ahds Documentation',
      u'Paul K. Korir, PhD', 'manual'),
 ]
 
@@ -263,7 +263,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'amiraheaderanddatastreams', u'Amira Header and Data Streams Documentation',
+    (master_doc, 'ahds', u'ahds Documentation',
      [author], 1)
 ]
 
@@ -277,8 +277,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'AmiraHeaderandDataStreams', u'Amira Header and Data Streams Documentation',
-     author, 'AmiraHeaderandDataStreams', 'One line description of project.',
+    (master_doc, 'ahds', u'ahds Documentation',
+     author, 'ahds', 'One line description of project.',
      'Miscellaneous'),
 ]
 

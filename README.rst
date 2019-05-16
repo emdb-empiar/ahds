@@ -11,8 +11,12 @@
 ----------------------------------------------
 Overview
 ----------------------------------------------
-``ahds`` (Amira (R) header and data streams) is a Python package to parse and handle Amira (R) files. 
+``ahds`` is a Python package to parse and handle Amira (R) files.
 It was developed to facilitate reading of Amira (R) files as part of the EMDB-SFF toolkit.
+
+.. note::
+
+    Amira (R) is a trademark of Thermo Fisher Scientific. This package is in no way affiliated with with Thermo Fisher Scientific.
 
 Use Cases
 ==============================================

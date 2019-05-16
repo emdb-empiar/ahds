@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ahds package &mdash; Amira Header and Data Streams 0.1 documentation</title>
+  <title>ahds package &mdash; ahds 0.1 documentation</title>
   
 
   
@@ -24,7 +24,6 @@
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,7 +34,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="overview.html" /> 
+    <link rel="prev" title="ahds" href="overview.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -49,7 +48,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> Amira Header and Data Streams
+            <a href="index.html" class="icon icon-home"> ahds
           
 
           
@@ -84,10 +83,11 @@
             
             
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ahds package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-ahds.grammar">ahds.grammar module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ahds.header">ahds.header module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ahds.data_stream">ahds.data_stream module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ahds</span></code> package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ahds.grammar"><code class="docutils literal notranslate"><span class="pre">ahds.grammar</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ahds.header"><code class="docutils literal notranslate"><span class="pre">ahds.header</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ahds.data_stream"><code class="docutils literal notranslate"><span class="pre">ahds.data_stream</span></code> module</a></li>
 </ul>
 </li>
 </ul>
@@ -104,7 +104,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Amira Header and Data Streams</a>
+          <a href="index.html">ahds</a>
         
       </nav>
 
@@ -135,7 +135,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>ahds package</li>
+      <li><code class="docutils literal notranslate"><span class="pre">ahds</span></code> package</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -155,31 +155,31 @@
            <div itemprop="articleBody">
             
   <div class="section" id="module-ahds">
-<span id="ahds-package"></span><h1>ahds package<a class="headerlink" href="#module-ahds" title="Permalink to this headline">¶</a></h1>
+<span id="ahds-package"></span><h1><code class="docutils literal notranslate"><span class="pre">ahds</span></code> package<a class="headerlink" href="#module-ahds" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ahds.AmiraFile">
 <em class="property">class </em><code class="descclassname">ahds.</code><code class="descname">AmiraFile</code><span class="sig-paren">(</span><em>fn</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds.html#AmiraFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.AmiraFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Convenience class to handle Amira files</p>
+<p>Convenience class to handle Amira (R) files</p>
 <p>This class aggregates user-level classes from the <a class="reference internal" href="#module-ahds.header" title="ahds.header"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ahds.header</span></code></a> and <a class="reference internal" href="#module-ahds.data_stream" title="ahds.data_stream"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ahds.data_stream</span></code></a> modules
 into a single class with a simple interface <code class="xref py py-meth docutils literal notranslate"><span class="pre">AmiraFile.header()</span></code> for the header and <code class="xref py py-attr docutils literal notranslate"><span class="pre">AmiraFile.data_streams</span></code> 
 data streams attribute.</p>
 </dd></dl>
 
 <div class="section" id="module-ahds.grammar">
-<span id="ahds-grammar-module"></span><h2>ahds.grammar module<a class="headerlink" href="#module-ahds.grammar" title="Permalink to this headline">¶</a></h2>
-<p>Grammar to parse headers in Amira files</p>
+<span id="ahds-grammar-module"></span><h2><code class="docutils literal notranslate"><span class="pre">ahds.grammar</span></code> module<a class="headerlink" href="#module-ahds.grammar" title="Permalink to this headline">¶</a></h2>
+<p>Grammar to parse headers in Amira (R) files</p>
 <dl class="class">
 <dt id="ahds.grammar.AmiraDispatchProcessor">
-<em class="property">class </em><code class="descclassname">ahds.grammar.</code><code class="descname">AmiraDispatchProcessor</code><a class="reference internal" href="_modules/ahds/grammar.html#AmiraDispatchProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.AmiraDispatchProcessor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">simpleparse.dispatchprocessor.DispatchProcessor</span></code></p>
+<em class="property">class </em><code class="descclassname">ahds.grammar.</code><code class="descname">AmiraDispatchProcessor</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#AmiraDispatchProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.AmiraDispatchProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sphinx.ext.autodoc.importer._MockObject</span></code></p>
 <p>Class defining methods to handle each token specified in the grammar</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ahds.grammar.detect_format">
 <code class="descclassname">ahds.grammar.</code><code class="descname">detect_format</code><span class="sig-paren">(</span><em>fn</em>, <em>format_bytes=50</em>, <em>verbose=False</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/grammar.html#detect_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.grammar.detect_format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect Amira file format (AmiraMesh or HyperSurface)</p>
+<dd><p>Detect Amira (R) file format (AmiraMesh or HyperSurface)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -258,10 +258,10 @@ data streams attribute.</p>
 
 </div>
 <div class="section" id="module-ahds.header">
-<span id="ahds-header-module"></span><h2>ahds.header module<a class="headerlink" href="#module-ahds.header" title="Permalink to this headline">¶</a></h2>
-<p>Module to convert parsed data from an Amira header into a set of nested objects. The key class is <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a>.</p>
+<span id="ahds-header-module"></span><h2><code class="docutils literal notranslate"><span class="pre">ahds.header</span></code> module<a class="headerlink" href="#module-ahds.header" title="Permalink to this headline">¶</a></h2>
+<p>Module to convert parsed data from an Amira (R) header into a set of nested objects. The key class is <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a>.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">amira.header</span> <span class="k">import</span> <span class="n">AmiraHeader</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ahds.header</span> <span class="k">import</span> <span class="n">AmiraHeader</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ah</span> <span class="o">=</span> <span class="n">AmiraHeader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s1">&#39;file.am&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">ah</span>
 </pre></div>
@@ -293,7 +293,7 @@ data streams attribute.</p>
 <dt id="ahds.header.AmiraHeader">
 <em class="property">class </em><code class="descclassname">ahds.header.</code><code class="descname">AmiraHeader</code><span class="sig-paren">(</span><em>parsed_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/header.html#AmiraHeader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.header.AmiraHeader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Class to encapsulate Amira metadata</p>
+<p>Class to encapsulate Amira (R) metadata</p>
 <dl class="attribute">
 <dt id="ahds.header.AmiraHeader.data_pointers">
 <code class="descname">data_pointers</code><a class="headerlink" href="#ahds.header.AmiraHeader.data_pointers" title="Permalink to this definition">¶</a></dt>
@@ -311,7 +311,7 @@ designation preceded by the key-word ‘define’</p>
 <dl class="attribute">
 <dt id="ahds.header.AmiraHeader.designation">
 <code class="descname">designation</code><a class="headerlink" href="#ahds.header.AmiraHeader.designation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Designation of the Amira file defined in the first row</p>
+<dd><p>Designation of the Amira (R) file defined in the first row</p>
 <p>Designations consist of some or all of the following data:</p>
 <ul class="simple">
 <li>filetype e.g. <code class="docutils literal notranslate"><span class="pre">AmiraMesh</span></code> or <code class="docutils literal notranslate"><span class="pre">HyperSurface</span></code></li>
@@ -330,7 +330,7 @@ designation preceded by the key-word ‘define’</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Amira file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Amira (R) file</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return ah:</th><td class="field-body">object of class <a class="reference internal" href="#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> containing header metadata</td>
 </tr>
@@ -376,10 +376,10 @@ e.g. colour, data pointer etc.</p>
 
 </div>
 <div class="section" id="module-ahds.data_stream">
-<span id="ahds-data-stream-module"></span><h2>ahds.data_stream module<a class="headerlink" href="#module-ahds.data_stream" title="Permalink to this headline">¶</a></h2>
+<span id="ahds-data-stream-module"></span><h2><code class="docutils literal notranslate"><span class="pre">ahds.data_stream</span></code> module<a class="headerlink" href="#module-ahds.data_stream" title="Permalink to this headline">¶</a></h2>
 <p>data_stream</p>
 <p>The following image shows the class hierarchy for data streams.</p>
-<img alt="_images/ahds_AmiraMeshDataStream_classes.png" src="_images/ahds_AmiraMeshDataStream_classes.png" />
+<img alt="_images/ahds_classes.png" src="_images/ahds_classes.png" />
 <dl class="class">
 <dt id="ahds.data_stream.AmiraDataStream">
 <em class="property">class </em><code class="descclassname">ahds.data_stream.</code><code class="descname">AmiraDataStream</code><span class="sig-paren">(</span><em>amira_header</em>, <em>data_pointer</em>, <em>stream_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ahds/data_stream.html#AmiraDataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ahds.data_stream.AmiraDataStream" title="Permalink to this definition">¶</a></dt>
@@ -1187,7 +1187,7 @@ Raise ValueError if the value is not present.</p>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="overview.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="overview.html" class="btn btn-neutral float-left" title="ahds" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

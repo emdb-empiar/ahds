@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ahds.data_stream &mdash; Amira Header and Data Streams 0.1 documentation</title>
+  <title>ahds.data_stream &mdash; ahds 0.1 documentation</title>
   
 
   
@@ -24,7 +24,6 @@
         <script type="text/javascript" src="../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -48,7 +47,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> Amira Header and Data Streams
+            <a href="../../index.html" class="icon icon-home"> ahds
           
 
           
@@ -84,7 +83,7 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../overview.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../ahds.html">ahds package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ahds.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code> package</a></li>
 </ul>
 
             
@@ -99,7 +98,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Amira Header and Data Streams</a>
+          <a href="../../index.html">ahds</a>
         
       </nav>
 
@@ -156,7 +155,7 @@
 
 <span class="sd">The following image shows the class hierarchy for data streams.</span>
 
-<span class="sd">.. image:: ../docs/ahds_AmiraMeshDataStream_classes.png</span>
+<span class="sd">.. image:: ../docs/ahds_classes.png</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -329,31 +328,31 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">z</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">=</span> <span class="n">array</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_byte_values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">byte_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_byte_values</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Accessor to underlying array data&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__array</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span>
 
 <div class="viewcode-block" id="Image.equalise"><a class="viewcode-back" href="../../ahds.html#ahds.data_stream.Image.equalise">[docs]</a>    <span class="k">def</span> <span class="nf">equalise</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Increase the dynamic range of the image&quot;&quot;&quot;</span>
-        <span class="n">multiplier</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">*</span> <span class="n">multiplier</span></div>
+        <span class="n">multiplier</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_byte_values</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">*</span> <span class="n">multiplier</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">as_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;A dictionary of lists of contours keyed by byte_value&quot;&quot;&quot;</span>
         <span class="n">contours</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">byte_value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__byte_values</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">byte_value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_byte_values</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">byte_value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">==</span> <span class="n">byte_value</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">==</span> <span class="n">byte_value</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
             <span class="n">found_contours</span> <span class="o">=</span> <span class="n">find_contours</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">254</span><span class="p">,</span> <span class="n">fully_connected</span><span class="o">=</span><span class="s1">&#39;high&#39;</span><span class="p">)</span>  <span class="c1"># a list of array</span>
             <span class="n">contours</span><span class="p">[</span><span class="n">byte_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">ContourSet</span><span class="p">(</span><span class="n">found_contours</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">contours</span>
@@ -443,13 +442,13 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">z</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__array</span> <span class="o">=</span> <span class="n">array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">array</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">string_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -473,25 +472,25 @@
     <span class="n">find_type</span> <span class="o">=</span> <span class="n">FIND</span><span class="p">[</span><span class="s1">&#39;decimal&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span> <span class="n">stream_data</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span> <span class="o">=</span> <span class="n">amira_header</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span> <span class="o">=</span> <span class="n">data_pointer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span> <span class="o">=</span> <span class="n">stream_data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__decoded_length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span> <span class="o">=</span> <span class="n">amira_header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_pointer</span> <span class="o">=</span> <span class="n">data_pointer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span> <span class="o">=</span> <span class="n">stream_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decoded_length</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;An :py:class:`ahds.header.AmiraHeader` object&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_pointer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The data pointer for this data stream&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_pointer</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_pointer</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">stream_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;All the raw data from the file&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">encoded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -506,11 +505,11 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">decoded_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The length of the decoded stream data in relevant units e.g. tuples, integers (not bytes)&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__decoded_length</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decoded_length</span>
 
     <span class="nd">@decoded_length</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">decoded_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__decoded_length</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decoded_length</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> object of </span><span class="si">{:,}</span><span class="s2"> bytes&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_data</span><span class="p">))</span></div>
@@ -586,47 +585,47 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (?P&lt;</span><span class="si">%s</span><span class="s2">&gt;</span><span class="si">%s</span><span class="s2">+)\n&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_type</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">AmiraHxSurfaceDataStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream_data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__count</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__start_offset</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__end_offset</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_offset</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_offset</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__name</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
 
     <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span>
 
     <span class="nd">@count</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__count</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">start_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_offset</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_offset</span>
 
     <span class="nd">@start_offset</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">start_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__start_offset</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_offset</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">end_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__end_offset</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_offset</span>
 
     <span class="nd">@end_offset</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">end_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__end_offset</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_offset</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">match_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__match</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_match</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
@@ -736,7 +735,7 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">PatchesDataStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__patches</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_patches</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">):</span>
             <span class="c1">#  in order of appearance</span>
             <span class="n">inner_region</span> <span class="o">=</span> <span class="n">PatchesInnerRegionDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start_offset</span><span class="p">:])</span>
@@ -751,22 +750,22 @@
                 <span class="s1">&#39;BranchingPoints&#39;</span><span class="p">:</span> <span class="n">branching_points</span><span class="p">,</span>
                 <span class="s1">&#39;Triangles&#39;</span><span class="p">:</span> <span class="n">triangles</span><span class="p">,</span>
             <span class="p">}</span>
-            <span class="k">if</span> <span class="n">inner_region</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__patches</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__patches</span><span class="p">[</span><span class="n">inner_region</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">patch</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">inner_region</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patches</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_patches</span><span class="p">[</span><span class="n">inner_region</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">patch</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__patches</span><span class="p">[</span><span class="n">inner_region</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">patch</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_patches</span><span class="p">[</span><span class="n">inner_region</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">patch</span><span class="p">]</span>
             <span class="c1"># start searching from the end of the last search</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">start_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__patches</span><span class="p">[</span><span class="n">inner_region</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;Triangles&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">end_offset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patches</span><span class="p">[</span><span class="n">inner_region</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;Triangles&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">end_offset</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">end_offset</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__patches</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_patches</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__patches</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patches</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__patches</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_patches</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">encoded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -782,80 +781,80 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># private attrs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__fn</span> <span class="o">=</span> <span class="n">fn</span>  <span class="c1">#  property</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">AmiraHeader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>  <span class="c1"># property</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__filetype</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__configure</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span> <span class="o">=</span> <span class="n">fn</span>  <span class="c1">#  property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">AmiraHeader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filetype</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_configure</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">__configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fn</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;AmiraMesh&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__filetype</span> <span class="o">=</span> <span class="s2">&quot;AmiraMesh&quot;</span>
+    <span class="k">def</span> <span class="nf">_configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;AmiraMesh&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filetype</span> <span class="o">=</span> <span class="s2">&quot;AmiraMesh&quot;</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># refactor</span>
-                    <span class="n">data_pointer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="p">,</span> <span class="s1">&#39;data_pointer_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">AmiraMeshDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span>
-                                                                     <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
+                <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># refactor</span>
+                    <span class="n">data_pointer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="p">,</span> <span class="s1">&#39;data_pointer_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">AmiraMeshDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span>
+                                                                     <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
                     <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">AmiraMeshDataStream</span><span class="o">.</span><span class="n">last_stream</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">data_pointer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="p">,</span> <span class="s1">&#39;data_pointer_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">AmiraMeshDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
+                <span class="n">data_pointer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="o">.</span><span class="n">data_pointers</span><span class="p">,</span> <span class="s1">&#39;data_pointer_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">AmiraMeshDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="n">data_pointer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
                 <span class="c1"># reset AmiraMeshDataStream.last_stream</span>
                 <span class="n">AmiraMeshDataStream</span><span class="o">.</span><span class="n">last_stream</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;HyperSurface&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__filetype</span> <span class="o">=</span> <span class="s2">&quot;HyperSurface&quot;</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;BINARY&quot;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="s1">&#39;Vertices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">VerticesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="s1">&#39;NBranchingPoints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NBranchingPointsDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                                                                                         <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="s1">&#39;NVerticesOnCurves&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NVerticesOnCurvesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                                                                                           <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="s1">&#39;BoundaryCurves&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">BoundaryCurvesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                                                                                     <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="s1">&#39;Patches&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">PatchesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="s1">&#39;Vertices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">VerticesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span><span class="p">)</span>
-                    <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="s1">&#39;Vertices&#39;</span><span class="p">]</span>
-        <span class="c1">#                     f.seek(self.__data_streams[&#39;Vertices&#39;].start_offset)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;HyperSurface&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_filetype</span> <span class="o">=</span> <span class="s2">&quot;HyperSurface&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;BINARY&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="s1">&#39;Vertices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">VerticesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="s1">&#39;NBranchingPoints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NBranchingPointsDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                                                                         <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="s1">&#39;NVerticesOnCurves&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NVerticesOnCurvesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                                                                           <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="s1">&#39;BoundaryCurves&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">BoundaryCurvesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                                                                     <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="s1">&#39;Patches&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">PatchesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="o">.</span><span class="n">designation</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;ASCII&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="s1">&#39;Vertices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">VerticesDataStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span><span class="p">)</span>
+                    <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="s1">&#39;Vertices&#39;</span><span class="p">]</span>
+        <span class="c1">#                     f.seek(self._data_streams[&#39;Vertices&#39;].start_offset)</span>
         <span class="c1">#                     print f.readline(),</span>
         <span class="c1">#                     print f.readline(),</span>
         <span class="c1">#                     print f.readline(),</span>
         <span class="c1">#                     print f.readline(),</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fn</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__amira_header</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amira_header</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">stream_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stream_data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_data</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">filetype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__filetype</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filetype</span>
 
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> object with </span><span class="si">{}</span><span class="s2"> stream(s): </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
             <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
-            <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__data_streams</span><span class="o">.</span><span class="n">keys</span><span class="p">())),</span>
+            <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span><span class="o">.</span><span class="n">keys</span><span class="p">())),</span>
         <span class="p">)</span></div>
 </pre></div>
 
