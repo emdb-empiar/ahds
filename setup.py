@@ -29,7 +29,7 @@ setup(
     keywords="header, parser, data streams",
     setup_requires=["numpy"],
     # additional dependencies to prevent failed install due to no support for Py27
-    install_requires=["simpleparse==2.1.1", "scikit-image<0.14", "networkx==2.2", "scipy<1.2", "mock"],
+    install_requires=["simpleparse==2.1.1", "scikit-image<0.14", "networkx==2.2", "scipy<1.2"],
     ext_modules=[decoders],
     include_dirs=[np.get_include()],
 )
