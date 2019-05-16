@@ -4,7 +4,7 @@ data_stream
 
 The following image shows the class hierarchy for data streams.
 
-.. image:: ../docs/ahds_AmiraMeshDataStream_classes.png
+.. image:: ../docs/ahds_classes.png
 
 """
 
