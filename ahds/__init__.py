@@ -4,8 +4,6 @@
 from . import header
 from . import data_stream
 
-AHDS_VERSION = '0.1.9.post0'
-
 class AmiraFile(object):
     """Convenience class to handle Amira (R) files
     

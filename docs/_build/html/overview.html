@@ -110,7 +110,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="ahds.html">ahds package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ahds.html"><code class="docutils literal notranslate"><span class="pre">ahds</span></code> package</a></li>
 </ul>
 
             
@@ -202,7 +202,7 @@
 <li><a class="reference internal" href="#functions" id="id15">Functions</a></li>
 <li><a class="reference internal" href="#classes-in-detail" id="id16">Classes in Detail</a><ul>
 <li><a class="reference internal" href="#datastreams-class" id="id17">DataStreams class</a></li>
-<li><a class="reference internal" href="#classes-describing-amira-reg-data-streams" id="id18">Classes describing Amira ® data streams</a></li>
+<li><a class="reference internal" href="#classes-describing-amira-r-data-streams" id="id18">Classes describing Amira (R) data streams</a></li>
 <li><a class="reference internal" href="#conversion-classes" id="id19">Conversion classes</a></li>
 </ul>
 </li>
@@ -216,16 +216,16 @@
 </div>
 <div class="section" id="overview">
 <h2><a class="toc-backref" href="#id2">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ahds</span></code> is a Python package to parse and handle Amira ® files.
-It was developed to facilitate reading of Amira ® files as part of the EMDB-SFF toolkit.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ahds</span></code> is a Python package to parse and handle Amira (R) files.
+It was developed to facilitate reading of Amira (R) files as part of the EMDB-SFF toolkit.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Amira ® is a trademark of Thermo Fisher Scientific. This package is in no way affiliated with with Thermo Fisher Scientific.</p>
+<p class="last">Amira (R) is a trademark of Thermo Fisher Scientific. This package is in no way affiliated with with Thermo Fisher Scientific.</p>
 </div>
 <div class="section" id="use-cases">
 <h3><a class="toc-backref" href="#id3">Use Cases</a><a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Detect and parse Amira ® headers and return structured data</li>
+<li>Detect and parse Amira (R) headers and return structured data</li>
 <li>Decode data (<code class="docutils literal notranslate"><span class="pre">HxRLEByte</span></code>, <code class="docutils literal notranslate"><span class="pre">HxZip</span></code>)</li>
 <li>Easy extensibility to handle previously unencountered data streams</li>
 </ul>
@@ -265,12 +265,12 @@ installing <code class="docutils literal notranslate"><span class="pre">numpy&lt
 <div class="section" id="future-plans">
 <h2><a class="toc-backref" href="#id6">Future Plans</a><a class="headerlink" href="#future-plans" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>Write out valid Amira ® files</li>
+<li>Write out valid Amira (R) files</li>
 </ul>
 </div>
 <div class="section" id="background-and-definitions">
 <h2><a class="toc-backref" href="#id7">Background and Definitions</a><a class="headerlink" href="#background-and-definitions" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ahds</span></code> presently handles two types of Amira ® files:</p>
+<p><code class="docutils literal notranslate"><span class="pre">ahds</span></code> presently handles two types of Amira (R) files:</p>
 <ul class="simple">
 <li><cite>AmiraMesh</cite> files, which typically but not necessarily have a <code class="docutils literal notranslate"><span class="pre">.am</span></code> extension, and</li>
 <li><cite>HyperSurface</cite> files, which have <code class="docutils literal notranslate"><span class="pre">.surf</span></code> and represent an older filetype.</li>
@@ -437,7 +437,7 @@ installing <code class="docutils literal notranslate"><span class="pre">numpy&lt
 </div>
 <div class="section" id="ahds-grammar">
 <h3><a class="toc-backref" href="#id11"><a class="reference internal" href="ahds.html#module-ahds.grammar" title="ahds.grammar"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ahds.grammar</span></code></a></a><a class="headerlink" href="#ahds-grammar" title="Permalink to this headline">¶</a></h3>
-<p>This module describes the header grammar for Amira ® (AmiraMesh and HyperSurface) files and so depends on <code class="xref py py-mod docutils literal notranslate"><span class="pre">simpleparse</span></code> Python package. It defines a single class (<a class="reference internal" href="ahds.html#ahds.grammar.AmiraDispatchProcessor" title="ahds.grammar.AmiraDispatchProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.grammar.AmiraDispatchProcessor</span></code></a>) and four functions.</p>
+<p>This module describes the header grammar for Amira (R) (AmiraMesh and HyperSurface) files and so depends on <code class="xref py py-mod docutils literal notranslate"><span class="pre">simpleparse</span></code> Python package. It defines a single class (<a class="reference internal" href="ahds.html#ahds.grammar.AmiraDispatchProcessor" title="ahds.grammar.AmiraDispatchProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.grammar.AmiraDispatchProcessor</span></code></a>) and four functions.</p>
 <p><a class="reference internal" href="ahds.html#ahds.grammar.AmiraDispatchProcessor" title="ahds.grammar.AmiraDispatchProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.grammar.AmiraDispatchProcessor</span></code></a> is a subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">simpleparse.dispatchprocessor</span></code> which implements the core functionality required to use the grammar. Each grammar token has a corresponding method defined on this class which determines how the data associated with that token will be rendered. Data can be rendered as a single or multimap, string, number, or in custom format.</p>
 <ul class="simple">
 <li><code class="xref py py-func docutils literal notranslate"><span class="pre">ahds.grammar.get_parsed_data(fn,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)()</span></code> is the user-level function that takes a filename and returns structured parsed data. It depends on the other three functions defined:</li>
@@ -535,8 +535,8 @@ installing <code class="docutils literal notranslate"><span class="pre">numpy&lt
 <span class="go">4014522</span>
 </pre></div>
 </div>
-<p>This module consists of two main classes: <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> is the user-level class and <a class="reference internal" href="ahds.html#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a> which is a container class for a block of structured data from an Amira ® header.</p>
-<p>AmiraHeader has one constructor: <code class="xref py py-func docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader.from_file(fn,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)()</span></code> which takes an Amira ® file by name and arguments and returns an <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: <code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader(parsed_data)</span></code> which returns an <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object configured appropriately.</p>
+<p>This module consists of two main classes: <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> is the user-level class and <a class="reference internal" href="ahds.html#ahds.header.Block" title="ahds.header.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.Block</span></code></a> which is a container class for a block of structured data from an Amira (R) header.</p>
+<p>AmiraHeader has one constructor: <code class="xref py py-func docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader.from_file(fn,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)()</span></code> which takes an Amira (R) file by name and arguments and returns an <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: <code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader(parsed_data)</span></code> which returns an <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> object configured appropriately.</p>
 <ul class="simple">
 <li>The raw data structured data is available as read-only property: <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader.raw_header" title="ahds.header.AmiraHeader.raw_header"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader.raw_header</span></code></a></li>
 <li>Internally the <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> class implements a set of private methods which individually load the four data sections (<code class="docutils literal notranslate"><span class="pre">designation</span></code>, <code class="docutils literal notranslate"><span class="pre">definitions</span></code>, <code class="docutils literal notranslate"><span class="pre">parameters</span></code>, and <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">pointers</span></code>).</li>
@@ -580,13 +580,13 @@ installing <code class="docutils literal notranslate"><span class="pre">numpy&lt
 </div>
 <div class="section" id="ahds-data-stream">
 <h3><a class="toc-backref" href="#id13"><a class="reference internal" href="ahds.html#module-ahds.data_stream" title="ahds.data_stream"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ahds.data_stream</span></code></a></a><a class="headerlink" href="#ahds-data-stream" title="Permalink to this headline">¶</a></h3>
-<p>This is most complex module implementing a hierarchy of classes describing various data streams within Amira ® files. It has 22 classes and five functions</p>
+<p>This is most complex module implementing a hierarchy of classes describing various data streams within Amira (R) files. It has 22 classes and five functions</p>
 <div class="section" id="classes">
 <h4><a class="toc-backref" href="#id14">Classes</a><a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h4>
 <p>There are three categories of classes:</p>
 <ul class="simple">
 <li>A user-level class that encapsulates (2) below.</li>
-<li>Classes describing Amira ® data streams</li>
+<li>Classes describing Amira (R) data streams</li>
 </ul>
 <blockquote>
 <div><ul class="simple">
@@ -603,7 +603,7 @@ installing <code class="docutils literal notranslate"><span class="pre">numpy&lt
 <li>Classes abstracting contours</li>
 </ul>
 </div></blockquote>
-<p>The user-level <a class="reference internal" href="ahds.html#ahds.data_stream.DataStreams" title="ahds.data_stream.DataStreams"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams</span></code></a> class is the preferred way to use the module. It takes the name of an Amira ® file and encapsulates an iterator of data streams.</p>
+<p>The user-level <a class="reference internal" href="ahds.html#ahds.data_stream.DataStreams" title="ahds.data_stream.DataStreams"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams</span></code></a> class is the preferred way to use the module. It takes the name of an Amira (R) file and encapsulates an iterator of data streams.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ahds</span> <span class="k">import</span> <span class="n">data_stream</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data_streams</span> <span class="o">=</span> <span class="n">data_stream</span><span class="o">.</span><span class="n">DataStreams</span><span class="p">(</span><span class="s1">&#39;am/test6.am&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data_streams</span>
@@ -632,7 +632,7 @@ installing <code class="docutils literal notranslate"><span class="pre">numpy&lt
 <h5><a class="toc-backref" href="#id17">DataStreams class</a><a class="headerlink" href="#datastreams-class" title="Permalink to this headline">¶</a></h5>
 <p>The following attributes are available on objects of this class:</p>
 <ul class="simple">
-<li><code class="xref py py-attr docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams.file</span></code> - filename of Amira ® file</li>
+<li><code class="xref py py-attr docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams.file</span></code> - filename of Amira (R) file</li>
 <li><code class="xref py py-attr docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams.header</span></code> - an object of class <a class="reference internal" href="ahds.html#ahds.header.AmiraHeader" title="ahds.header.AmiraHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.header.AmiraHeader</span></code></a> encapsulating the header data in four sections (<code class="docutils literal notranslate"><span class="pre">designation</span></code>, <code class="docutils literal notranslate"><span class="pre">definitions</span></code>, <code class="docutils literal notranslate"><span class="pre">parameters</span></code>, and <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">pointers</span></code>)</li>
 <li><code class="xref py py-attr docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams.filetype</span></code> - the filetype as specified in (ii) above.</li>
 <li><code class="xref py py-attr docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams.stream_data</span></code> - all raw data from the file (including the header)</li>
@@ -640,11 +640,11 @@ installing <code class="docutils literal notranslate"><span class="pre">numpy&lt
 <li><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.DataStreams[&lt;index&gt;]</span></code> - returns the data stream of the index specified (as defined in the data_pointers section of the header object</li>
 </ul>
 </div>
-<div class="section" id="classes-describing-amira-reg-data-streams">
-<h5><a class="toc-backref" href="#id18">Classes describing Amira ® data streams</a><a class="headerlink" href="#classes-describing-amira-reg-data-streams" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="classes-describing-amira-r-data-streams">
+<h5><a class="toc-backref" href="#id18">Classes describing Amira (R) data streams</a><a class="headerlink" href="#classes-describing-amira-r-data-streams" title="Permalink to this headline">¶</a></h5>
 <p>The following diagrams illustrates the hierarchy of classes:</p>
 <img alt="_images/ahds_classes1.png" src="_images/ahds_classes1.png" />
-<p>Classes describing Amira ® data streams</p>
+<p>Classes describing Amira (R) data streams</p>
 <ul class="simple">
 <li><a class="reference internal" href="ahds.html#ahds.data_stream.AmiraDataStream" title="ahds.data_stream.AmiraDataStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">ahds.data_stream.AmiraDataStream</span></code></a> is the base class for all data stream classes and defines the following attributes:</li>
 </ul>
