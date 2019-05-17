@@ -4,7 +4,7 @@ from setuptools import setup, find_packages, Extension
 import numpy as np
 import os
 
-AHDS_VERSION = '0.1.9.post0'
+AHDS_VERSION = '0.1.9.post1'
 
 decoders = Extension(
     'ahds.decoders',
