@@ -5,30 +5,30 @@ Grammar to parse headers in Amira files
 """
 
 from __future__ import print_function
-import sys
-import re
-from pprint import pprint
 
+import re
+import sys
+from pprint import pprint
 
 # simpleparse
 from simpleparse.parser import Parser
-from simpleparse.common import numbers, strings  # @UnusedImport
-from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, dispatch, singleMap, multiMap  # @UnusedImport
+from simpleparse.common import numbers, strings
+from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, dispatch, singleMap, multiMap
 
 
 try:
-    from .AmiraDispatchProcessor import AmiraDispatchProcessor
-except :
-    from AmiraDispatchProcessor import AmiraDispatchProcessor
-
-try:
-    from .ahds_common import _decode_string,_dict_iter_items,_dict_iter_keys
+    from .proc import AmiraDispatchProcessor
 except:
-    from ahds_common import _decode_string,_dict_iter_items,_dict_iter_keys
+    from proc import AmiraDispatchProcessor
 
-#try:
+try:
+    from .core import _decode_string, _dict_iter_items, _dict_iter_keys
+except:
+    from core import _decode_string, _dict_iter_items, _dict_iter_keys
+
+# try:
 #    from .data_stream import _stream_delimiters,_rescan_overlap
-#except:
+# except:
 #    from data_stream import _stream_delimiters,_rescan_overlap
 
 # Amira Header Grammar
@@ -88,50 +88,52 @@ number_seq                   :=    number, (ts, number)*
 # pp 519-525 # downloaded Dezember 2018 from 
 # http://www1.udel.edu/ctcr/sites/udel.edu.ctcr/files/Amira%20Reference%20Guide.pdf
 _hyper_surface_file = {
-    'Vertices': ['Coordinates',3,'float',False],
-    'NBranchingPoints': [None,None,'int',True],
-    'NVerticesOnCurves': [None,None,'int',True],
+    'Vertices': ['Coordinates', 3, 'float', False],
+    'NBranchingPoints': [None, None, 'int', True],
+    'NVerticesOnCurves': [None, None, 'int', True],
     'BoundaryCurves': {
-        'Vertices': [ None,1,'int',False],
-        0:True
+        'Vertices': [None, 1, 'int', False],
+        0: True
     },
     'Patches': {
-        'InnerRegion':[None,None,'str',False],
-        'OuterRegion':[None,None,'str',False],
-        'Triangles':[None,3,'int',False],
-        'BranchingPoints':[None,0,'int',True],
-        'BoundaryCurves':[None,0,'int',True],
-        0:False
+        'InnerRegion': [None, None, 'str', False],
+        'OuterRegion': [None, None, 'str', False],
+        'Triangles': [None, 3, 'int', False],
+        'BranchingPoints': [None, 0, 'int', True],
+        'BoundaryCurves': [None, 0, 'int', True],
+        0: False
     },
     'Surfaces': {
-        'Region':[None,None,'str',False],
-        'Patches':[None,0,'int',False],
-        0:True
+        'Region': [None, None, 'str', False],
+        'Patches': [None, 0, 'int', False],
+        0: True
     }
 }
 
 # string representing all valid keys within the above structure is inserted 
 # in the below regular expression patterns 
-_hyper_surface_entities = '|'.join([ 
-    '|'.join([_key] + ([ _vk for _vk in _dict_iter_keys(_val) if isinstance(_vk,str)] if isinstance(_val,dict) else []))
-    for _key,_val in _dict_iter_items(_hyper_surface_file)
-    if isinstance(_key,str)
+_hyper_surface_entities = '|'.join([
+    '|'.join(
+        [_key] + ([_vk for _vk in _dict_iter_keys(_val) if isinstance(_vk, str)] if isinstance(_val, dict) else []))
+    for _key, _val in _dict_iter_items(_hyper_surface_file)
+    if isinstance(_key, str)
 ])
 
 # maximum number of bytes to be rescanned at the end of the already inspected
 # _stream_data array after new bytes have been read from the file. In case within this
 # range a data block marker (@<Num>) or any of the above HyperSurface section keys has
 # alreday been successfully identified rescan starts at the byte following this match
-_rescan_overlap = max( (
-    max([len(_key)] + ([len(_vk) for _vk in _dict_iter_keys(_val) if isinstance(_vk,str)] if isinstance(_val,dict) else []))
-    for _key,_val in _dict_iter_items(_hyper_surface_file)
-    if isinstance(_key,str)
-) ) + 16
+_rescan_overlap = max((
+    max([len(_key)] + (
+        [len(_vk) for _vk in _dict_iter_keys(_val) if isinstance(_vk, str)] if isinstance(_val, dict) else []))
+    for _key, _val in _dict_iter_items(_hyper_surface_file)
+    if isinstance(_key, str)
+)) + 16
 
 if sys.version_info[0] > 2:
     # definitions required by python3 and newer for properly parsing binary byte strings without converting
     # them first into regular UTF-8 strings
- 
+
     _file_format_match = (
         re.compile(b'.*AmiraMesh.*'),
         re.compile(b'.*HyperSurface.*')
@@ -143,9 +145,10 @@ if sys.version_info[0] > 2:
     # defined as byte string instead of regular raw pyhton string
     _strip_lineend = b'\n'
     _stream_delimiters = [
-        re.compile(b"(?:^|\n)@(?P<stream>\d+)\n",flags=re.S),
-        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(_hyper_surface_entities).encode('ASCII')),
-        re.compile(b"^\s*}",re.I) # NOTE this is applied to reverese slice of stream_data therefore ^
+        re.compile(b"(?:^|\n)@(?P<stream>\d+)\n", flags=re.S),
+        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(
+            _hyper_surface_entities).encode('ASCII')),
+        re.compile(b"^\s*}", re.I)  # NOTE this is applied to reverese slice of stream_data therefore ^
     ]
 
 else:
@@ -163,9 +166,10 @@ else:
     # the raw byte stream can be formulated using regular raw strings
     _strip_lineened = r'\n}{\t '
     _stream_delimiters = [
-        re.compile(r"(?:^|\n)@(?P<stream>\d+)\n",flags=re.S),
-        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(r"|".join(_hyper_surface_entities))),
-        re.compile(r"^\s*}'",re.I) # NOTE this is applied to reverese slice of stream_data therefore ^
+        re.compile(r"(?:^|\n)@(?P<stream>\d+)\n", flags=re.S),
+        re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(
+            r"|".join(_hyper_surface_entities))),
+        re.compile(r"^\s*}'", re.I)  # NOTE this is applied to reverese slice of stream_data therefore ^
     ]
 
 
@@ -179,20 +183,20 @@ def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
     """
     assert format_bytes > 0
     assert verbose in [True, False]
-    
+
     with open(fn, 'rb') as f:
         rough_header = f.read(format_bytes)
-        
+
         if _file_format_match[0].match(rough_header):
             file_format = "AmiraMesh"
         elif _file_format_match[1].match(rough_header):
             file_format = "HyperSurface"
         else:
             file_format = "Undefined"
-    
+
     if verbose:
-        print("{} file detected...".format(file_format),file = sys.stderr)
-    
+        print("{} file detected...".format(file_format), file=sys.stderr)
+
     return file_format
 
 
@@ -206,31 +210,31 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
     """
     assert header_bytes > 0
     assert file_format in ['AmiraMesh', 'HyperSurface']
-    
+
     data = None
     with open(fn, 'rb') as f:
         # read a first chunk and store it in the first element of the list of header chunks
         data = f.read(header_bytes if header_bytes >= _rescan_overlap else _rescan_overlap)
-        
+
         if file_format == "AmiraMesh":
             if verbose:
-                print("Using pattern: {}".format(_stream_delimiters[0].pattern),file = sys.stderr)
+                print("Using pattern: {}".format(_stream_delimiters[0].pattern), file=sys.stderr)
             # scan the latests chunk ta for the first @<n> data block start marker
             m = _stream_delimiters[0].search(data)
             while m is None:
                 _chunklen = len(data) - _rescan_overlap
                 data += f.read(header_bytes)
-                m = _stream_delimiters[0].search(data,_chunklen)
+                m = _stream_delimiters[0].search(data, _chunklen)
         elif file_format == "HyperSurface":
             if verbose:
-                print("Using pattern: {}".format(_stream_delimiters[1].pattern),file = sys.stderr)
+                print("Using pattern: {}".format(_stream_delimiters[1].pattern), file=sys.stderr)
             # scan the latests chunk for the the first occurance of any of the keys of the above
             # _hyper_surface_file structure
             m = _stream_delimiters[1].search(data)
             while m is None:
                 _chunklen = len(data) - _rescan_overlap
                 data += f.read(header_bytes)
-                m =_stream_delimiters[1].search(data,_chunklen)
+                m = _stream_delimiters[1].search(data, _chunklen)
         elif file_format == "Undefined":
             raise ValueError("Unable to parse undefined file")
     # cut the data before the delimter and encode the remaining byte string into ASCII
@@ -246,22 +250,22 @@ def parse_header(data, verbose=False, *args, **kwargs):
     """
     # the parser
     if verbose:
-        print("Creating parser object...",file = sys.stderr)
+        print("Creating parser object...", file=sys.stderr)
     parser = Parser(amira_header_grammar)
-    
+
     # the processor
     if verbose:
-        print("Defining dispatch processor...",file = sys.stderr)
+        print("Defining dispatch processor...", file=sys.stderr)
     amira_processor = AmiraDispatchProcessor()
-    
+
     # parsing
     if verbose:
-        print("Parsing data...",file = sys.stderr)
+        print("Parsing data...", file=sys.stderr)
     success, parsed_data, next_item = parser.parse(data, production='amira', processor=amira_processor)
-    
+
     if success:
         if verbose:
-            print("Successfully parsed data...",file = sys.stderr)
+            print("Successfully parsed data...", file=sys.stderr)
         return parsed_data
     else:
         raise TypeError("Parse: {}\nNext: {}\n".format(parsed_data, next_item))
@@ -276,12 +280,12 @@ def get_parsed_data(fn, *args, **kwargs):
     file_format = detect_format(fn, *args, **kwargs)
     data = get_header(fn, file_format, *args, **kwargs)
     parsed_data = parse_header(data, *args, **kwargs)
-    return parsed_data,len(data)
+    return parsed_data, len(data)
 
 
 def main():
     import argparse
-    
+
     parser = argparse.ArgumentParser(prog='amira_grammar_parser', description='Parser for Amira headers')
     parser.add_argument('amira_fn', help="name of an Amira file with extension .am or .surf")
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='verbose output')
@@ -289,25 +293,25 @@ def main():
     parser.add_argument('-P', '--show-parsed', action='store_true', default=False, help='show parsed header')
     parser.add_argument('-f', '--format-bytes', type=int, default=50, help='bytes to search for file format')
     parser.add_argument('-r', '--header-bytes', type=int, default=20000, help='bytes to search for header')
-    
+
     args = parser.parse_args()
 
     # get file format
     file_format = detect_format(args.amira_fn, format_bytes=args.format_bytes, verbose=args.verbose)
-    
+
     # get the exact header
     data = get_header(args.amira_fn, file_format, header_bytes=args.header_bytes, verbose=args.verbose)
-    
+
     if args.show_header:
-        print('raw data:',file = sys.stderr)
-        print(data,file = sys.stderr)
-        print('',file = sys.stderr)
+        print('raw data:', file=sys.stderr)
+        print(data, file=sys.stderr)
+        print('', file=sys.stderr)
 
     # parse the header    
     parsed_data = parse_header(data, verbose=args.verbose)
 
     if args.show_parsed:
-        print('parsed data:',file = sys.stderr)
+        print('parsed data:', file=sys.stderr)
         pprint(parsed_data, width=318, stream=sys.stderr)
 
     return 0
