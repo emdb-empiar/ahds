@@ -2,19 +2,18 @@
 # ahds
 
 try:
-    from .header import AmiraHeader,AmiraHeaderError
+    from .header import AmiraHeader, AmiraHeaderError
 except:
-    from header import AmiraHeader,AmiraHeaderError
+    from header import AmiraHeader, AmiraHeaderError
 try:
-    from .data_stream import DataStreams,DataStreamError,DataStreamNotFoundError,NotSupportedError
+    from .data_stream import DataStreams, DataStreamError, DataStreamNotFoundError, NotSupportedError
 except:
-    from data_stream import DataStreams,DataStreamError,DataStreamNotFoundError,NotSupportedError
+    from data_stream import DataStreams, DataStreamError, DataStreamNotFoundError, NotSupportedError
 try:
-    from .ahds_common import deprecated
+    from .core import deprecated
 except:
-    from ahds_common import deprecated
+    from core import deprecated
 
-import os.path as path
 
 
 class AmiraFile(AmiraHeader):
@@ -27,25 +26,26 @@ class AmiraFile(AmiraHeader):
     """
 
     __slots__ = ("_data_streams",)
+
     def __init__(self, fn, *args, **kwargs):
-        super(AmiraFile,self).__init__(fn,*args,**kwargs)
-        self._data_streams = None # create wrapper on call to read
+        super(AmiraFile, self).__init__(fn, *args, **kwargs)
+        self._data_streams = None  # create wrapper on call to read
 
-    def __getattribute__(self,name):
-        if name in ("header","data_streams"):
-            return super(AmiraFile,self).__getattribute__(name)()
-        return super(AmiraFile,self).__getattribute__(name)
-        
+    def __getattribute__(self, name):
+        if name in ("header", "data_streams"):
+            return super(AmiraFile, self).__getattribute__(name)()
+        return super(AmiraFile, self).__getattribute__(name)
 
-    @deprecated("AmiraFile is a subclass of AmiraHeader access header attributes directly from it")        
+    @deprecated("AmiraFile is a subclass of AmiraHeader access header attributes directly from it")
     def header(self):
         return self
 
-    @deprecated("data streams are loaded into their metadata blocks when accessed for the fist time through the dedicated stream_data and data attributes of corresponding metadata blocks")
+    @deprecated(
+        "data streams are loaded into their metadata blocks when accessed for the fist time through the dedicated stream_data and data attributes of corresponding metadata blocks")
     def data_streams(self):
         return self._data_streams
 
-    @deprecated("data streams are read on demmand when dedicated stream_data and data attributes are accessed for the first time")
+    @deprecated(
+        "data streams are read on demmand when dedicated stream_data and data attributes are accessed for the first time")
     def read(self):
         self._data_streams = DataStreams(self)
-        
