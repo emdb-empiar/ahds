@@ -249,13 +249,15 @@ if REFACTOR:
             # but the prefix will be updated calls for __str__ for nested Blocks
             # we use the format() function to pass a format_spec which does alignment
             if index is not None:
-                string = "{}[is_parent? {:<5}]\n".format(
+                string = "{} {} object [is_parent? {:<5}]\n".format(
                     format(prefix + "+[{}]-{}".format(index, self.name), '<55'),
+                    format(str(type(self)), '>50'),
                     str(self.is_parent)
                 )
             else:
-                string = "{}[is_parent? {:<5}]\n".format(
+                string = "{} {} object [is_parent? {:<5}]\n".format(
                     format(prefix + "+-{}".format(self.name), '<55'),
+                    format(str(type(self)), '>50'),
                     str(self.is_parent)
                 )
             for attr in self._attrs:
@@ -266,7 +268,7 @@ if REFACTOR:
                     string += self._attrs[attr].__str__(prefix=prefix + "|  ")
                 else:
                     # if it is not a Block then we construct the repr. manually
-                    string += prefix + "|  +-{} = {}\n".format(attr, self._attrs[attr])
+                    string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
             return string
 
         def __getitem__(self, index):

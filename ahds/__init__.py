@@ -1,19 +1,9 @@
 # -*- coding: utf-8 -*-
 # ahds
 
-try:
-    from .header import AmiraHeader, AmiraHeaderError
-except:
-    from header import AmiraHeader, AmiraHeaderError
-try:
-    from .data_stream import DataStreams, DataStreamError, DataStreamNotFoundError, NotSupportedError
-except:
-    from data_stream import DataStreams, DataStreamError, DataStreamNotFoundError, NotSupportedError
-try:
-    from .core import deprecated
-except:
-    from core import deprecated
-
+from .header import AmiraHeader, AmiraHeaderError
+from .data_stream import DataStreams, DataStreamError, DataStreamNotFoundError, NotSupportedError
+from .core import deprecated
 
 
 class AmiraFile(AmiraHeader):
