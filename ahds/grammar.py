@@ -15,16 +15,16 @@ from simpleparse.parser import Parser
 from simpleparse.common import numbers, strings
 from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, dispatch, singleMap, multiMap
 
+# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
+# pip install -e /path/to/folder/with/setup.py
+# or
+# python setup.py develop
 
-try:
-    from .proc import AmiraDispatchProcessor
-except:
-    from proc import AmiraDispatchProcessor
+# definition of numpy data types with dedicated endianess and number of bits
+# they are used by the below lookup table
+from .proc import AmiraDispatchProcessor
+from .core import _decode_string, _dict_iter_items, _dict_iter_keys
 
-try:
-    from .core import _decode_string, _dict_iter_items, _dict_iter_keys
-except:
-    from core import _decode_string, _dict_iter_items, _dict_iter_keys
 
 # try:
 #    from .data_stream import _stream_delimiters,_rescan_overlap
@@ -280,7 +280,7 @@ def get_parsed_data(fn, *args, **kwargs):
     file_format = detect_format(fn, *args, **kwargs)
     data = get_header(fn, file_format, *args, **kwargs)
     parsed_data = parse_header(data, *args, **kwargs)
-    return parsed_data, len(data)
+    return parsed_data, len(data), file_format
 
 
 def main():

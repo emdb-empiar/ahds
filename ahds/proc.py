@@ -28,7 +28,7 @@ _compatibilitymap = {
 _strip_material_name = re.compile(r'^\s*"\s*|\s*",*$')
 
 # simpleparse
-from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, singleMap  # @UnusedImport
+from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, singleMap
 
 
 class AmiraDispatchProcessor(DispatchProcessor):
