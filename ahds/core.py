@@ -7,6 +7,7 @@ import inspect
 import re
 import sys
 import warnings
+import numpy as np
 
 if sys.argv[2] == '0':
     REFACTOR = False
@@ -248,14 +249,15 @@ if REFACTOR:
             # the root Block will have an empty prefix
             # but the prefix will be updated calls for __str__ for nested Blocks
             # we use the format() function to pass a format_spec which does alignment
+            string = ''
             if index is not None:
-                string = "{} {} object [is_parent? {:<5}]\n".format(
+                string += "{} {} object [is_parent? {:<5}]\n".format(
                     format(prefix + "+[{}]-{}".format(index, self.name), '<55'),
                     format(str(type(self)), '>50'),
                     str(self.is_parent)
                 )
             else:
-                string = "{} {} object [is_parent? {:<5}]\n".format(
+                string += "{} {} object [is_parent? {:<5}]\n".format(
                     format(prefix + "+-{}".format(self.name), '<55'),
                     format(str(type(self)), '>50'),
                     str(self.is_parent)
@@ -268,7 +270,12 @@ if REFACTOR:
                     string += self._attrs[attr].__str__(prefix=prefix + "|  ")
                 else:
                     # if it is not a Block then we construct the repr. manually
-                    string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
+                    val = self._attrs[attr]
+                    # don't print the whole array
+                    if isinstance(val, (np.ndarray, )):
+                        string += prefix + "|  +-{}: {},...,{}\n".format(attr, val[0], val[-1])
+                    else:
+                        string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
             return string
 
         def __getitem__(self, index):
@@ -347,7 +354,7 @@ if REFACTOR:
             :returns str string: formatted string of attributes
             """
             # first we use the superclass to populate everything else
-            string = super(ListBlock, self).__str__(prefix=prefix)
+            string = super(ListBlock, self).__str__(prefix=prefix, index=index)
             # now we stringify the list-blocks
             for index, block in enumerate(self.items()):
                 string += block.__str__(prefix=prefix + "|  ", index=index)

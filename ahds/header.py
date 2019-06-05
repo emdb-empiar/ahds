@@ -210,7 +210,7 @@ import numpy as np
 # python setup.py develop
 from .core import _dict_iter_items, Block, deprecated, \
     ListBlock, REFACTOR
-from .data_stream import StreamLoader, set_data_stream, set_stream_loader
+from .data_stream import StreamLoader, set_data_stream
 # definition of numpy data types with dedicated endianess and number of bits
 # they are used by the below lookup table
 from .grammar import get_parsed_data
@@ -258,7 +258,8 @@ class AmiraHeader(Block):
     # which will be stored inside the __dict__ attribute of the Block base class
     if REFACTOR:
         __slots__ = (
-        '_fn', '_parsed_data', '_stream_loader', '_header_length', '_file_format', '_parameters', '_load_streams', '_data_stream_count')
+            '_fn', '_parsed_data', '_header_length', '_file_format', '_parameters', '_load_streams',
+            '_data_stream_count')
     else:
         __slots__ = (
             "_fn", "_parsed_data", "_stream_loader", "_parameters", "_materials", "_field_data_map", "_noload",
@@ -271,8 +272,7 @@ class AmiraHeader(Block):
             self._fn = fn
             self._parsed_data, self._header_length, self._file_format = get_parsed_data(fn, *args, **kwargs)
             # introspect the stream loader to use
-            self._stream_loader = set_stream_loader(self._file_format)
-            pprint(self._parsed_data)
+            # pprint(self._parsed_data)
             # load the streams
             self._load_streams = load_streams
             # data stream count
@@ -305,10 +305,6 @@ class AmiraHeader(Block):
     @property
     def filename(self):
         return self._fn
-
-    @property
-    def stream_loader(self):
-        return self._stream_loader
 
     @property
     def load_streams(self):
@@ -408,14 +404,19 @@ class AmiraHeader(Block):
             # load array declarations
             self._load_declarations(block_data['array_declarations'])
             # load data stream definitions
-            data_streams = self._load_definitions(block_data['data_definitions'])
-            self._data_stream_count = len(data_streams)
-            if self.load_streams:
-                for ds in data_streams:
-                    ds.read()
-                    ds.add_attr('data', ds.data)
-
-
+            if self.filetype == "AmiraMesh":
+                data_streams = self._load_definitions(block_data['data_definitions'])
+                self._data_stream_count = len(data_streams)
+                if self.load_streams:
+                    for ds in data_streams:
+                        ds.read()
+                        ds.add_attr('data', ds.data())
+            elif self.filetype == "HyperSurface":
+                # data_streams = self._locate_hx_streams()
+                if self.load_streams:
+                    block = set_data_stream('Data', self)
+                    block.read()
+                    self.add_attr(block)
     else:
         def _load(self, _data_section_start):
             # disable automatic  loading of data streams while construction of header
@@ -516,7 +517,20 @@ class AmiraHeader(Block):
     def _load_designation(self, block_data):
         self.add_attr('filetype', block_data.get('filetype', None))
         self.add_attr('dimension', block_data.get('dimension', None))
-        self.add_attr('format', block_data.get('format', None))
+        format = block_data.get('format')
+        if format == 'BINARY':
+            self.add_attr('format', format)
+            self.add_attr('endian', 'BIG')
+        elif format == 'ASCII':
+            self.add_attr('format', format)
+            self.add_attr('endian', None)
+        elif format == 'BINARY-LITTLE-ENDIAN':
+            self.add_attr('format', 'BINARY')
+            self.add_attr('endian', 'LITTLE')
+        else:
+            raise ValueError(
+                f'unsupported format {format}; kindly consider contacting the maintainer to include support. Thanks.')
+        # self.add_attr('format', block_data.get('format', None))
         self.add_attr('version', block_data.get('version', None))
         self.add_attr('extra_format', block_data.get('extra_format', None))
 
@@ -588,8 +602,6 @@ class AmiraHeader(Block):
                 block = Block(decl['array_name'])
                 block.add_attr('length', decl['array_dimension'])
                 self.add_attr(block)
-            # fixme: remove empty tuple eventually
-            return ()
 
         def _load_definitions(self, block_data):
             """We want to load data definitions to the appropriate array definition block"""
