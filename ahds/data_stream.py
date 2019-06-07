@@ -34,23 +34,23 @@ from .grammar import _rescan_overlap, _stream_delimiters, _hyper_surface_file
 _np_ubytebig = np.dtype(np.uint8).newbyteorder('>')
 _np_ubytelittle = np.dtype(np.uint8).newbyteorder('<')
 _np_bytebig = np.dtype(np.int8).newbyteorder('>')
-_np_bytelitle = np.dtype(np.int8).newbyteorder('<')
-_np_shortlitle = np.dtype(np.int16).newbyteorder('<')
+_np_bytelittle = np.dtype(np.int8).newbyteorder('<')
+_np_shortlittle = np.dtype(np.int16).newbyteorder('<')
 _np_shortbig = np.dtype(np.int16).newbyteorder('>')
-_np_ushortlitle = np.dtype(np.uint16).newbyteorder('<')
+_np_ushortlittle = np.dtype(np.uint16).newbyteorder('<')
 _np_ushortbig = np.dtype(np.uint16).newbyteorder('>')
-_np_intlitle = np.dtype(np.int32).newbyteorder('<')
+_np_intlittle = np.dtype(np.int32).newbyteorder('<')
 _np_intbig = np.dtype(np.int32).newbyteorder('>')
-_np_uintlitle = np.dtype(np.uint32).newbyteorder('<')
+_np_uintlittle = np.dtype(np.uint32).newbyteorder('<')
 _np_uintbig = np.dtype(np.uint32).newbyteorder('>')
-_np_longlitle = np.dtype(np.int64).newbyteorder('<')
+_np_longlittle = np.dtype(np.int64).newbyteorder('<')
 _np_longbig = np.dtype(np.int64).newbyteorder('>')
-_np_ulonglitle = np.dtype(np.uint64).newbyteorder('<')
+_np_ulonglittle = np.dtype(np.uint64).newbyteorder('<')
 _np_ulongbig = np.dtype(np.uint64).newbyteorder('>')
 _np_floatbig = np.dtype(np.float32).newbyteorder('>')
-_np_floatlitle = np.dtype(np.float32).newbyteorder('<')
+_np_floatlittle = np.dtype(np.float32).newbyteorder('<')
 _np_doublebig = np.dtype(np.float64).newbyteorder('>')
-_np_doublelitle = np.dtype(np.float64).newbyteorder('<')
+_np_doublelittle = np.dtype(np.float64).newbyteorder('<')
 _np_complexbig = np.dtype(np.complex64).newbyteorder('>')
 _np_complexlittle = np.dtype(np.complex64).newbyteorder('<')
 _np_char = np.dtype(np.string_)
@@ -81,14 +81,15 @@ _type_map = {
     True: {
         'byte': _np_ubytelittle,
         'ubyte': _np_ubytelittle,
-        'short': _np_shortlitle,
-        'ushort': _np_ushortlitle,
-        'int': _np_intlitle,
-        'uint': _np_uintlitle,
-        'long': _np_longlitle,
-        'ulong': _np_ulonglitle,
-        'float': _np_floatlitle,
-        'double': _np_doublelitle,
+        'short': _np_shortlittle,
+        'ushort': _np_ushortlittle,
+        'int': _np_intlittle,
+        'uint': _np_uintlittle,
+        'long': _np_longlittle,
+        'ulong': _np_ulonglittle,
+        'uint64': _np_ulonglittle,
+        'float': _np_floatlittle,
+        'double': _np_doublelittle,
         'complex': _np_complexlittle,
         'char': _np_char,
         'string': _np_char,
@@ -103,6 +104,7 @@ _type_map = {
         'uint': _np_uintbig,
         'long': _np_longbig,
         'ulong': _np_ulongbig,
+        'uint64': _np_ulongbig,
         'float': _np_floatbig,
         'double': _np_doublebig,
         'complex': _np_complexbig,
@@ -118,6 +120,7 @@ _type_map = {
     'uint': np.dtype(np.uint32),
     'long': np.dtype(np.int64),
     'ulong': np.dtype(np.uint64),
+    'uint64': np.dtype(np.uint64),
     'float': np.dtype(np.float32),
     'double': np.dtype(np.float64),
     'complex': np.dtype(np.complex64),
@@ -131,6 +134,7 @@ _type_map = {
 try:
     from ahds.decoders import byterle_decoder
 except ImportError:
+    # fixme: function does not have dtype and count kwargs
     def byterle_decoder(data, dtype=None, count=0):
         """Python drop-in replacement for compiled equivalent
         
@@ -139,7 +143,6 @@ except ImportError:
         :return np.array output: an array of ``np.uint8``
         """
         from warnings import warn
-
         warn("using pure-Python (instead of Python C-extension) implementation of byterle_decoder")
 
         input_data = np.frombuffer(data, dtype=_np_ubytelittle, count=len(data))
@@ -2068,36 +2071,76 @@ class _AmiraMeshDataStream(_AmiraDataStream):
             end = start + 1
             if self._header.data_stream_count == start:  # this is the last stream
                 data = f.read()
-                regex = ".*?\n@{}\n(?P<stream>.*)".format(start).encode('ASCII')
-                match = re.match(regex, data, re.S)
-                self._stream_data = match.group('stream')
+                _regex = ".*?\n@{}\n(?P<stream>.*)\n".format(start).encode('ASCII')
+                print(f"regex: {_regex}")
+                regex = re.compile(_regex, re.S)
+                match = regex.match(data)
+                _stream_data = match.group('stream')
+                self._stream_data = _stream_data[:-1] if _stream_data[-1] == 10 else _stream_data
             else:
                 data = f.read()
-                regex = ".*?\n@{}\n(?P<stream>.*)\n@{}".format(start, end).encode('ASCII')
-                match = re.match(regex, data, re.S)
+                _regex = ".*?\n@{}\n(?P<stream>.*)\n@{}\n".format(start, end).encode('ASCII')
+                regex = re.compile(_regex, re.S)
+                match = regex.match(data)
                 self._stream_data = match.group('stream')
 
     # @property
     def data(self):
-        # print(self._stream_data)
-        # print(np.frombuffer(self._stream_data.strip(), dtype=np.dtype(np.string_)))
-        # print(len(self._stream_data))
+        # print(f"start:  {self._stream_data[:20]}")
+        # print(f"end:    {self._stream_data[-20:]}")
+        # print(f"length: {len(self._stream_data)}\n")
+        # if len(self._stream_data) > 0:
+        #     data = self._stream_data[:-1] if self._stream_data[-1] == 10 else self._stream_data
+        # else:
+        #     data = self._stream_data
+        try:
+            assert len(self._stream_data) > 0
+        except AssertionError:
+            raise ValueError('empty stream found')
         return self._decode(self._stream_data)
 
     def _decode(self, data):
+        """Decode the data stream by introspection"""
         if self._header.format == 'BINARY':
+            #
             # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
             is_little_endian = self._header.endian == 'LITTLE'
-            if isinstance(self.shape, list):
-                return np.frombuffer(
-                    data.strip(),
-                    dtype=_type_map[is_little_endian][self.type]
-                ).reshape(*self.shape, self.dimension)
-            elif isinstance(self.shape, int):
-                return np.frombuffer(
-                    data.strip(),
-                    dtype=_type_map[is_little_endian][self.type]
-                ).reshape(self.shape, self.dimension)
+            if self.format is None:
+                if isinstance(self.shape, (list, np.ndarray, )):
+                    return np.frombuffer(
+                        data,
+                        dtype=_type_map[is_little_endian][self.type]
+                    ).reshape(*self.shape, self.dimension)
+                elif isinstance(self.shape, int):
+                    return np.frombuffer(
+                        data,
+                        dtype=_type_map[is_little_endian][self.type]
+                    ).reshape(self.shape, self.dimension)
+            elif self.format == 'HxZip':
+                if isinstance(self.shape, (list, np.ndarray, )):
+                    return np.frombuffer(
+                        zlib.decompress(data),
+                        dtype=_type_map[is_little_endian][self.type]
+                    ).reshape(*self.shape, self.dimension)
+                else:
+                    return np.frombuffer(
+                        zlib.decompress(data),
+                        dtype=_type_map[is_little_endian][self.type]
+                    ).reshape(self.shape, self.dimension)
+            elif self.format == 'HxByteRLE':
+                # these are always bytes so no type introspection
+                if isinstance(self.shape, (list, np.ndarray, )):
+                    return hxbyterle_decode(
+                        data,
+                        int(self.shape.prod())
+                    ).reshape(*self.shape, self.dimension)
+                else:
+                    return hxbyterle_decode(
+                        data,
+                        int(self.shape.prod())
+                    ).reshape(self.shape, self.dimension)
+            else:
+                raise ValueError(f'what in the world is {self.format}?')
         else:
             return np.fromstring(
                 data,
@@ -2129,13 +2172,16 @@ class _AmiraHxSurfaceDataStream(ListBlock, _AmiraDataStream):
                               "(?P<streams>.*)".encode('ASCII')
             vertices_regex = re.compile(_vertices_regex, re.S)
             match_vertices = vertices_regex.match(data)
+            # todo: fix for full.surf and simple.surf
+            print(f"vertices: {match_vertices.group('vertex_count')}")
+            # print(f"streams: {match_vertices.group('streams')}")
             vertex_count = int(match_vertices.group('vertex_count'))
             # get the patches
             # fixme: general case for NBranchingPoints, NVerticesOnCurves, BoundaryCurves being non-zero
             stream_regex = "(?P<vertices>.*?)\n" \
-                           "NBranchingPoints 0\n" \
-                           "NVerticesOnCurves 0\n" \
-                           "BoundaryCurves 0\n" \
+                           "NBranchingPoints (?P<branching_point_count>\d+)\n" \
+                           "NVerticesOnCurves (?P<vertices_on_curves_count>\d+)\n" \
+                           "BoundaryCurves (?P<boundary_curve_count>\d+)\n" \
                            "Patches (?P<patch_count>\d+)\n" \
                            "(?P<patches>.*)".encode('ASCII')
             match_streams = re.match(stream_regex, match_vertices.group('streams'), re.S)
@@ -2220,10 +2266,17 @@ class _AmiraHxSurfaceDataStream(ListBlock, _AmiraDataStream):
 
     def _decode(self, data):
         is_little_endian = self._header.endian == 'LITTLE'
-        return np.frombuffer(
-            data,
-            dtype=_type_map[is_little_endian][self.type]
-        ).reshape(self.length, self.dimension)
+        if self._header.format == 'BINARY':
+            return np.frombuffer(
+                data,
+                dtype=_type_map[is_little_endian][self.type]
+            ).reshape(self.length, self.dimension)
+        elif self._header.format == 'ASCII':
+            return np.fromstring(
+                data,
+                dtype=_type_map[self.type],
+                sep="\n \t"
+            ).reshape(self.length, self.dimension)
 
 
 def set_data_stream(name, header):

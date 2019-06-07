@@ -39,7 +39,7 @@ static struct module_state _state;
 #endif
 
 // prototypes
-static PyObject *decoders_byterle_decode(PyObject *, PyObject *,PyObject *);
+static PyObject *decoders_byterle_decode(PyObject *, PyObject *);
 static void get_multiple(uchar *, uchar *, ulong, ulong);
 static void set_multiple_diff(uchar *, uchar *, ulong, ulong);
 static void set_multiple_same(uchar *, uchar, ulong, ulong);
@@ -106,29 +106,18 @@ initdecoders(void)
 }
 
 static PyObject *
-decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *keywords)
+decoders_byterle_decode(PyObject *self, PyObject *args)
 {
 	ulong input_size, output_size=0;
 	uchar *input;
-	PyObject * ignoreddtype = Py_None; // ignore it as it is only required to mimic partial of numpy.frombuffer numpy.fromstring with separtor fixed
-	static char * kwlist[] = {
-		"count",
-		NULL
-	};
 
 	// Python usage: hx.byterle_decode(input, output_size)
-	if (!PyArg_ParseTupleAndKeywords(args,keywords, "s#|Ok", kwlist,&input, &input_size, &output_size)) {
+	if (!PyArg_ParseTuple(args, "s#k", &input, &input_size, &output_size))
 		return NULL;
-	}
-	if ( output_size < 1 ) {
-		PyErr_Format(PyExc_ValueError,"parameter 'count' reqired to determine output size");
-		return NULL;
-	}
 
 //	printf("c: input size = %lu\n", input_size);
 //	printf("c output_size: %lu\n", output_size);
 	uchar *output = PyMem_New(uchar, output_size);
-
 	ulong i=0, j=0;
 	int count=1, repeat=0; // count/repeat: true = 1; false = 0
 	uchar no=0;
@@ -136,6 +125,7 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *keywords)
 	// two state machine that oscillates between getting counts and getting data
 	while (i < input_size) { // while we still have some input
 		if (count) { // get count
+//            printf("nothing: %u\n", i);
 			no = input[i];
 			// determine if this is a repeat or a non-repeat
 			if (no > 127) {
@@ -153,12 +143,12 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *keywords)
 		else { // get data
 			if (repeat) {
 				if (no > 0) {
-					// uchar value[no];
 					uchar *value = (uchar *)malloc(no*sizeof(uchar));
 					get_multiple(input, value, i, i+no);
 					repeat = 0;
 					count = 1;
 					set_multiple_diff(output, value, j, j+no);
+					free(value);
 					i += no;
 					j += no;
 				}
@@ -176,7 +166,7 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *keywords)
 	}
 
 	int nd=1;
-	npy_intp dims[1] = {j};
+	npy_intp dims[1] = {static_cast<npy_intp>(j)};
 	// create a numpy array using the buffer as the data source
 	PyObject *output_array = PyArray_SimpleNewFromData(nd, dims, NPY_UINT8, output);
 	Py_INCREF(output_array); // ... because it will be managed from Python

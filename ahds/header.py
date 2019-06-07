@@ -193,6 +193,11 @@ The BoundaryCurve<n> defindes teh followng data stream
 The NBranchingPoints and NVerticesOnCurves are repesented by value attributes of
 the AmiraHeader Block.
 
+
+NOTE!!!
+NEW DESCRIPTION OF THE FILE FORMAT:
+https://assets.thermofisher.com/TFS-Assets/MSD/Product-Guides/user-guide-amira-software.pdf
+
 """
 from __future__ import print_function
 
@@ -272,7 +277,7 @@ class AmiraHeader(Block):
             self._fn = fn
             self._parsed_data, self._header_length, self._file_format = get_parsed_data(fn, *args, **kwargs)
             # introspect the stream loader to use
-            # pprint(self._parsed_data)
+            pprint(self._parsed_data)
             # load the streams
             self._load_streams = load_streams
             # data stream count
@@ -582,18 +587,21 @@ class AmiraHeader(Block):
             else:
                 block = Block(name)
                 for param in block_data:
-                    if isinstance(param['parameter_value'], list):
-                        if len(param['parameter_value']) > 0:
-                            if param['parameter_value'][0] == '<!?c?!>':
-                                block.add_attr(param['parameter_name'], param['parameter_value'][1:])
+                    try:
+                        if isinstance(param['parameter_value'], list):
+                            if len(param['parameter_value']) > 0:
+                                if param['parameter_value'][0] == '<!?c?!>':
+                                    block.add_attr(param['parameter_name'], param['parameter_value'][1:])
+                                else:
+                                    block.add_attr(
+                                        self._load_parameters(param['parameter_value'], name=param['parameter_name']))
                             else:
-                                block.add_attr(
-                                    self._load_parameters(param['parameter_value'], name=param['parameter_name']))
+                                print(param['parameter_name'], type(param['parameter_name']))
+                                block.add_attr(param['parameter_name'], param['parameter_value'])
                         else:
-                            print(param['parameter_name'], type(param['parameter_name']))
                             block.add_attr(param['parameter_name'], param['parameter_value'])
-                    else:
-                        block.add_attr(param['parameter_name'], param['parameter_value'])
+                    except KeyError:
+                        print(f"Found odd parameter: {list(param.keys())[0]} = {param[list(param.keys())[0]]}", file=sys.stderr)
             return block
 
         def _load_declarations(self, block_data):
@@ -624,7 +632,8 @@ class AmiraHeader(Block):
                 block.add_attr('dimension', defn.get('data_dimension', 1))  # assume dimension of 1
                 block.add_attr('type', defn['data_type'])
                 block.add_attr('interpolation_method', defn.get('interpolation_method', None))
-                block.add_attr('shape', parent.length)
+                block.add_attr('shape', getattr(parent, 'length', None))
+                block.add_attr('format', defn.get('data_format', None))
                 # insert this definition as an attribute
                 parent.add_attr(block)
                 # keep track of data streams
