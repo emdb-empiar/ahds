@@ -271,8 +271,8 @@ if REFACTOR:
                 else:
                     # if it is not a Block then we construct the repr. manually
                     val = self._attrs[attr]
-                    # don't print the whole array
-                    if isinstance(val, (np.ndarray, )):
+                    # don't print the whole array for large arrays
+                    if isinstance(val, (np.ndarray, )) and len(val.flatten().tolist()) > 4:
                         string += prefix + "|  +-{}: {},...,{}\n".format(attr, val[0], val[-1])
                     else:
                         string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
