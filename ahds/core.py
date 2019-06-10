@@ -14,7 +14,7 @@ if sys.argv[2] == '0':
 else:
     REFACTOR = True
 
-if sys.version_info[0] > 2:
+if sys.version_info[0] >= 3:
     # All defnitions for Python3 and newer which differ from their counterparts in Python2.x
 
     def _decode_string(data):
@@ -40,6 +40,8 @@ if sys.version_info[0] > 2:
     _dict_iter_keys = dict.keys
     # pylint: enable=E1101
 
+    _dict = dict
+
 else:
     # All defnitions for Python3 and newer which differ from their counterparts in Python2.x
 
@@ -64,6 +66,9 @@ else:
     _dict_iter_keys = dict.iterkeys
     # pylint: enable=E1101
 
+    from collections import OrderedDict
+
+    _dict = OrderedDict
 
 def deprecated(description=None):
     """ decorator used to mark methods, classes, classmethods and properies as deprecated
@@ -131,21 +136,21 @@ def deprecated(description=None):
         #    _message_filter = re.escape(msg.format(func.__qualname__,r''))
         if inspect.isclass(func):
             # issue DeprecationWarning specific to class object and its instances
-            _deprecated_message = "Class '{}' is deprecated{}".format(func.__qualname__, description)
-            _message_filter = re.escape(r"Class '{}' is deprecated".format(func.__qualname__))
+            _deprecated_message = "Class '{}' is deprecated{}".format(getattr(func, '__qualname__', getattr(func, '__name__')), description)
+            _message_filter = re.escape(r"Class '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
         elif inspect.ismethod(func):
             # func is a staticmethod or a classmethod or a classmember issue related DeprecationWarning
-            _deprecated_message = "Method '{}' is deprecated{}".format(func.__qualname__, description)
-            _message_filter = re.escape(r"Method '{}' is deprecated".format(func.__qualname__))
+            _deprecated_message = "Method '{}' is deprecated{}".format(getattr(func, '__qualname__', getattr(func, '__name__')), description)
+            _message_filter = re.escape(r"Method '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
         elif inspect.isfunction(func):
             # func is a function issue related DeprecationWarning
-            _deprecated_message = "Function '{}' is deprecated{}".format(func.__qualname__, description)
-            _message_filter = re.escape(r"Function '{}' is deprecated".format(func.__qualname__))
+            _deprecated_message = "Function '{}' is deprecated{}".format(getattr(func, '__qualname__', getattr(func, '__name__')), description)
+            _message_filter = re.escape(r"Function '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
         else:
             # func is none of the above entities issue a general DeprecationWarning stating that it's use
             # is deprecated
-            _deprecated_message = "Use of '{}' is deprecated{}".format(func.__qualname__, description)
-            _message_filter = re.escape(r"Use of '{}' is deprecated".format(func.__qualname__))
+            _deprecated_message = "Use of '{}' is deprecated{}".format(getattr(func, '__qualname__', getattr(func, '__name__')), description)
+            _message_filter = re.escape(r"Use of '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
         # return function wrapping the decorated item
         return decorated_deprecated
 
@@ -164,7 +169,7 @@ if REFACTOR:
 
         def __init__(self, name):
             self._name = name
-            self._attrs = dict()
+            self._attrs = _dict()
             self._is_parent = False
 
         @property

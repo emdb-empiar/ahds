@@ -1,4 +1,9 @@
-from collections import UserList
+import sys
+
+if sys.version_info[0] >= 3:
+    from collections import UserList
+else:
+    from UserList import UserList
 
 import numpy as np
 from skimage.measure._find_contours import find_contours

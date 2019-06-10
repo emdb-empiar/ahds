@@ -534,7 +534,7 @@ class AmiraHeader(Block):
             self.add_attr('endian', 'LITTLE')
         else:
             raise ValueError(
-                f'unsupported format {format}; kindly consider contacting the maintainer to include support. Thanks.')
+                u'unsupported format {format}; kindly consider contacting the maintainer to include support. Thanks.'.format(format=format))
         # self.add_attr('format', block_data.get('format', None))
         self.add_attr('version', block_data.get('version', None))
         self.add_attr('extra_format', block_data.get('extra_format', None))
@@ -601,7 +601,7 @@ class AmiraHeader(Block):
                         else:
                             block.add_attr(param['parameter_name'], param['parameter_value'])
                     except KeyError:
-                        print(f"Found odd parameter: {list(param.keys())[0]} = {param[list(param.keys())[0]]}", file=sys.stderr)
+                        print(u"Found odd parameter: {} = {}".format(list(param.keys())[0], param[list(param.keys())[0]]), file=sys.stderr)
             return block
 
         def _load_declarations(self, block_data):

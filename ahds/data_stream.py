@@ -2067,7 +2067,7 @@ class _AmiraMeshDataStream(_AmiraDataStream):
             if self._header.data_stream_count == start:  # this is the last stream
                 data = f.read()
                 _regex = ".*?\n@{}\n(?P<stream>.*)\n".format(start).encode('ASCII')
-                print(f"regex: {_regex}")
+                print("regex: {}".format(_regex))
                 regex = re.compile(_regex, re.S)
                 match = regex.match(data)
                 _stream_data = match.group('stream')
@@ -2102,10 +2102,11 @@ class _AmiraMeshDataStream(_AmiraDataStream):
             is_little_endian = self._header.endian == 'LITTLE'
             if self.format is None:
                 if isinstance(self.shape, (list, np.ndarray, )):
+                    new_shape = self.shape.tolist() + [self.dimension]
                     return np.frombuffer(
                         data,
                         dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(*self.shape, self.dimension)
+                    ).reshape(*new_shape)
                 elif isinstance(self.shape, int):
                     return np.frombuffer(
                         data,
@@ -2113,10 +2114,11 @@ class _AmiraMeshDataStream(_AmiraDataStream):
                     ).reshape(self.shape, self.dimension)
             elif self.format == 'HxZip':
                 if isinstance(self.shape, (list, np.ndarray, )):
+                    new_shape = self.shape.tolist() + [self.dimension]
                     return np.frombuffer(
                         zlib.decompress(data),
                         dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(*self.shape, self.dimension)
+                    ).reshape(*new_shape)
                 else:
                     return np.frombuffer(
                         zlib.decompress(data),
@@ -2125,17 +2127,18 @@ class _AmiraMeshDataStream(_AmiraDataStream):
             elif self.format == 'HxByteRLE':
                 # these are always bytes so no type introspection
                 if isinstance(self.shape, (list, np.ndarray, )):
+                    new_shape = self.shape.tolist() + [self.dimension]
                     return hxbyterle_decode(
                         data,
                         int(self.shape.prod())
-                    ).reshape(*self.shape, self.dimension)
+                    ).reshape(*new_shape)
                 else:
                     return hxbyterle_decode(
                         data,
                         int(self.shape.prod())
                     ).reshape(self.shape, self.dimension)
             else:
-                raise ValueError(f'what in the world is {self.format}?')
+                raise ValueError('what in the world is {}?'.format(self.format))
         else:
             return np.fromstring(
                 data,
@@ -2168,7 +2171,7 @@ class _AmiraHxSurfaceDataStream(ListBlock, _AmiraDataStream):
             vertices_regex = re.compile(_vertices_regex, re.S)
             match_vertices = vertices_regex.match(data)
             # todo: fix for full.surf and simple.surf
-            print(f"vertices: {match_vertices.group('vertex_count')}")
+            print("vertices: {}".format(match_vertices.group('vertex_count')))
             # print(f"streams: {match_vertices.group('streams')}")
             vertex_count = int(match_vertices.group('vertex_count'))
             # get the patches
