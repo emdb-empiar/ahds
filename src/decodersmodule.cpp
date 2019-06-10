@@ -79,6 +79,8 @@ PyInit_decoders(void) {
 PyMODINIT_FUNC
 initdecoders(void)
 {
+    PyObject *m;
+
 	m = Py_InitModule("decoders", HxMethods);
 	if (m == NULL) {
 	    return;
