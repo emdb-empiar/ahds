@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # ahds
 
-from .header import AmiraHeader, AmiraHeaderError
-from .data_stream import DataStreams, DataStreamError, DataStreamNotFoundError, NotSupportedError
 from .core import deprecated
+from .data_stream import DataStreams
+from .header import AmiraHeader
 
 
 class AmiraFile(AmiraHeader):
