@@ -28,7 +28,7 @@ amira_header_grammar = (r'''
 amira                        :=    designation, tsn, comment*, tsn*, array_declarations, tsn, parameters*, materials*, data_definitions, tsn
 
 designation                  :=    ("#", ts, filetype, ts, dimension*, ts*, format, ts, version, ts*, extra_format*, tsn) / ("#", ts, filetype, ts, version, ts, format, tsn)
-filetype                     :=    "AmiraMesh" / "HyperSurface"
+filetype                     :=    "AmiraMesh" / "HyperSurface" / "Avizo"
 dimension                    :=    "3D"
 format                       :=    "BINARY-LITTLE-ENDIAN" / "BINARY" / "ASCII"
 version                      :=    number
@@ -124,7 +124,8 @@ if sys.version_info[0] > 2:
 
     _file_format_match = (
         re.compile(b'.*AmiraMesh.*'),
-        re.compile(b'.*HyperSurface.*')
+        re.compile(b'.*HyperSurface.*'),
+        re.compile(b'.*Avizo.*')
     )
 
     # in python3 and later open(<filename>,'rb') creates a binary file stream which has to be 
@@ -146,7 +147,8 @@ else:
     # them to ASCII byte string
     _file_format_match = (
         re.compile(r'.*AmiraMesh.*'),
-        re.compile(r'.*HyperSurface.*')
+        re.compile(r'.*HyperSurface.*'),
+        re.compile(r'.*Avizo.*')
     )
 
     # in python2.x and before strings are per default ascii type strings and thus open(<filename>,'rb') does not 
@@ -179,6 +181,8 @@ def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
             file_format = "AmiraMesh"
         elif _file_format_match[1].match(rough_header):
             file_format = "HyperSurface"
+        elif _file_format_match[2].match(rough_header):
+            file_format = "Avizo"
         else:
             file_format = "Undefined"
 
@@ -197,14 +201,17 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
     :return str data: the header as per the ``file_format``
     """
     assert header_bytes > 0
-    assert file_format in ['AmiraMesh', 'HyperSurface']
+    try:
+        assert file_format in ['AmiraMesh', 'HyperSurface', 'Avizo']
+    except AssertionError:
+        raise ValueError("unknown file format: {}".format(file_format))
 
     data = None
     with open(fn, 'rb') as f:
         # read a first chunk and store it in the first element of the list of header chunks
         data = f.read(header_bytes if header_bytes >= _rescan_overlap else _rescan_overlap)
 
-        if file_format == "AmiraMesh":
+        if file_format == "AmiraMesh" or file_format == "Avizo":
             if verbose:
                 print("Using pattern: {}".format(_stream_delimiters[0].pattern), file=sys.stderr)
             # scan the latests chunk ta for the first @<n> data block start marker
