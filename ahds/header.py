@@ -238,7 +238,8 @@ class AmiraHeader(Block):
         self._load_streams = load_streams
         # data stream count
         self._data_stream_count = None
-        super(AmiraHeader, self).__init__(fn)
+        # super(AmiraHeader, self).__init__(fn)
+        super(AmiraHeader, self).__init__('header')
         # load the parse data into this object
         self._load()
 
@@ -250,9 +251,22 @@ class AmiraHeader(Block):
     def load_streams(self):
         return self._load_streams
 
+    @load_streams.setter
+    def load_streams(self, value):
+        try:
+            assert isinstance(value, bool)
+        except AssertionError:
+            raise TypeError("must be a bool")
+        self._load_streams = value
+
+
     @property
     def data_stream_count(self):
         return self._data_stream_count
+
+    def load(self):
+        """Public loading method"""
+        self._load()
 
     def __len__(self):
         return self._header_length
@@ -273,26 +287,37 @@ class AmiraHeader(Block):
         self._load_designation(block_data['designation'])
         # load parameters
         if 'parameters' in block_data:
-            self._parameters = self._load_parameters(block_data['parameters'], 'Parameters', parent=self)
+            _parameters = self._load_parameters(block_data['parameters'], 'Parameters', parent=self)
         else:
             # just create an empty parameters block to keep header consistent
-            self._parameters = Block('Parameters')
+            _parameters = Block('Parameters')
+        # if we have a Materials block in parameters we create a convenience dictionary for
+        # accessing materials e.g. for patches
+        if hasattr(_parameters, 'Materials'):
+            material_dict = dict()
+            for material in _parameters.Materials:
+                material_dict[material.name] = material
+            _parameters.Materials.material_dict = material_dict
+        super(AmiraHeader, self).add_attr('_parameters', _parameters)
         # load array declarations
         self._load_declarations(block_data['array_declarations'])
         # load data stream definitions
         if self.filetype == "AmiraMesh":
-            data_streams = self._load_definitions(block_data['data_definitions'])
-            self._data_stream_count = len(data_streams)
-            if self.load_streams:
-                for ds in data_streams:
-                    ds.read()
-                    ds.add_attr('data', ds.data())
+            # a list of data streams
+            self._data_streams_block_list = self._load_definitions(block_data['data_definitions'])
+            self._data_stream_count = len(self._data_streams_block_list)
+            # if self.load_streams:
+            #     for ds in data_streams_list:
+            #         ds.read()
+            #         ds.add_attr('data', ds.data())
         elif self.filetype == "HyperSurface":
-            # data_streams = self._locate_hx_streams()
+            # data_streams_list = self._locate_hx_streams()
+            self._data_streams_block_list = []
+            self._data_stream_count = 1
             if self.load_streams:
                 block = set_data_stream('Data', self)
                 block.read()
-                self.add_attr(block)
+                # self.add_attr(block)
 
     @property
     def parameters(self):
@@ -372,6 +397,7 @@ class AmiraHeader(Block):
         if name in ["Materials"]:
             block = ListBlock(name)
             for param in block_data:
+                # a sequence of parameters
                 if isinstance(param['parameter_value'], list):
                     if len(param['parameter_value']) > 0:
                         if param['parameter_value'][0] == '<!?c?!>':
@@ -385,6 +411,7 @@ class AmiraHeader(Block):
                             )
                     else:
                         block.add_attr(param['parameter_name'], param['parameter_value'])
+                # a string or number
                 else:
                     block.add_attr(param['parameter_name'], param['parameter_value'])
         else:
@@ -439,29 +466,29 @@ class AmiraHeader(Block):
             block.add_attr('shape', getattr(parent, 'length', None))
             block.add_attr('format', defn.get('data_format', None))
             # insert this definition as an attribute
-            parent.add_attr(block)
+            # parent.add_attr(block)
             # keep track of data streams
         return data_streams
 
     def __repr__(self):
         return "AmiraHeader('{}')".format(self.filename)
 
-    def __str__(self, prefix="", index=None):
-        width = 140
-        string = ''
-        string += '*' * width + '\n'
-        string += "AMIRA HEADER \n"
-        string += "-" * width + "\n"
-        string += "+-file: {}\n".format(self.filename)
-        string += "+-header length: {}\n".format(len(self))
-        string += "+-data streams: {}\n".format(self.data_stream_count)
-        string += "+-streams loaded? {}\n".format(str(self.load_streams))
-        string += "-" * width + "\n"
-        string += "{}".format(self.parameters)
-        string += "-" * width + "\n"
-        string += super(AmiraHeader, self).__str__()
-        string += "*" * width
-        return string
+    # def __str__(self, prefix="", index=None):
+    #     width = 140
+    #     string = ''
+        # string += '*' * width + '\n'
+        # string += "AMIRA HEADER \n"
+        # string += "-" * width + "\n"
+        # string += "+-file: {}\n".format(self.filename)
+        # string += "+-header length: {}\n".format(len(self))
+        # string += "+-data streams: {}\n".format(self.data_stream_count)
+        # string += "+-streams loaded? {}\n".format(str(self.load_streams))
+        # string += "-" * width + "\n"
+        # string += "{}".format(self.parameters)
+        # string += "-" * width + "\n"
+        # string += super(AmiraHeader, self).__str__()
+        # string += "*" * width
+        # return string
 
 
 def main():

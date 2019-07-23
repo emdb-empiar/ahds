@@ -9,9 +9,9 @@ The following image shows the class hierarchy for data streams.
 """
 from __future__ import print_function
 
-import functools as ft
 import re
-# TODO remove as soon as DataStrams class is removed
+import sys
+# TODO remove as soon as DataStreams class is removed
 import warnings
 import zlib
 
@@ -20,10 +20,9 @@ import numpy as np
 # definition of numpy data types with dedicated endianess and number of bits
 # they are used by the below lookup table
 from .core import (
-    _dict_iter_keys, _dict_iter_items, _dict_iter_values, Block, ListBlock, xrange, _decode_string, deprecated
+    _dict_iter_keys, _dict_iter_values, ListBlock, deprecated
 )
-from .extra import ImageSet
-from .grammar import _rescan_overlap, _stream_delimiters, _hyper_surface_file
+from .grammar import _hyper_surface_file
 
 # to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
 # pip install -e /path/to/folder/with/setup.py
@@ -55,7 +54,7 @@ _np_complexbig = np.dtype(np.complex64).newbyteorder('>')
 _np_complexlittle = np.dtype(np.complex64).newbyteorder('<')
 _np_char = np.dtype(np.string_)
 
-# lookuptable of the differnt data types occuring within
+# lookuptable of the different data types occuring within
 # AmiraMesh and HyperSurface files grouped by their endianess
 # which is defined according to Amira Referenceguide [1] as follows
 #
@@ -132,7 +131,10 @@ _type_map = {
 # try to import native byterele_decoder binary and fallback to python implementation
 # if import failed for whatever reason
 try:
-    from ahds.decoders import byterle_decoder
+    if sys.version_info[0] > 2:
+        from ahds.decoders import byterle_decoder
+    else:
+        from .decoders import byterle_decoder
 except ImportError:
     # fixme: function does not have dtype and count kwargs
     def byterle_decoder(data, dtype=None, count=0):
@@ -192,7 +194,8 @@ except ImportError:
 
 # define common alias for the selected byterle_decoder implementation
 
-"""Decode HxRLE data stream
+"""
+Decode HxRLE data stream
    
    func:: hxbyterle_decode
    if C-extension is not compiled it will use a (slower) Python equivalent
@@ -212,7 +215,6 @@ def hxzip_decode(data, dtype=None, count=0):
     :return np.array output: an array of ``np.uint8``
     """
     return np.frombuffer(zlib.decompress(data), dtype=_np_ubytelittle, count=count)
-
 
 
 @deprecated(
@@ -303,7 +305,6 @@ class AmiraMeshDataStream(AmiraDataStream):
             if self._header.data_stream_count == start:  # this is the last stream
                 data = f.read()
                 _regex = ".*?\n@{}\n(?P<stream>.*)\n".format(start).encode('ASCII')
-                print("regex: {}".format(_regex))
                 regex = re.compile(_regex, re.S)
                 match = regex.match(data)
                 _stream_data = match.group('stream')
@@ -316,7 +317,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                 self._stream_data = match.group('stream')
 
     # @property
-    def data(self):
+    def get_data(self):
         # print(f"start:  {self._stream_data[:20]}")
         # print(f"end:    {self._stream_data[-20:]}")
         # print(f"length: {len(self._stream_data)}\n")
@@ -337,7 +338,7 @@ class AmiraMeshDataStream(AmiraDataStream):
             # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
             is_little_endian = self._header.endian == 'LITTLE'
             if self.format is None:
-                if isinstance(self.shape, (list, np.ndarray, )):
+                if isinstance(self.shape, (list, np.ndarray,)):
                     new_shape = self.shape.tolist() + [self.dimension]
                     return np.frombuffer(
                         data,
@@ -349,7 +350,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                         dtype=_type_map[is_little_endian][self.type]
                     ).reshape(self.shape, self.dimension)
             elif self.format == 'HxZip':
-                if isinstance(self.shape, (list, np.ndarray, )):
+                if isinstance(self.shape, (list, np.ndarray,)):
                     new_shape = self.shape.tolist() + [self.dimension]
                     return np.frombuffer(
                         zlib.decompress(data),
@@ -362,7 +363,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                     ).reshape(self.shape, self.dimension)
             elif self.format == 'HxByteRLE':
                 # these are always bytes so no type introspection
-                if isinstance(self.shape, (list, np.ndarray, )):
+                if isinstance(self.shape, (list, np.ndarray,)):
                     new_shape = self.shape.tolist() + [self.dimension]
                     return hxbyterle_decode(
                         data,
@@ -407,7 +408,6 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             vertices_regex = re.compile(_vertices_regex, re.S)
             match_vertices = vertices_regex.match(data)
             # todo: fix for full.surf and simple.surf
-            print("vertices: {}".format(match_vertices.group('vertex_count')))
             # print(f"streams: {match_vertices.group('streams')}")
             vertex_count = int(match_vertices.group('vertex_count'))
             # get the patches
@@ -427,7 +427,7 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             vertices_block.add_attr('length', vertex_count)
             vertices_block.add_attr('type', 'float')
             vertices_block.add_attr('dimension', 3)
-            vertices_block.add_attr('data', vertices_block.data())
+            vertices_block.add_attr('data', vertices_block.get_data())
             vertices_block.add_attr('NBranchingPoints', 0)
             vertices_block.add_attr('NVerticesOnCurves', 0)
             vertices_block.add_attr('BoundaryCurves', 0)
@@ -481,7 +481,7 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
                 # print('debug:', int(match_patch.group('triangle_count')), len(match_patch.group('triangles')))
                 # print('debug:', match_patch.group('triangles')[:20])
                 # print('debug:', match_patch.group('triangles')[-20:])
-                triangles_block.add_attr('data', triangles_block.data())
+                triangles_block.add_attr('data', triangles_block.get_data())
                 # now we can add the triangles block to the patch...
                 patch_block.add_attr(triangles_block)
                 # then we collate the patches
@@ -495,7 +495,7 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             self.add_attr(vertices_block)
 
     # @property
-    def data(self):
+    def get_data(self):
         return self._decode(self._stream_data)
 
     def _decode(self, data):

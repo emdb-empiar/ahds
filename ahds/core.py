@@ -203,11 +203,14 @@ class Block(object):
             assert hasattr(attr, 'name') or isinstance(attr, str)
         except AssertionError:
             raise ValueError('attr should be str or have .name attribute')
+        if hasattr(attr, 'name'):
+            attr_name = attr.name
+        elif isinstance(attr, str):
+            attr_name = attr
+        # first check that the attribute does not exist on the class
+        if hasattr(self, attr_name):
+            raise ValueError("will not overwrite attribute '{}'".format(attr_name))
         try:
-            if hasattr(attr, 'name'):
-                attr_name = attr.name
-            elif isinstance(attr, str):
-                attr_name = attr
             assert attr_name not in self._attrs
         except AssertionError:
             raise ValueError("attribute '{}' already exists".format(attr))
@@ -217,6 +220,24 @@ class Block(object):
             self._is_parent = True
         else:
             self._attrs[attr] = value
+
+    def __setattr__(self, key, value):
+        """Guard against unintentional modification of _attrs"""
+        if key == '_attrs': # we can't prevent it but we can control it's type and content
+            # value must be a dictionary
+            try:
+                assert isinstance(value, dict)
+            except AssertionError:
+                raise ValueError('{} must be a dict'.format(key))
+            # value must have strings for keys
+            try:
+                keys = list(value.keys())
+                keys_are_strings = map(lambda x: isinstance(x, str), keys)
+                assert all(keys_are_strings) #or len(keys) == 0
+            except AssertionError:
+                raise ValueError("all keys of {} must be strings".format(key))
+        super(Block, self).__setattr__(key, value)
+
 
     # todo: rename to 'rename_attr'
     # todo: change signature to rename(self, name, new_name)
@@ -260,8 +281,11 @@ class Block(object):
                 str(self.is_parent)
             )
         else:
+            name = format(prefix + "+-{}".format(self.name), '<55')
+            if len(name) > 55:
+                name = name[:52] + '...'
             string += "{} {} [is_parent? {:<5}]\n".format(
-                format(prefix + "+-{}".format(self.name), '<55'),
+                name,
                 format(type(self).__name__, '>50'),
                 str(self.is_parent)
             )
@@ -281,9 +305,18 @@ class Block(object):
                     # we use a tuple constructed using shape - 1 in both cases
                     start = tuple([0] * (len(val.shape) - 1))
                     end = tuple([-1] * (len(val.shape) - 1))
-                    string += prefix + "|  +-{}: {},...,{}\n".format(attr, val[start], val[end])
+                    if start == end:
+                        string += prefix + "|  +-{}: {}\n".format(attr, val[start])
+                    else:
+                        string += prefix + "|  +-{}: {},...,{}\n".format(attr, val[start], val[end])
                 else:
-                    string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
+                    if isinstance(self._attrs[attr], str):
+                        if len(self._attrs[attr]) > 55:
+                            string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr][:52] + '...')
+                        else:
+                            string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
+                    else:
+                        string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
         return string
 
     def __getitem__(self, index):
@@ -327,14 +360,65 @@ class Block(object):
 
 class ListBlock(Block):
     """Extension of Block which has an iterable attribute to which Block objects can be added"""
-    __slots__ = ('_list',)
+    __slots__ = ('_list', '_material_dict')
 
     def __init__(self, *args, **kwargs):
         super(ListBlock, self).__init__(*args, **kwargs)
         self._list = list()  # separate attribute for ease of management
+        self._material_dict = dict() # a dictionary used by Materials to extract material by material name
 
     def items(self):
         return self._list
+
+    @property
+    def material_dict(self):
+        """A convenience dictionary of materials indexed by material name
+
+        If this is not a Materials ListBlock (name = 'Material') then it should return None
+        """
+        # todo: testcase: name == 'Materials' ? dictionary of material blocks : None
+        return self._material_dict
+
+    @material_dict.setter
+    def material_dict(self, value):
+        """Check that this is a material block"""
+        if self.name == "Materials":
+            if isinstance(value, dict):
+                keys_are_strings = map(lambda k: isinstance(k, str), value.keys())
+                values_are_blocks = map(lambda v: isinstance(v, Block), value.values())
+                try:
+                    assert all(keys_are_strings)
+                except AssertionError:
+                    raise ValueError("keys for material_dict dictionary must be strings")
+                try:
+                    assert all(values_are_blocks)
+                except AssertionError:
+                    raise ValueError("values for material_dict dictionary must be Blocks (or subclasses)")
+                # now we can set
+                self._material_dict = value
+            else:
+                raise TypeError("value must be a dict")
+        else:
+            raise ValueError("the material_dict attribute can only be set for Materials ListBlocks")
+
+
+
+    def __setattr__(self, key, value):
+        """We do some sanity checks before allowing direct setting"""
+        # we only allow modification of _list if it meets some criteria
+        if key == '_list':
+            # it must be a list
+            try:
+                assert isinstance(value, list)
+            except AssertionError:
+                raise ValueError("_list attribute must be a list")
+            # make sure it's either empty or has block subclasses
+            if len(value) > 0:
+                try:
+                    assert all(map(lambda x: isinstance(x, Block), value))
+                except AssertionError:
+                    raise ValueError("list contains non-Block class/subclass")
+        super(ListBlock, self).__setattr__(key, value)
 
     @property
     def is_parent(self):
@@ -347,6 +431,8 @@ class ListBlock(Block):
                 return True
             else:
                 return False
+
+
 
     def __str__(self, prefix="", index=None):
         """Convert the ListBlock into a string

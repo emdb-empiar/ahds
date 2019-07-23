@@ -7,8 +7,9 @@ import os
 AHDS_VERSION = '0.1.9.post1'
 
 decoders = Extension(
-    'ahds.decoders',
-    sources=['src/decodersmodule.cpp'],
+      'ahds.decoders',
+      sources=['src/decodersmodule.cpp'],
+      libraries=['-std=libc++']
 )
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -34,4 +35,9 @@ setup(
     install_requires=["simpleparse>=2.1.1", "scikit-image"],
     ext_modules=[decoders],
     include_dirs=[np.get_include()],
+    entry_points={
+                'console_scripts': [
+                      'ahds = ahds.ahds:main',
+                ]
+          }
 )
