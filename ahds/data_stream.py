@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+# data_stream
 """
-data_stream
+Data stream module
 
-The following image shows the class hierarchy for data streams.
+Here we define the set of classes that define and manage data streams
 
-.. image:: ../docs/ahds_classes.png
+
+
 
 """
 from __future__ import print_function
@@ -17,19 +19,15 @@ import zlib
 
 import numpy as np
 
-# definition of numpy data types with dedicated endianess and number of bits
-# they are used by the below lookup table
-from .core import (
-    _dict_iter_keys, _dict_iter_values, ListBlock, deprecated
-)
-from .grammar import _hyper_surface_file
-
 # to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
 # pip install -e /path/to/folder/with/setup.py
 # or
 # python setup.py develop
+from .core import _dict_iter_keys, _dict_iter_values, ListBlock, deprecated
+from .grammar import _hyper_surface_file
 
-
+# definition of numpy data types with dedicated endianess and number of bits
+# they are used by the below lookup table
 _np_ubytebig = np.dtype(np.uint8).newbyteorder('>')
 _np_ubytelittle = np.dtype(np.uint8).newbyteorder('<')
 _np_bytebig = np.dtype(np.int8).newbyteorder('>')
@@ -54,28 +52,30 @@ _np_complexbig = np.dtype(np.complex64).newbyteorder('>')
 _np_complexlittle = np.dtype(np.complex64).newbyteorder('<')
 _np_char = np.dtype(np.string_)
 
-# lookuptable of the different data types occuring within
-# AmiraMesh and HyperSurface files grouped by their endianess
-# which is defined according to Amira Referenceguide [1] as follows
-#
-#  * BINARY:               for bigendian encoded streams,
-#
-#  * BINARY-LITTLE-ENDIAN: for little endian encoded streams and
-#
-#  * ASCII:                for human readable encoded data
-#
-# The lookup table is split into three sections:
-#
-#  * True:  for all littleendian data types
-#
-#  * False: for all bigendian data types and
-#
-#  * the direct section mapping to the default numpy types for
-#    reading ASCII encoded data which have no specific endianness besides the
-#    bigendian characteristic intrinsic to decimal numbers.
-#
-# [1] pp 519-525 # downloaded Dezember 2018 from 
-#    http://www1.udel.edu/ctcr/sites/udel.edu.ctcr/files/Amira%20Reference%20Guide.pdf
+"""
+lookuptable of the different data types occurring within
+AmiraMesh and HyperSurface files grouped by their endianess
+which is defined according to Amira Referenceguide [1] as follows
+
+ * BINARY:               for bigendian encoded streams,
+
+ * BINARY-LITTLE-ENDIAN: for little endian encoded streams and
+
+ * ASCII:                for human readable encoded data
+
+The lookup table is split into three sections:
+
+ * True:  for all littleendian data types
+
+ * False: for all bigendian data types and
+
+ * the direct section mapping to the default numpy types for
+   reading ASCII encoded data which have no specific endianness besides the
+   bigendian characteristic intrinsic to decimal numbers.
+
+[1] pp 519-525 # downloaded Dezember 2018 from 
+   http://www1.udel.edu/ctcr/sites/udel.edu.ctcr/files/Amira%20Reference%20Guide.pdf
+"""
 _type_map = {
     True: {
         'byte': _np_ubytelittle,
@@ -129,26 +129,26 @@ _type_map = {
 }
 
 # try to import native byterele_decoder binary and fallback to python implementation
-# if import failed for whatever reason
 try:
+    # if import failed for whatever reason
     if sys.version_info[0] > 2:
         from ahds.decoders import byterle_decoder
     else:
         from .decoders import byterle_decoder
 except ImportError:
-    # fixme: function does not have dtype and count kwargs
-    def byterle_decoder(data, dtype=None, count=0):
-        """Python drop-in replacement for compiled equivalent
-        
-        :param int output_size: the number of items when ``data`` is uncompressed
+    def byterle_decoder(data, output_size):
+        """If the C-ext. failed to compile or is unimportable use this slower Python equivalent
+
         :param str data: a raw stream of data to be unpacked
+        :param int output_size: the number of items when ``data`` is uncompressed
         :return np.array output: an array of ``np.uint8``
         """
+
         from warnings import warn
         warn("using pure-Python (instead of Python C-extension) implementation of byterle_decoder")
 
         input_data = np.frombuffer(data, dtype=_np_ubytelittle, count=len(data))
-        output = np.zeros(count, dtype=np.uint8)
+        output = np.zeros(output_size, dtype=np.uint8)
         i = 0
         count = True
         repeat = False
@@ -193,110 +193,55 @@ except ImportError:
         return output
 
 # define common alias for the selected byterle_decoder implementation
-
-"""
-Decode HxRLE data stream
-   
-   func:: hxbyterle_decode
-   if C-extension is not compiled it will use a (slower) Python equivalent
-    
-   :param int output_size: the number of items when ``data`` is uncompressed
-   :param str data: a raw stream of data to be unpacked
-   :return np.array output: an array of ``np.uint8``
-"""
 hxbyterle_decode = byterle_decoder
 
 
-def hxzip_decode(data, dtype=None, count=0):
+def hxzip_decode(data, output_size):
     """Decode HxZip data stream
-    
-    :param int data_size: the number of items when ``data`` is uncompressed
+
     :param str data: a raw stream of data to be unpacked
+    :param int output_size: the number of items when ``data`` is uncompressed
     :return np.array output: an array of ``np.uint8``
     """
-    return np.frombuffer(zlib.decompress(data), dtype=_np_ubytelittle, count=count)
+    return np.frombuffer(zlib.decompress(data), dtype=_np_ubytelittle, count=output_size)
 
 
-@deprecated(
-    "DataStreams class is obsolete, access data using stream_data and data attributes of corresponding metadata block attributes of AmiraHeader instance")
-class DataStreams(object):
-    __slots__ = ("_header", "__stream_data")
-
-    def __init__(self, header):
-        self._header = header
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            if self._header.filetype == "AmiraMesh":
-                self.__stream_data = self._header.data_pointers
-            else:
-                self.__stream_data = dict()
-                for _streamblock in _dict_iter_keys(_hyper_surface_file):
-                    _streamlist = _streamblock  # self._header._stream_loader.__class__._group_array_map.get(_streamblock,_streamblock).format('List')
-                    _streamlist = getattr(self._header, _streamlist, None)
-                    if _streamlist is None:
-                        continue
-                    self.__stream_data[_streamblock] = _streamlist
-
-    def __getattribute__(self, attr):
-        if attr in ("file", "header", "stream_data", "filetype"):
-            return super(DataStreams, self).__getattribute__(attr)()
-        return super(DataStreams, self).__getattribute__(attr)
-
-    @deprecated("use <AmiraHeader>.filename instead")
-    def file(self):
-        return self._header.filename
-
-    @deprecated("use AmiraHeader instance directly")
-    def header(self):
-        return self._header
-
-    @deprecated(
-        "access data of individual streams through corresponding attributes and dedicated stream_data and data attributes of meta data blocks")
-    def stream_data(self):
-        return self.__stream_data
-
-    @deprecated("use <AmiraHeader>.filetype attribute instead")
-    def filetype(self):
-        return self._header.filetype
-
-    @deprecated
-    def __len__(self):
-        return len(self.__stream_data)
-
-    @deprecated
-    def __iter__(self):
-        return iter(_dict_iter_values(self.__stream_data))
-
-    @deprecated
-    def __getitem__(self, key):
-        return self.__stream_data[key]
-
-    @deprecated
-    def __repr__(self):
-        return "{} object with {} stream(s): {} ".format(
-            self.__class__,
-            len(self),
-            ", ".join(_dict_iter_keys(self.__stream_data))
-        )
+def set_data_stream(name, header):
+    """Factory function used by AmiraHeader to determine the type of data stream present"""
+    if header.filetype == 'AmiraMesh':
+        return AmiraMeshDataStream(name, header)
+    elif header.filetype == 'HyperSurface':
+        return AmiraHxSurfaceDataStream(name, header)
 
 
 class AmiraDataStream(ListBlock):
-    pass
-
-
-class AmiraMeshDataStream(AmiraDataStream):
+    """"""
     __slots__ = ('_stream_data', '_header')
 
     def __init__(self, name, header):
         self._header = header  # contains metadata for extracting streams
         self._stream_data = None
-        super(AmiraMeshDataStream, self).__init__(name)
+        super(AmiraDataStream, self).__init__(name)
 
     @property
     def load_stream(self):
+        """Reports whether data streams are loaded or not"""
         return self._header.load_streams
 
+    def get_data(self):
+        """Decode and return the stream data in this stream"""
+        try:
+            assert len(self._stream_data) > 0
+        except AssertionError:
+            raise ValueError('empty stream found')
+        return self._decode(self._stream_data)
+
+
+class AmiraMeshDataStream(AmiraDataStream):
+    """Class that defines an AmiraMesh data stream"""
+
     def read(self):
+        """Extract the data streams from the AmiraMesh file"""
         with open(self._header.filename, 'rb') as f:
             # rewind the file pointer to the end of the header
             f.seek(len(self._header))
@@ -316,25 +261,10 @@ class AmiraMeshDataStream(AmiraDataStream):
                 match = regex.match(data)
                 self._stream_data = match.group('stream')
 
-    # @property
-    def get_data(self):
-        # print(f"start:  {self._stream_data[:20]}")
-        # print(f"end:    {self._stream_data[-20:]}")
-        # print(f"length: {len(self._stream_data)}\n")
-        # if len(self._stream_data) > 0:
-        #     data = self._stream_data[:-1] if self._stream_data[-1] == 10 else self._stream_data
-        # else:
-        #     data = self._stream_data
-        try:
-            assert len(self._stream_data) > 0
-        except AssertionError:
-            raise ValueError('empty stream found')
-        return self._decode(self._stream_data)
-
     def _decode(self, data):
-        """Decode the data stream by introspection"""
+        """Performs data stream decoding by introspecting the header information"""
+        # first we handle binary files
         if self._header.format == 'BINARY':
-            #
             # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
             is_little_endian = self._header.endian == 'LITTLE'
             if self.format is None:
@@ -362,7 +292,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                         dtype=_type_map[is_little_endian][self.type]
                     ).reshape(self.shape, self.dimension)
             elif self.format == 'HxByteRLE':
-                # these are always bytes so no type introspection
+                # these seem to always be bytes so no type introspection
                 if isinstance(self.shape, (list, np.ndarray,)):
                     new_shape = self.shape.tolist() + [self.dimension]
                     return hxbyterle_decode(
@@ -376,6 +306,7 @@ class AmiraMeshDataStream(AmiraDataStream):
                     ).reshape(self.shape, self.dimension)
             else:
                 raise ValueError('what in the world is {}?'.format(self.format))
+        # assume the file is ASCII
         else:
             return np.fromstring(
                 data,
@@ -385,18 +316,10 @@ class AmiraMeshDataStream(AmiraDataStream):
 
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):
-    __slots__ = ('_stream_data', '_header')
-
-    def __init__(self, name, header, *args, **kwargs):
-        self._header = header
-        self._stream_data = None
-        super(AmiraHxSurfaceDataStream, self).__init__(name)
-
-    # fixme: where is this method used?
-    def load_stream(self):
-        return self._header.load_streams
+    """Class that defines an Amira HxSurface data stream"""
 
     def read(self):
+        """Extract the data streams from the HxSurface file"""
         with open(self._header.filename, 'rb') as f:
             # rewind the file pointer to the end of the header
             f.seek(len(self._header))
@@ -494,10 +417,6 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             # add the vertices to the data stream
             self.add_attr(vertices_block)
 
-    # @property
-    def get_data(self):
-        return self._decode(self._stream_data)
-
     def _decode(self, data):
         is_little_endian = self._header.endian == 'LITTLE'
         if self._header.format == 'BINARY':
@@ -513,8 +432,64 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             ).reshape(self.length, self.dimension)
 
 
-def set_data_stream(name, header):
-    if header.filetype == 'AmiraMesh':
-        return AmiraMeshDataStream(name, header)
-    elif header.filetype == 'HyperSurface':
-        return AmiraHxSurfaceDataStream(name, header)
+@deprecated(
+    "DataStreams class is obsolete, access data using stream_data and data attributes of corresponding metadata block attributes of AmiraHeader instance")
+class DataStreams(object):
+    __slots__ = ("_header", "__stream_data")
+
+    def __init__(self, header):
+        self._header = header
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            if self._header.filetype == "AmiraMesh":
+                self.__stream_data = self._header.data_pointers
+            else:
+                self.__stream_data = dict()
+                for _streamblock in _dict_iter_keys(_hyper_surface_file):
+                    _streamlist = _streamblock  # self._header._stream_loader.__class__._group_array_map.get(_streamblock,_streamblock).format('List')
+                    _streamlist = getattr(self._header, _streamlist, None)
+                    if _streamlist is None:
+                        continue
+                    self.__stream_data[_streamblock] = _streamlist
+
+    def __getattribute__(self, attr):
+        if attr in ("file", "header", "stream_data", "filetype"):
+            return super(DataStreams, self).__getattribute__(attr)()
+        return super(DataStreams, self).__getattribute__(attr)
+
+    @deprecated("use <AmiraHeader>.filename instead")
+    def file(self):
+        return self._header.filename
+
+    @deprecated("use AmiraHeader instance directly")
+    def header(self):
+        return self._header
+
+    @deprecated(
+        "access data of individual streams through corresponding attributes and dedicated stream_data and data attributes of meta data blocks")
+    def stream_data(self):
+        return self.__stream_data
+
+    @deprecated("use <AmiraHeader>.filetype attribute instead")
+    def filetype(self):
+        return self._header.filetype
+
+    @deprecated
+    def __len__(self):
+        return len(self.__stream_data)
+
+    @deprecated
+    def __iter__(self):
+        return iter(_dict_iter_values(self.__stream_data))
+
+    @deprecated
+    def __getitem__(self, key):
+        return self.__stream_data[key]
+
+    @deprecated
+    def __repr__(self):
+        return "{} object with {} stream(s): {} ".format(
+            self.__class__,
+            len(self),
+            ", ".join(_dict_iter_keys(self.__stream_data))
+        )

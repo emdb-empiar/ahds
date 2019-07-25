@@ -19,21 +19,12 @@ from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatch
 # pip install -e /path/to/folder/with/setup.py
 # or
 # python setup.py develop
-
-# definition of numpy data types with dedicated endianess and number of bits
-# they are used by the below lookup table
 from .proc import AmiraDispatchProcessor
 from .core import _decode_string, _dict_iter_items, _dict_iter_keys
 
 
-# try:
-#    from .data_stream import _stream_delimiters,_rescan_overlap
-# except:
-#    from data_stream import _stream_delimiters,_rescan_overlap
-
 # Amira (R) Header Grammar
-amira_header_grammar = (
-    r'''
+amira_header_grammar = (r'''
 amira                        :=    designation, tsn, comment*, tsn*, array_declarations, tsn, parameters*, materials*, data_definitions, tsn
 
 designation                  :=    ("#", ts, filetype, ts, dimension*, ts*, format, ts, version, ts*, extra_format*, tsn) / ("#", ts, filetype, ts, version, ts, format, tsn)
@@ -111,18 +102,15 @@ _hyper_surface_file = {
 }
 
 # string representing all valid keys within the above structure is inserted 
-# in the below regular expression patterns 
-_hyper_surface_entities = '|'.join([
-    '|'.join(
-        [_key] + ([_vk for _vk in _dict_iter_keys(_val) if isinstance(_vk, str)] if isinstance(_val, dict) else []))
-    for _key, _val in _dict_iter_items(_hyper_surface_file)
-    if isinstance(_key, str)
-])
+# in the below regular expression patterns
+# todo: replace this with something more meaningful
+_hyper_surface_entities = '|'.join(['|'.join([_key] + ([_vk for _vk in _dict_iter_keys(_val) if isinstance(_vk, str)] if isinstance(_val, dict) else [])) for _key, _val in _dict_iter_items(_hyper_surface_file) if isinstance(_key, str)])
 
 # maximum number of bytes to be rescanned at the end of the already inspected
 # _stream_data array after new bytes have been read from the file. In case within this
 # range a data block marker (@<Num>) or any of the above HyperSurface section keys has
 # alreday been successfully identified rescan starts at the byte following this match
+# todo: replace this with something more meaningful
 _rescan_overlap = max((
     max([len(_key)] + (
         [len(_vk) for _vk in _dict_iter_keys(_val) if isinstance(_vk, str)] if isinstance(_val, dict) else []))

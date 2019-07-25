@@ -204,17 +204,10 @@ from __future__ import print_function
 import sys
 from pprint import pprint
 
-# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
-# pip install -e /path/to/folder/with/setup.py
-# or
-# python setup.py develop
 from .core import Block, deprecated, \
     ListBlock
 from .data_stream import set_data_stream
-# definition of numpy data types with dedicated endianess and number of bits
-# they are used by the below lookup table
 from .grammar import get_parsed_data
-
 
 
 class AmiraHeader(Block):
@@ -259,7 +252,6 @@ class AmiraHeader(Block):
             raise TypeError("must be a bool")
         self._load_streams = value
 
-
     @property
     def data_stream_count(self):
         return self._data_stream_count
@@ -298,7 +290,7 @@ class AmiraHeader(Block):
             for material in _parameters.Materials:
                 material_dict[material.name] = material
             _parameters.Materials.material_dict = material_dict
-        super(AmiraHeader, self).add_attr('_parameters', _parameters)
+        super(AmiraHeader, self).add_attr('parameters', _parameters)
         # load array declarations
         self._load_declarations(block_data['array_declarations'])
         # load data stream definitions
@@ -476,19 +468,19 @@ class AmiraHeader(Block):
     # def __str__(self, prefix="", index=None):
     #     width = 140
     #     string = ''
-        # string += '*' * width + '\n'
-        # string += "AMIRA HEADER \n"
-        # string += "-" * width + "\n"
-        # string += "+-file: {}\n".format(self.filename)
-        # string += "+-header length: {}\n".format(len(self))
-        # string += "+-data streams: {}\n".format(self.data_stream_count)
-        # string += "+-streams loaded? {}\n".format(str(self.load_streams))
-        # string += "-" * width + "\n"
-        # string += "{}".format(self.parameters)
-        # string += "-" * width + "\n"
-        # string += super(AmiraHeader, self).__str__()
-        # string += "*" * width
-        # return string
+    # string += '*' * width + '\n'
+    # string += "AMIRA HEADER \n"
+    # string += "-" * width + "\n"
+    # string += "+-file: {}\n".format(self.filename)
+    # string += "+-header length: {}\n".format(len(self))
+    # string += "+-data streams: {}\n".format(self.data_stream_count)
+    # string += "+-streams loaded? {}\n".format(str(self.load_streams))
+    # string += "-" * width + "\n"
+    # string += "{}".format(self.parameters)
+    # string += "-" * width + "\n"
+    # string += super(AmiraHeader, self).__str__()
+    # string += "*" * width
+    # return string
 
 
 def main():

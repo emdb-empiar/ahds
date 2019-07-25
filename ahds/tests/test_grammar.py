@@ -5,7 +5,7 @@ import os
 import unittest
 
 from ahds import grammar
-from tests import TEST_DATA_PATH
+from ahds.tests import TEST_DATA_PATH
 
 
 class TestGrammar(unittest.TestCase):

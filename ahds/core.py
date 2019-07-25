@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # core.py
 """ Common data structures and utils used accross all submodules of ahds """
+from __future__ import print_function
 
 import functools as ft
 import inspect
@@ -10,9 +11,8 @@ import warnings
 
 import numpy as np
 
-if sys.version_info[0] >= 3:
-    # All defnitions for Python3 and newer which differ from their counterparts in Python2.x
-
+if sys.version_info[0] > 2:
+    # All definitions for Python3 and newer which differ from their counterparts in Python2.x
     def _decode_string(data):
         """ decodes binary ASCII string to python3 UTF-8 standard string """
         try:
@@ -22,57 +22,46 @@ if sys.version_info[0] >= 3:
 
 
     # in define xrange alias which has been removed in Python3 as range now is equal to
-    # xrange
-    xrange = range
-
+    xrange = range  # xrange
     # define _dict_iter_values, _dict_iter_items, _dict_iter_keys aliases imported by the
     # other parts for dict.values, dict.items and dict.keys
-
-    # pylint: disable=E1101
     _dict_iter_values = dict.values
-
     _dict_iter_items = dict.items
-
     _dict_iter_keys = dict.keys
-    # pylint: enable=E1101
+    if sys.version_info[1] >= 7:
+        _dict = dict
+    else:
+        from collections import OrderedDict
 
-    _dict = dict
-
+        _dict = OrderedDict
 else:
-    # All defnitions for Python3 and newer which differ from their counterparts in Python2.x
-
+    # Python2.x definitions
     def _decode_string(data):
-        """ in python2.x no decoding is necessary thus just returns data without any change """
+        """No decoding in Python2.x"""
         return data
 
 
     # try to define xrange alias pointing to the builtin xrange
     try:
         xrange = __builtins__['xrange']
-    except:
-        xrange = getattr(__builtins__, 'xrange', xrange)
-
+    except AttributeError:
+        xrange = getattr(__builtins__, 'xrange')
     # define _dict_iter_values, _dict_iter_items, _dict_iter_keys aliases imported by the
     # other parts for dict.itervalues, dict.iteritems and dict.iterkeys
-    # pylint: disable=E1101
     _dict_iter_values = dict.itervalues
-
     _dict_iter_items = dict.iteritems
-
     _dict_iter_keys = dict.iterkeys
-    # pylint: enable=E1101
-
     from collections import OrderedDict
 
     _dict = OrderedDict
 
 
 def deprecated(description=None):
-    """ decorator used to mark methods, classes, classmethods and properies as deprecated
-        :param str description: the additional information printed along with the DeprecationWarning
-    """
+    """Decorator used to mark methods, classes, classmethods and properies as deprecated
 
-    # check if description prarameter is set and whether it is a valid string
+    :param str description: the additional information printed along with the DeprecationWarning
+    """
+    # check if description parameter is set and whether it is a valid string
     if description is None:
         # no addtional message just print a '!' at the end of the basic DeprecationWarning
         # message
@@ -98,10 +87,11 @@ def deprecated(description=None):
             # is accessed
             _callstack = inspect.stack()
             # locate caller of deprecated entity. In case this message decorates a mixed_property
-            # the mimediate caller following this function on callstack is  the __get__, __set__
+            # the immediate caller following this function on callstack is  the __get__, __set__
             # or __delete__ special methods of the above mixed_property decorator class or any other 
             # element which is defined within this module. Just walk up the call stack until
             # __name__ points to any other module
+            # fixme: I'm not sure how necessary this is
             _select_level = 1
             _self = _callstack[0]
             _selfframe = _self.frame
@@ -119,7 +109,7 @@ def deprecated(description=None):
                     break
                 _select_level += 1
 
-            # define filter ensuring warning for func is issued only onece per module and file it is called
+            # define filter ensuring warning for func is issued only once per module and file it is called
             warnings.filterwarnings('module', message=_message_filter, category=DeprecationWarning, module=_fname)
             warnings.warn(
                 _deprecated_message,
@@ -128,9 +118,6 @@ def deprecated(description=None):
             )
             return func(*args, **kwargs)
 
-        # if msg is not None:
-        #    _deprecated_message = msg.format(func.__qualname__,description)
-        #    _message_filter = re.escape(msg.format(func.__qualname__,r''))
         if inspect.isclass(func):
             # issue DeprecationWarning specific to class object and its instances
             _deprecated_message = "Class '{}' is deprecated{}".format(
@@ -169,7 +156,7 @@ def deprecated(description=None):
 @ft.total_ordering
 class Block(object):
     """Generic block"""
-    __slots__ = ('_name', '_attrs', '_is_parent', '_parent', '__dict__', '__weakref__')
+    __slots__ = ('_name', '_attrs', '_is_parent', '__dict__', '__weakref__')
 
     def __init__(self, name):
         self._name = name
@@ -207,6 +194,8 @@ class Block(object):
             attr_name = attr.name
         elif isinstance(attr, str):
             attr_name = attr
+        else:
+            raise ValueError("invalid type for attr: {}".format(type(attr)))
         # first check that the attribute does not exist on the class
         if hasattr(self, attr_name):
             raise ValueError("will not overwrite attribute '{}'".format(attr_name))
@@ -223,7 +212,7 @@ class Block(object):
 
     def __setattr__(self, key, value):
         """Guard against unintentional modification of _attrs"""
-        if key == '_attrs': # we can't prevent it but we can control it's type and content
+        if key == '_attrs':  # we can't prevent it but we can control it's type and content
             # value must be a dictionary
             try:
                 assert isinstance(value, dict)
@@ -233,11 +222,10 @@ class Block(object):
             try:
                 keys = list(value.keys())
                 keys_are_strings = map(lambda x: isinstance(x, str), keys)
-                assert all(keys_are_strings) #or len(keys) == 0
+                assert all(keys_are_strings)  # or len(keys) == 0
             except AssertionError:
                 raise ValueError("all keys of {} must be strings".format(key))
         super(Block, self).__setattr__(key, value)
-
 
     # todo: rename to 'rename_attr'
     # todo: change signature to rename(self, name, new_name)
@@ -365,7 +353,7 @@ class ListBlock(Block):
     def __init__(self, *args, **kwargs):
         super(ListBlock, self).__init__(*args, **kwargs)
         self._list = list()  # separate attribute for ease of management
-        self._material_dict = dict() # a dictionary used by Materials to extract material by material name
+        self._material_dict = dict()  # a dictionary used by Materials to extract material by material name
 
     def items(self):
         return self._list
@@ -401,8 +389,6 @@ class ListBlock(Block):
         else:
             raise ValueError("the material_dict attribute can only be set for Materials ListBlocks")
 
-
-
     def __setattr__(self, key, value):
         """We do some sanity checks before allowing direct setting"""
         # we only allow modification of _list if it meets some criteria
@@ -431,8 +417,6 @@ class ListBlock(Block):
                 return True
             else:
                 return False
-
-
 
     def __str__(self, prefix="", index=None):
         """Convert the ListBlock into a string

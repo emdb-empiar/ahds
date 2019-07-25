@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 # ahds
 
-from .core import deprecated, Block, ListBlock
-from .data_stream import set_data_stream
+# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
+# pip install -e /path/to/folder/with/setup.py
+# or
+# python setup.py develop
+from .core import Block
 from .header import AmiraHeader
-
-__all__ = ['AmiraHeader']
+from .data_stream import set_data_stream
 
 
 class AmiraFile(Block):
@@ -69,3 +71,6 @@ class AmiraFile(Block):
         string += super(AmiraFile, self).__str__(prefix=prefix, index=index)
         string += "*" * width
         return string
+
+
+__all__ = ['AmiraFile', 'AmiraHeader']

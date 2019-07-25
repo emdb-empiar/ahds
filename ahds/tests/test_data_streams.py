@@ -7,7 +7,7 @@ import unittest
 import numpy
 
 from ahds import data_stream, AmiraFile, header
-from tests import TEST_DATA_PATH
+from ahds.tests import TEST_DATA_PATH
 
 
 class TestDataStreams(unittest.TestCase):

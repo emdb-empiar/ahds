@@ -6,9 +6,13 @@ import random
 import sys
 import unittest
 
-from ahds import AmiraFile
-from ahds.core import Block, ListBlock
+# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
+# pip install -e /path/to/folder/with/setup.py
+# or
+# python setup.py develop
 from . import TEST_DATA_PATH
+from .. import AmiraFile
+from ..core import Block, ListBlock
 
 
 class TestUtils(unittest.TestCase):
@@ -278,8 +282,6 @@ def extract_segments(af, *args, **kwargs):
     # a dictionary of all vertices
     vertices_dict = dict(zip(range(1, len(vertices_list) + 1), vertices_list))
     # then we repack the vertices and patches into vertices and triangles (collate triangles from all patches)
-    patches_vertices = dict()
-    patch_triangles = list()
     for patch in af.data_streams.Data.Vertices.Patches:
         material = af.header.parameters.Materials.material_dict[patch.InnerRegion]
         patch_id = material.Id
@@ -288,8 +290,7 @@ def extract_segments(af, *args, **kwargs):
             raise ValueError('patch ID is None')
         # now collate triangles and vertices
         triangles = patch.Triangles.data
-        patch_triangles = triangles.tolist()
-        hxsurfsegment = HxSurfSegment(material, vertices_dict, patch_triangles, *args, **kwargs)
+        hxsurfsegment = HxSurfSegment(material, vertices_dict, triangles.tolist(), *args, **kwargs)
         if patch_id not in segments:
             segments[patch_id] = [hxsurfsegment]
         else:
@@ -450,7 +451,7 @@ class TestAmiraFile(unittest.TestCase):
         af = AmiraFile('/Users/pkorir/data/segmentations/surf/test8.surf')
         # print(af.header.attrs())
         # print(af.header.parameters.Materials)
-        # print(af.data_streams.Data.Vertices)
+        print(af.data_streams.Data.Vertices)
         with self.assertRaises(TypeError):
             extract_segments(list())
         segments = extract_segments(af)

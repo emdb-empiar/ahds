@@ -5,7 +5,7 @@ import os
 import unittest
 
 from ahds import header
-from tests import TEST_DATA_PATH
+from ahds.tests import TEST_DATA_PATH
 
 
 class TestHeaderBlock(unittest.TestCase):

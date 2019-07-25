@@ -117,8 +117,6 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "s#k", &input, &input_size, &output_size))
 		return NULL;
 
-//	printf("c: input size = %lu\n", input_size);
-//	printf("c output_size: %lu\n", output_size);
 	uchar *output = PyMem_New(uchar, output_size);
 	ulong i=0, j=0;
 	int count=1, repeat=0; // count/repeat: true = 1; false = 0
@@ -127,7 +125,6 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 	// two state machine that oscillates between getting counts and getting data
 	while (i < input_size) { // while we still have some input
 		if (count) { // get count
-//            printf("nothing: %u\n", i);
 			no = input[i];
 			// determine if this is a repeat or a non-repeat
 			if (no > 127) {

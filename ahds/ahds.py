@@ -11,6 +11,10 @@ from __future__ import print_function
 import argparse
 import os
 
+# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
+# pip install -e /path/to/folder/with/setup.py
+# or
+# python setup.py develop
 from . import AmiraFile
 
 

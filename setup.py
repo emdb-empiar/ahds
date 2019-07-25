@@ -1,15 +1,39 @@
 # -*- coding: utf-8 -*-
 # setup.py
-from setuptools import setup, find_packages, Extension
-import numpy as np
+from __future__ import print_function
 import os
+import sys
 
-AHDS_VERSION = '0.1.9.post1'
+# fixme: how can I pre-install numpy???
+from subprocess import Popen, PIPE
 
+AHDS_VERSION = '0.2.0.dev0'
+
+print('xxxxxxx', file=sys.stderr)
+with open("requirements.txt", 'r') as f:
+    for row in f:
+        if row[0] == "#":
+            continue
+        print("Attempting to install {}...".format(row.strip()))
+        cmd = "pip install {}".format(row.strip())
+        print(cmd)
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+        o, e = p.communicate()
+print('xxxxxxx', file=sys.stderr)
+import numpy as np
+
+from setuptools import setup, find_packages, Extension
+
+"""
+The build may fail on macOS. Try the following:
+
+open /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
+
+Credits: https://blog.driftingruby.com/updated-to-mojave/
+"""
 decoders = Extension(
-      'ahds.decoders',
-      sources=['src/decodersmodule.cpp'],
-      libraries=['-std=libc++']
+    'ahds.decoders',
+    sources=['src/decodersmodule.cpp'],
 )
 
 here = os.path.abspath(os.path.dirname(__file__))

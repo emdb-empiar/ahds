@@ -31,8 +31,8 @@ Use Cases
 --------------------------------------------
 Installation
 --------------------------------------------
-Presently, ``ahds`` only works with Python 2.7 but will soon work on Python 3. Please begin by 
-installing ``numpy<1.16`` using 
+Presently, ``ahds`` only works with Python 2.7 but will soon work on Python 3. Please begin by
+installing ``numpy<1.16`` using
 
 ::
 
@@ -45,29 +45,29 @@ because it is needed to run ``setup.py``. Afterwards you may run
     pip install ahds
 
 ----------------------------------------------
-License
+License			
 ----------------------------------------------
 
 ::
 
-    Copyright 2017 EMBL - European Bioinformatics Institute
-                        
-    Licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-    You may obtain a copy of the License at 
-    
-    http://www.apache.org/licenses/LICENSE-2.0
-                        
-    Unless required by applicable law or agreed to in writing, 
-    software distributed under the License is distributed on an 
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-    either express or implied. See the License for the specific 
-    language governing permissions and limitations under the License.     
+	Copyright 2017 EMBL - European Bioinformatics Institute
+						
+	Licensed under the Apache License, Version 2.0 (the "License"); 
+	you may not use this file except in compliance with the License. 
+	You may obtain a copy of the License at 
+	
+	http://www.apache.org/licenses/LICENSE-2.0
+						
+	Unless required by applicable law or agreed to in writing, 
+	software distributed under the License is distributed on an 
+	"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+	either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. 	
 
 ----------------------------------------------
 Future Plans
 ----------------------------------------------
-*    Write out valid Amira (R) files
+*	Write out valid Amira (R) files
 
 ----------------------------------------------
 Background and Definitions
@@ -80,9 +80,9 @@ Background and Definitions
 
 Both file types consist of two parts: 
 
-*     a `header`, and 
+*     a `header`, and
 
-*     one or more `data streams`. 
+*     one or more `data streams`.
 
 Headers are structured in a modified VRML-like syntax and differ between AmiraMesh and HyperSurface files in some of the keywords used. 
 
@@ -172,7 +172,7 @@ These refer to three raw data streams each found beginning with the delimiter ``
 which is a run-length encoded data stream of the specified length, while
 
 ::
-    
+
     Lattice { byte Data } @1(HxZip,919215)
 
 contains zipped data of the specified length.
@@ -188,7 +188,7 @@ HyperSurface data streams structured to have the following sections:
     # Header
     Vertices <nvertices>
     # vertices data stream
-    
+
     NBranchingPoints <nbranching_points>
     NVerticesOnCurves <nvertices_on_curves>
     BoundaryCurves <nboundary_curves>
@@ -211,7 +211,7 @@ HyperSurface data streams can be either plain ASCII or binary.
 
 *    `ahds.grammar <https://ahds.readthedocs.io/en/latest/ahds.html#ahds-grammar-module>`_ specifies an EBNF grammar
 
-*    `ahds.header <https://ahds.readthedocs.io/en/latest/ahds.html#ahds-header-module>`_ 
+*    `ahds.header <https://ahds.readthedocs.io/en/latest/ahds.html#ahds-header-module>`_
 
 *    `ahds.data_stream <https://ahds.readthedocs.io/en/latest/ahds.html#ahds-data-stream-module>`_
 
