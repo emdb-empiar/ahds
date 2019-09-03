@@ -10,6 +10,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import sys
 
 # to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
 # pip install -e /path/to/folder/with/setup.py
@@ -31,3 +32,7 @@ def main():
     af = AmiraFile(args.file, load_streams=args.load_streams, debug=args.debug)
     print(af)
     return os.EX_OK
+
+
+if __name__ == "__main__":
+    sys.exit(main())
