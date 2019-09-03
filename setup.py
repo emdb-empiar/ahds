@@ -9,17 +9,15 @@ from subprocess import Popen, PIPE
 
 AHDS_VERSION = '0.2.0.dev0'
 
-print('xxxxxxx', file=sys.stderr)
 with open("requirements.txt", 'r') as f:
     for row in f:
         if row[0] == "#":
             continue
-        print("Attempting to install {}...".format(row.strip()))
+        print("Attempting to install {}...".format(row.strip()), file=sys.stderr)
         cmd = "pip install {}".format(row.strip())
-        print(cmd)
+        print(cmd, file=sys.stderr)
         p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
         o, e = p.communicate()
-print('xxxxxxx', file=sys.stderr)
 import numpy as np
 
 from setuptools import setup, find_packages, Extension
