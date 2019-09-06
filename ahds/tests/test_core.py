@@ -10,7 +10,7 @@ import unittest
 # pip install -e /path/to/folder/with/setup.py
 # or
 # python setup.py develop
-from . import TEST_DATA_PATH
+from . import TEST_DATA_PATH, Py23FixTestCase
 from .. import AmiraFile
 from ..core import Block, ListBlock
 
@@ -19,7 +19,7 @@ class TestUtils(unittest.TestCase):
     pass
 
 
-class TestBlock(unittest.TestCase):
+class TestBlock(Py23FixTestCase):
     def test_create(self):
         b = Block('block')
         self.assertTrue(b.name, 'block')
@@ -42,17 +42,17 @@ class TestBlock(unittest.TestCase):
         b.add_attr(Block('Materials'))
         inside = Block('Inside')
         b.Materials.add_attr(inside)
-        b.Materials.Inside.add_attr('Id', 1)
+        # b.Materials.Inside.add_attr('Id', 1)
         outside = Block('Outside')
         b.Materials.add_attr(outside)
-        b.Materials.Outside.add_attr('Id', 2)
+        # b.Materials.Outside.add_attr('Id', 2)
         seaside = Block('Seaside')
         b.Materials.add_attr(seaside)
-        b.Materials.Seaside.add_attr('Id', 3)
-        self.assertListEqual(b.Materials.ids, [1, 2, 3])
-        self.assertEqual(b.Materials[1], inside)
-        self.assertEqual(b.Materials[2], outside)
-        self.assertEqual(b.Materials[3], seaside)
+        # b.Materials.Seaside.add_attr('Id', 3)
+        # self.assertCountEqual(b.Materials.ids, [1, 2, 3])
+        # self.assertEqual(b.Materials[1], inside)
+        # self.assertEqual(b.Materials[2], outside)
+        # self.assertEqual(b.Materials[3], seaside)
         self.assertTrue('Materials' in b)
 
     def test_rename_attr(self):
@@ -73,10 +73,29 @@ class TestBlock(unittest.TestCase):
             b.rename_attr('_inner-block', 'a')
 
 
-class TestListBlock(unittest.TestCase):
+class TestListBlock(Py23FixTestCase):
     def test_create(self):
         l = ListBlock('listblock')
         self.assertTrue(hasattr(l, '_list'))
+
+    def test_add_attr(self):
+        b = Block('block')
+        b.add_attr(ListBlock('Materials'))
+        inside = Block('Inside')
+        b.Materials.append(inside)
+        # b.Materials.add_attr(inside)
+        b.Materials[0].add_attr('Id', 1)
+        outside = Block('Outside')
+        b.Materials.append(outside)
+        b.Materials[1].add_attr('Id', 2)
+        seaside = Block('Seaside')
+        seaside.add_attr('Id', 3)
+        b.Materials.append(seaside)
+        self.assertCountEqual(b.Materials.ids, [1, 2, 3])
+        self.assertEqual(b.Materials[0], inside)
+        self.assertEqual(b.Materials[1], outside)
+        self.assertEqual(b.Materials[2], seaside)
+        self.assertTrue('Materials' in b)
 
     def test_list(self):
         l = ListBlock('listblock')
@@ -283,7 +302,7 @@ def extract_segments(af, *args, **kwargs):
     vertices_dict = dict(zip(range(1, len(vertices_list) + 1), vertices_list))
     # then we repack the vertices and patches into vertices and triangles (collate triangles from all patches)
     for patch in af.data_streams.Data.Vertices.Patches:
-        material = af.header.parameters.Materials.material_dict[patch.InnerRegion]
+        material = af.header.Parameters.Materials.material_dict[patch.InnerRegion]
         patch_id = material.Id
         # sanity check
         if patch_id is None:
@@ -437,7 +456,7 @@ class TestAmiraFile(unittest.TestCase):
     data_streams = ahds.data_stream.DataStreams(fn, *args, **kwargs)
     segments = dict()
     for patch_name in data_streams['Patches']:
-        patch_material = getattr(header.parameters.Materials, patch_name)
+        patch_material = getattr(header.Parameters.Materials, patch_name)
         patch_vertices, patch_triangles = vertices_for_patches(data_streams['Vertices'], data_streams['Patches'][patch_name])
         # we use the material ID as the key because it is a unique reference to the patch
         segments[patch_material.Id] = HxSurfSegment(patch_material, patch_vertices, patch_triangles)
@@ -450,7 +469,7 @@ class TestAmiraFile(unittest.TestCase):
         # af = AmiraFile(os.path.join(TEST_DATA_PATH, 'BinaryHyperSurface.surf'), load_streams=True)
         af = AmiraFile('/Users/pkorir/data/segmentations/surf/test8.surf')
         # print(af.header.attrs())
-        # print(af.header.parameters.Materials)
+        # print(af.header.Parameters.Materials)
         print(af.data_streams.Data.Vertices)
         with self.assertRaises(TypeError):
             extract_segments(list())
@@ -461,10 +480,10 @@ class TestAmiraFile(unittest.TestCase):
         self.assertIsInstance(list(segments.keys())[0], int)
         self.assertIsInstance(list(segments.values())[0][0], HxSurfSegment)
         # if we have Materials verify that material_dict is not None
-        if hasattr(af.header.parameters, 'Materials'):
-            self.assertIsNotNone(af.header.parameters.Materials.material_dict)
+        if hasattr(af.header.Parameters, 'Materials'):
+            self.assertIsNotNone(af.header.Parameters.Materials.material_dict)
         else:
-            self.assertIsNone(af.header.parameters.Materials.material_dict)
+            self.assertIsNone(af.header.Parameters.Materials.material_dict)
         # print(segments)
         # print(list(map(lambda s: (s.id, s.name, s.colour, len(s.vertices), len(s.triangles)), segments.values())))
         # print(segments[patch_id].id)

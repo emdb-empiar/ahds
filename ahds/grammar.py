@@ -268,42 +268,5 @@ def get_parsed_data(fn, *args, **kwargs):
     file_format = detect_format(fn, *args, **kwargs)
     data = get_header(fn, file_format, *args, **kwargs)
     parsed_data = parse_header(data, *args, **kwargs)
-    return parsed_data, len(data), file_format
+    return data, parsed_data, len(data), file_format
 
-
-def main():
-    import argparse
-
-    parser = argparse.ArgumentParser(prog='amira_grammar_parser', description='Parser for Amira (R) headers')
-    parser.add_argument('amira_fn', help="name of an Amira (R) file with extension .am or .surf")
-    parser.add_argument('-v', '--verbose', action='store_true', default=False, help='verbose output')
-    parser.add_argument('-H', '--show-header', action='store_true', default=False, help='show raw header')
-    parser.add_argument('-P', '--show-parsed', action='store_true', default=False, help='show parsed header')
-    parser.add_argument('-f', '--format-bytes', type=int, default=50, help='bytes to search for file format')
-    parser.add_argument('-r', '--header-bytes', type=int, default=20000, help='bytes to search for header')
-
-    args = parser.parse_args()
-
-    # get file format
-    file_format = detect_format(args.amira_fn, format_bytes=args.format_bytes, verbose=args.verbose)
-
-    # get the exact header
-    data = get_header(args.amira_fn, file_format, header_bytes=args.header_bytes, verbose=args.verbose)
-
-    if args.show_header:
-        print('raw data:', file=sys.stderr)
-        print(data, file=sys.stderr)
-        print('', file=sys.stderr)
-
-    # parse the header    
-    parsed_data = parse_header(data, verbose=args.verbose)
-
-    if args.show_parsed:
-        print('parsed data:', file=sys.stderr)
-        pprint(parsed_data, width=318, stream=sys.stderr)
-
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

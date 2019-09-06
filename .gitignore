@@ -113,7 +113,6 @@ venv.bak/
 
 dist
 .coverage_report
-.travis.yml
 .pydevproject
 .project
 sfftk.egg-info

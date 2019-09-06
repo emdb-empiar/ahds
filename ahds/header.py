@@ -202,10 +202,8 @@ https://assets.thermofisher.com/TFS-Assets/MSD/Product-Guides/user-guide-amira-s
 from __future__ import print_function
 
 import sys
-from pprint import pprint
 
-from .core import Block, deprecated, \
-    ListBlock
+from .core import Block, deprecated, ListBlock
 from .data_stream import set_data_stream
 from .grammar import get_parsed_data
 
@@ -220,13 +218,11 @@ class AmiraHeader(Block):
         '_fn', '_parsed_data', '_header_length', '_file_format', '_parameters', '_load_streams',
         '_data_stream_count')
 
-    def __init__(self, fn, load_streams=True, debug=False, *args, **kwargs):
+    def __init__(self, fn, load_streams=True, *args, **kwargs):
         """Construct an AmiraHeader object from parsed data"""
         self._fn = fn
-        self._parsed_data, self._header_length, self._file_format = get_parsed_data(fn, *args, **kwargs)
-        # introspect the stream loader to use
-        if debug:
-            pprint(self._parsed_data)
+        self._literal_data, self._parsed_data, self._header_length, self._file_format = get_parsed_data(fn, *args,
+                                                                                                        **kwargs)
         # load the streams
         self._load_streams = load_streams
         # data stream count
@@ -236,9 +232,23 @@ class AmiraHeader(Block):
         # load the parse data into this object
         self._load()
 
+    @classmethod
+    @deprecated("Now you can directly create a header from the file name as AmiraHeader('file.am')")
+    def from_file(cls, fn, *args, **kwargs):
+        """Deprecated classmethod"""
+        return cls(fn, *args, **kwargs)
+
     @property
     def filename(self):
         return self._fn
+
+    @property
+    def literal_data(self):
+        return self._literal_data
+
+    @property
+    def parsed_data(self):
+        return self._parsed_data
 
     @property
     def load_streams(self):
@@ -290,7 +300,7 @@ class AmiraHeader(Block):
             for material in _parameters.Materials:
                 material_dict[material.name] = material
             _parameters.Materials.material_dict = material_dict
-        super(AmiraHeader, self).add_attr('parameters', _parameters)
+        super(AmiraHeader, self).add_attr('Parameters', _parameters)
         # load array declarations
         self._load_declarations(block_data['array_declarations'])
         # load data stream definitions
@@ -311,9 +321,9 @@ class AmiraHeader(Block):
                 block.read()
                 # self.add_attr(block)
 
-    @property
-    def parameters(self):
-        return self._parameters
+    # @property
+    # def Parameters(self):
+    #     return self._parameters
 
     @deprecated(" use header attributes version, dimension, fileformat, format and extra_format istead")
     def designation(self):

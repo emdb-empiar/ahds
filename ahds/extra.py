@@ -1,6 +1,6 @@
 import sys
 
-if sys.version_info[0] >= 3:
+if sys.version_info[0] > 2:
     from collections import UserList
 else:
     from UserList import UserList
