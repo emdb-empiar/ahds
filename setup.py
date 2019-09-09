@@ -40,7 +40,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst')) as f:
     long_description = f.read()
 
-
 AHDS_NAME = "ahds"
 AHDS_AUTHOR = "Paul K. Korir, PhD"
 AHDS_AUTHOR_EMAIL = "pkorir@ebi.ac.uk, paul.korir@gmail.com"
@@ -114,7 +113,8 @@ else:
         keywords=AHDS_KEYWORDS,
         setup_requires=["numpy"],
         # additional dependencies to prevent failed install due to no support for Py27
-        install_requires=["simpleparse==2.1.1", "scikit-image<0.14", "scipy<1.2", "backports.shutil_get_terminal_size"],
+        install_requires=["simpleparse==2.1.1", "scikit-image<0.14", "scipy<1.2", "backports.shutil_get_terminal_size",
+                          "networkx==2.2"],
         ext_modules=[decoders],
         include_dirs=[np.get_include()],
         entry_points={
