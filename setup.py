@@ -5,20 +5,9 @@ from __future__ import print_function
 import os
 import sys
 
-# fixme: how can I pre-install numpy???
+import numpy as np
 
 AHDS_VERSION = '0.2.0.dev0'
-
-# with open("requirements.txt", 'r') as f:
-#     for row in f:
-#         if row[0] == "#":
-#             continue
-#         print("Attempting to install {}...".format(row.strip()), file=sys.stderr)
-#         cmd = "pip install {}".format(row.strip())
-#         print(cmd, file=sys.stderr)
-#         p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
-#         o, e = p.communicate()
-import numpy as np
 
 from setuptools import setup, find_packages, Extension
 
