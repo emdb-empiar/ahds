@@ -2,6 +2,12 @@
 ``ahds``
 ==============================================
 
+.. image:: https://img.shields.io/pypi/v/ahds/0.2.0.dev0
+    :alt: PyPI
+
+.. image:: https://img.shields.io/pypi/pyversions/ahds/0.2.0.dev0
+    :alt: PyPI - Python Version
+
 .. image:: https://travis-ci.org/emdb-empiar/ahds.svg?branch=master
     :target: https://travis-ci.org/emdb-empiar/ahds
 
@@ -48,9 +54,9 @@ License
     either express or implied. See the License for the specific
     language governing permissions and limitations under the License.
 
-
+----------------------------------------
 Use Cases
-==============================================
+----------------------------------------
 *     Detect and parse Amira (R) headers and return structured data
 
 *     Decode data (``HxRLEByte``, ``HxZip``)
