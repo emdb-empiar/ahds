@@ -70,6 +70,11 @@ AHDS_CLASSIFIERS = [
 ]
 
 if sys.version_info[0] > 2:
+    AHDS_INSTALL_REQUIRES = ["simpleparse>=2.1.1", "scikit-image"]
+    if sys.version_info[1] > 5:
+        pass
+    else:
+        AHDS_INSTALL_REQUIRES += ["matplotlib<3.1"]
     setup(
         name=AHDS_NAME,
         version=AHDS_VERSION,
@@ -84,7 +89,7 @@ if sys.version_info[0] > 2:
         keywords=AHDS_KEYWORDS,
         setup_requires=["numpy"],
         # additional dependencies to prevent failed install due to no support for Py27
-        install_requires=["simpleparse>=2.1.1", "scikit-image"],
+        install_requires=AHDS_INSTALL_REQUIRES,
         ext_modules=[decoders],
         include_dirs=[np.get_include()],
         entry_points={
