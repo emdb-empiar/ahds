@@ -150,32 +150,96 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1"># ahds</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">header</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">data_stream</span>
+<span class="c1"># to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use</span>
+<span class="c1"># pip install -e /path/to/folder/with/setup.py</span>
+<span class="c1"># or</span>
+<span class="c1"># python setup.py develop</span>
 
-<div class="viewcode-block" id="AmiraFile"><a class="viewcode-back" href="../ahds.html#ahds.AmiraFile">[docs]</a><span class="k">class</span> <span class="nc">AmiraFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience class to handle Amira (R) files</span>
-<span class="sd">    </span>
-<span class="sd">    This class aggregates user-level classes from the :py:mod:`ahds.header` and :py:mod:`ahds.data_stream` modules</span>
-<span class="sd">    into a single class with a simple interface :py:meth:`AmiraFile.header` for the header and :py:attr:`AmiraFile.data_streams` </span>
-<span class="sd">    data streams attribute.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">.core</span> <span class="k">import</span> <span class="n">Block</span>
+<span class="kn">from</span> <span class="nn">.header</span> <span class="k">import</span> <span class="n">AmiraHeader</span>
+<span class="kn">from</span> <span class="nn">.data_stream</span> <span class="k">import</span> <span class="n">set_data_stream</span>
+
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">shutil</span> <span class="k">import</span> <span class="n">get_terminal_size</span>
+    <span class="n">_get_terminal_size</span> <span class="o">=</span> <span class="n">get_terminal_size</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">backports.shutil_get_terminal_size</span> <span class="k">import</span> <span class="n">get_terminal_size</span>
+    <span class="n">_get_terminal_size</span> <span class="o">=</span> <span class="n">get_terminal_size</span>
+
+
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="n">_get_terminal_size</span><span class="p">()</span><span class="o">.</span><span class="n">columns</span>
+
+<div class="viewcode-block" id="AmiraFile"><a class="viewcode-back" href="../ahds.html#ahds.AmiraFile">[docs]</a><span class="k">class</span> <span class="nc">AmiraFile</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Main entry point for working with Amira files&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_fn&#39;</span><span class="p">,</span> <span class="s1">&#39;_load_streams&#39;</span><span class="p">,</span> <span class="s1">&#39;_meta&#39;</span> <span class="s1">&#39;_header&#39;</span><span class="p">,</span> <span class="s1">&#39;_data_streams&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">load_streams</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise a new AmiraFile object given the Amira file.</span>
+
+<span class="sd">        Passes additional args/kwargs to AmiraHeader class for initialisation of the reading process</span>
+
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            from ahds import AmiraFile</span>
+<span class="sd">            af = AmiraFile(&#39;file.am&#39;)</span>
+<span class="sd">            print(af)</span>
+
+<span class="sd">        :param str fn: Amira file name</span>
+<span class="sd">        :param bool load_streams: whether (default) or not to load data streams</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmiraFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span> <span class="o">=</span> <span class="n">fn</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">AmiraHeader</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># only populate on call to read() method</span>
-        
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span>
-    
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">data_streams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span>
-    
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data_streams</span> <span class="o">=</span> <span class="n">data_stream</span><span class="o">.</span><span class="n">DataStreams</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_streams</span> <span class="o">=</span> <span class="n">load_streams</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_streams_loaded</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># the header contains a lot of information relied on for reading streams</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">AmiraHeader</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">load_streams</span><span class="o">=</span><span class="n">load_streams</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># meta block</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmiraFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="n">Block</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="s1">&#39;header_length&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="s1">&#39;data_streams&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="o">.</span><span class="n">data_stream_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="s1">&#39;streams_loaded&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_streams</span><span class="p">)</span>
+        <span class="c1"># header block</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmiraFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="s1">&#39;header&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">)</span>
+        <span class="c1"># data streams block</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmiraFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="n">Block</span><span class="p">(</span><span class="s1">&#39;data_streams&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_streams</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_streams_loaded</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="AmiraFile.read"><a class="viewcode-back" href="../ahds.html#ahds.AmiraFile.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read the data streams if they are not read yet&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_streams_loaded</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;AmiraMesh&quot;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="o">.</span><span class="n">_data_streams_block_list</span><span class="p">:</span>
+                    <span class="n">ds</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                    <span class="n">ds</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data_streams</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="o">.</span><span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;HyperSurface&quot;</span><span class="p">:</span>
+                <span class="n">block</span> <span class="o">=</span> <span class="n">set_data_stream</span><span class="p">(</span><span class="s1">&#39;Data&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">)</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_streams</span><span class="o">.</span><span class="n">add_attr</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_streams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="o">.</span><span class="n">load_streams</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_streams_loaded</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;AmiraFile(&#39;</span><span class="si">{}</span><span class="s2">&#39;, read=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">140</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;AMIRA (R) HEADER AND DATA STREAMS</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AmiraFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="n">width</span>
+        <span class="k">return</span> <span class="n">string</span></div>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AmiraFile&#39;</span><span class="p">,</span> <span class="s1">&#39;AmiraHeader&#39;</span><span class="p">]</span>
 </pre></div>
 
            </div>
