@@ -468,7 +468,7 @@ class TestAmiraFile(unittest.TestCase):
         # af = AmiraFile(os.path.join(TEST_DATA_PATH, 'test7.surf'), load_streams=True)
         # af = AmiraFile(os.path.join(TEST_DATA_PATH, 'BinaryHyperSurface.surf'), load_streams=True)
         # af = AmiraFile('/Users/pkorir/data/segmentations/surf/test8.surf')
-        af = AmiraFile(os.path.join(TEST_DATA_PATH, 'test8.surf'))
+        af = AmiraFile(os.path.join(TEST_DATA_PATH, 'test7.surf'))
         # print(af.header.attrs())
         # print(af.header.Parameters.Materials)
         print(af.data_streams.Data.Vertices)
