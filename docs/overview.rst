@@ -18,9 +18,7 @@
 .. image:: https://coveralls.io/repos/github/emdb-empiar/ahds/badge.svg
     :target: https://coveralls.io/github/emdb-empiar/ahds
 
-
-
-.. contents:: Table of Contents
+.. contents::
 
 ----------------------------------------------
 Overview
