@@ -294,7 +294,10 @@ class AmiraMeshDataStream(AmiraDataStream):
             elif self.format == 'HxByteRLE':
                 # these seem to always be bytes so no type introspection
                 if isinstance(self.shape, (list, np.ndarray,)):
-                    new_shape = self.shape.tolist() + [self.dimension]
+                    if self.dimension > 1:
+                        new_shape = self.shape.tolist() + [self.dimension]
+                    else:
+                        new_shape = self.shape.tolist()
                     return hxbyterle_decode(
                         data,
                         int(self.shape.prod())
@@ -325,9 +328,9 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             f.seek(len(self._header))
             data = f.read()
             # get the vertex count and streams
-            _vertices_regex = ".*?\n" \
-                              "Vertices (?P<vertex_count>\d+)\n" \
-                              "(?P<streams>.*)".encode('ASCII')
+            _vertices_regex = r".*?\n" \
+                              r"Vertices (?P<vertex_count>\d+)\n" \
+                              r"(?P<streams>.*)".encode('ASCII')
             vertices_regex = re.compile(_vertices_regex, re.S)
             match_vertices = vertices_regex.match(data)
             # todo: fix for full.surf and simple.surf
@@ -335,12 +338,12 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             vertex_count = int(match_vertices.group('vertex_count'))
             # get the patches
             # fixme: general case for NBranchingPoints, NVerticesOnCurves, BoundaryCurves being non-zero
-            stream_regex = "(?P<vertices>.*?)\n" \
-                           "NBranchingPoints (?P<branching_point_count>\d+)\n" \
-                           "NVerticesOnCurves (?P<vertices_on_curves_count>\d+)\n" \
-                           "BoundaryCurves (?P<boundary_curve_count>\d+)\n" \
-                           "Patches (?P<patch_count>\d+)\n" \
-                           "(?P<patches>.*)".encode('ASCII')
+            stream_regex = r"(?P<vertices>.*?)\n" \
+                           r"NBranchingPoints (?P<branching_point_count>\d+)\n" \
+                           r"NVerticesOnCurves (?P<vertices_on_curves_count>\d+)\n" \
+                           r"BoundaryCurves (?P<boundary_curve_count>\d+)\n" \
+                           r"Patches (?P<patch_count>\d+)\n" \
+                           r"(?P<patches>.*)".encode('ASCII')
             match_streams = re.match(stream_regex, match_vertices.group('streams'), re.S)
             # instatiate the vertex block
             vertices_block = AmiraHxSurfaceDataStream('Vertices', self._header)
@@ -373,15 +376,15 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
             # the starting point of the next patch. This is trivial to solve because we simply
             # backtrack start_from by 1.
             # These are noted in NOTE A and NOTE B below.
-            _patch_regex = "[{]\n" \
-                           "InnerRegion (?P<patch_inner_region>.*?)\n" \
-                           "OuterRegion (?P<patch_outer_region>.*?)\n" \
-                           "BoundaryID (?P<patch_boundary_id>\d+)\n" \
-                           "BranchingPoints (?P<patch_branching_points>\d+)\n" \
-                           "\s+\n" \
-                           "Triangles (?P<triangle_count>.*?)\n" \
-                           "(?P<triangles>.*?)\n" \
-                           "[}]\n[{]".encode('ASCII')
+            _patch_regex = r"[{]\n" \
+                           r"InnerRegion (?P<patch_inner_region>.*?)\n" \
+                           r"OuterRegion (?P<patch_outer_region>.*?)\n" \
+                           r"BoundaryID (?P<patch_boundary_id>\d+)\n" \
+                           r"BranchingPoints (?P<patch_branching_points>\d+)\n" \
+                           r"\s+\n" \
+                           r"Triangles (?P<triangle_count>.*?)\n" \
+                           r"(?P<triangles>.*?)\n" \
+                           r"[}]\n[{]".encode('ASCII')
             patch_regex = re.compile(_patch_regex, re.S)
             # start from the beginning
             start_from = 0

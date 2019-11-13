@@ -428,7 +428,7 @@ class AmiraHeader(Block):
                                 block.add_attr(
                                     self._load_parameters(param['parameter_value'], name=param['parameter_name']))
                         else:
-                            print(param['parameter_name'], type(param['parameter_name']))
+                            # print(param['parameter_name'], type(param['parameter_name']))
                             block.add_attr(param['parameter_name'], param['parameter_value'])
                     else:
                         block.add_attr(param['parameter_name'], param['parameter_value'])

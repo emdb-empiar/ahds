@@ -63,9 +63,9 @@ data_format                  :=    "HxByteRLE" / "HxZip"
 data_length                  :=    number
 interpolation_method         :=    "Linear" / "Constant" / "EdgeElem"
 
-hyphname                     :=    [A-Za-z_], [A-Za-z0-9_\-]*
-qstring                      :=    "\"", "["*, [A-Za-z0-9_,.\(\):/ \t]*, "]"*, "\""
-xstring                      :=    [A-Za-z], [A-Za-z0-9_\- (\xef)(\xbf)(\xbd)]*
+hyphname                     :=    [A-Za-z_&], [-A-Za-z0-9_:]*
+qstring                      :=    "\"", "["*, [-A-Za-z0-9_,.:/ tÅ�$;\n]*, "]"*, "\""
+xstring                      :=    [A-Za-z], [A-Za-z0-9_\- �(\xc5)]*
 number_seq                   :=    number, (ts, number)*
 
 # silent production rules
@@ -192,6 +192,21 @@ def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
     return file_format
 
 
+SEQ_MAP = [
+    (b'\xc5', u'Å'.encode('utf-8')), # Angstrom char
+]
+
+
+def _swap_illegal_chars(byte_seq, seq_map):
+    """Replace illegal byte sequences with legal ones"""
+    for s,r in seq_map:
+        _byte_seq = byte_seq
+        while _byte_seq.find(s) > 1:
+            _byte_seq = _byte_seq.replace(s, r)
+    swapped_byte_seq = _byte_seq
+    return swapped_byte_seq
+
+
 def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwargs):
     """Apply rules for detecting the boundary of the header
     
@@ -209,7 +224,9 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
     data = None
     with open(fn, 'rb') as f:
         # read a first chunk and store it in the first element of the list of header chunks
-        data = f.read(header_bytes if header_bytes >= _rescan_overlap else _rescan_overlap)
+        _data = f.read(header_bytes if header_bytes >= _rescan_overlap else _rescan_overlap)
+
+        data = _swap_illegal_chars(_data, SEQ_MAP)
 
         if file_format == "AmiraMesh" or file_format == "Avizo":
             if verbose:

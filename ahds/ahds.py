@@ -42,11 +42,12 @@ def main():
 
     af = get_amira_file(_file, args)
 
-    print(get_literal(af, args))
-
-    print(get_debug(af, args))
-
-    print(get_paths(_paths, af))
+    if args.literal:
+        print(get_literal(af, args), file=sys.stderr)
+    if args.debug:
+        print(get_debug(af, args), file=sys.stderr)
+    # always show paths
+    print(get_paths(_paths, af), file=sys.stderr)
     return os.EX_OK
 
 
@@ -93,7 +94,7 @@ def get_literal(af, args):
         string += u"ahds: Displaying literal header\n"
         string += u"-" * WIDTH + "\n"
         string += _str(af.header.literal_data)
-    return string
+    return string #.encode('utf-8')
 
 
 def set_file_and_paths(args):
