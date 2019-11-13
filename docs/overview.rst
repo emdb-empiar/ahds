@@ -80,7 +80,7 @@ Afterwards you may run
 
     pip install ahds
 
-.. todo::
+.. note::
 
     Figure out a way to avoid the need for ``numpy`` as part of the build.
 
