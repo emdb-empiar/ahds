@@ -294,10 +294,7 @@ class AmiraMeshDataStream(AmiraDataStream):
             elif self.format == 'HxByteRLE':
                 # these seem to always be bytes so no type introspection
                 if isinstance(self.shape, (list, np.ndarray,)):
-                    if self.dimension > 1:
-                        new_shape = self.shape.tolist() + [self.dimension]
-                    else:
-                        new_shape = self.shape.tolist()
+                    new_shape = self.shape.tolist() + [self.dimension]
                     return hxbyterle_decode(
                         data,
                         int(self.shape.prod())

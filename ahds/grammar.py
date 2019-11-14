@@ -221,7 +221,6 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
     except AssertionError:
         raise ValueError("unknown file format: {}".format(file_format))
 
-    data = None
     with open(fn, 'rb') as f:
         # read a first chunk and store it in the first element of the list of header chunks
         _data = f.read(header_bytes if header_bytes >= _rescan_overlap else _rescan_overlap)
