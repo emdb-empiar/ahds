@@ -1,26 +1,38 @@
 # -*- coding: utf-8 -*-
 # amira_grammar_parser.py
 """
-Grammar to parse headers in Amira (R) files
+grammar
+=======
+
+We define an EBNF grammar for Amira (R) headers to extract all metadata. In addition to that,
+we also define how `HxSurface` files are structured.
+
+This module also includes several helper functions that use the grammar resources:
+
+* the `get_header` function returns only the header up to the first data stream; data is returned as a
+decoded string (`UTF-8`);
+* the `parse_header` function applies the grammar to return a nested set of Python primitives to be transformed
+into an `AmiraHeader` object;
+* the `get_parsed_data` function transparently applied both above functions given the Amira (R) filename
+
 """
 
 from __future__ import print_function
 
 import re
 import sys
-from pprint import pprint
 
 # simpleparse
 from simpleparse.parser import Parser
 from simpleparse.common import numbers, strings
 from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, dispatch, singleMap, multiMap
 
-# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
-# pip install -e /path/to/folder/with/setup.py
-# or
-# python setup.py develop
-from .proc import AmiraDispatchProcessor
 from .core import _decode_string, _dict_iter_items, _dict_iter_keys
+from .proc import AmiraDispatchProcessor
+
+# on autoformat these two lines disappear; adding them here in case that happens
+# from simpleparse.common import numbers, strings
+# from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, dispatch, singleMap, multiMap
 
 
 # Amira (R) Header Grammar
@@ -73,9 +85,9 @@ number_seq                   :=    number, (ts, number)*
 <ts>                         :=    [ \t]*
 <c>                          :=    ","
 '''
-)
+                        )
 
-# dict representin structure of hypersurface file according to Amira Reference guide
+# dict representing structure of hypersurface file according to Amira Reference guide
 # pp 519-525 # downloaded Dezember 2018 from 
 # http://www1.udel.edu/ctcr/sites/udel.edu.ctcr/files/Amira%20Reference%20Guide.pdf
 _hyper_surface_file = {
@@ -104,11 +116,13 @@ _hyper_surface_file = {
 # string representing all valid keys within the above structure is inserted 
 # in the below regular expression patterns
 # todo: replace this with something more meaningful
-_hyper_surface_entities = '|'.join(['|'.join([_key] + ([_vk for _vk in _dict_iter_keys(_val) if isinstance(_vk, str)] if isinstance(_val, dict) else [])) for _key, _val in _dict_iter_items(_hyper_surface_file) if isinstance(_key, str)])
+_hyper_surface_entities = '|'.join(['|'.join(
+    [_key] + ([_vk for _vk in _dict_iter_keys(_val) if isinstance(_vk, str)] if isinstance(_val, dict) else [])) for
+    _key, _val in _dict_iter_items(_hyper_surface_file) if isinstance(_key, str)])
 
 # maximum number of bytes to be rescanned at the end of the already inspected
 # _stream_data array after new bytes have been read from the file. In case within this
-# range a data block marker (@<Num>) or any of the above HyperSurface section keys has
+# range a data stream marker (@<Num>) or any of the above HyperSurface section keys has
 # alreday been successfully identified rescan starts at the byte following this match
 # todo: replace this with something more meaningful
 _rescan_overlap = max((
@@ -134,12 +148,11 @@ if sys.version_info[0] > 2:
     # defined as byte string instead of regular raw pyhton string
     _strip_lineend = b'\n'
     _stream_delimiters = [
-        re.compile(b"(?:^|\n)@(?P<stream>\d+)\n", flags=re.S),
+        re.compile(b"(?:^|\n)@(?P<stream>\\d+)\n", flags=re.S),
         re.compile(r"(?:^|\n)\s*(?P<stream>(?:{}))(?:\s+(?:(?P<count>\d+)|(?P<name>\w+)))?(?:\s*\n|\s+{{)".format(
             _hyper_surface_entities).encode('ASCII')),
-        re.compile(b"^\s*}", re.I)  # NOTE this is applied to reverese slice of stream_data therefore ^
+        re.compile(b"^\\s*}", re.I)  # NOTE this is applied to reverse slice of stream_data therefore ^
     ]
-
 else:
     # definitions required by python2.x and older which does not destinguish between string and 
     # binary byte string as standard string are still relying on ASCII and alike encoding.
@@ -164,7 +177,7 @@ else:
 
 
 def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
-    """Detect Amira (R) file format (AmiraMesh or HyperSurface)
+    """Detect Amira (R) file format (AmiraMesh/Avizo or HyperSurface)
     
     :param str fn: file name
     :param int format_bytes: number of bytes in which to search for the format [default: 50]
@@ -193,13 +206,13 @@ def detect_format(fn, format_bytes=50, verbose=False, *args, **kwargs):
 
 
 SEQ_MAP = [
-    (b'\xc5', u'Å'.encode('utf-8')), # Angstrom char
+    (b'\xc5', u'Å'.encode('utf-8')),  # Angstrom char
 ]
 
 
 def _swap_illegal_chars(byte_seq, seq_map):
     """Replace illegal byte sequences with legal ones"""
-    for s,r in seq_map:
+    for s, r in seq_map:
         _byte_seq = byte_seq
         while _byte_seq.find(s) > 1:
             _byte_seq = _byte_seq.replace(s, r)
@@ -207,7 +220,7 @@ def _swap_illegal_chars(byte_seq, seq_map):
     return swapped_byte_seq
 
 
-def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwargs):
+def get_header(fn, file_format, header_bytes=20000, verbose=True, *args, **kwargs):
     """Apply rules for detecting the boundary of the header
     
     :param str fn: file name
@@ -230,7 +243,7 @@ def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwar
         if file_format == "AmiraMesh" or file_format == "Avizo":
             if verbose:
                 print("Using pattern: {}".format(_stream_delimiters[0].pattern), file=sys.stderr)
-            # scan the latests chunk ta for the first @<n> data block start marker
+            # scan the latests chunk  for the first @<n> data block start marker
             m = _stream_delimiters[0].search(data)
             while m is None:
                 _chunklen = len(data) - _rescan_overlap
@@ -292,4 +305,3 @@ def get_parsed_data(fn, *args, **kwargs):
     data = get_header(fn, file_format, *args, **kwargs)
     parsed_data = parse_header(data, *args, **kwargs)
     return data, parsed_data, len(data), file_format
-

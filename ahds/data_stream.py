@@ -1,28 +1,32 @@
 # -*- coding: utf-8 -*-
-# data_stream
 """
-Data stream module
+data_stream
+===========
 
-Here we define the set of classes that define and manage data streams
+Classes that define data streams (DataList) in Amira (R) files
 
+There are two main types of data streams:
 
+* `AmiraMeshDataStream` is for `AmiraMesh` files
+* `AmiraHxSurfaceDataStream` is for `HxSurface` files
 
+Both classes inherit from `AmiraDataStream` class, which handles common functionality such as:
+
+* initialisation with the header metadata
+* the `get_data` method calls each subclass's `_decode` method
 
 """
 from __future__ import print_function
 
 import re
 import sys
-# TODO remove as soon as DataStreams class is removed
+# todo: remove as soon as DataStreams class is removed
 import warnings
 import zlib
 
 import numpy as np
 
-# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
-# pip install -e /path/to/folder/with/setup.py
-# or
-# python setup.py develop
+
 from .core import _dict_iter_keys, _dict_iter_values, ListBlock, deprecated
 from .grammar import _hyper_surface_file
 
@@ -263,56 +267,56 @@ class AmiraMeshDataStream(AmiraDataStream):
 
     def _decode(self, data):
         """Performs data stream decoding by introspecting the header information"""
+        # determine the new output shape
+        # take into account shape and dimension
+        if isinstance(self.shape, tuple):
+            if self.dimension > 1:
+                new_shape = tuple(list(self.shape) + [self.dimension])
+            else:
+                new_shape = (self.shape, )
+        elif isinstance(self.shape, int):
+            if self.dimension > 1:
+                new_shape = tuple([self.shape, self.dimension])
+            else:
+                new_shape = (self.shape, )
         # first we handle binary files
+        # NOTE ON HOW LATTICES ARE STORED
+        # AmiraMesh files state the dimensions of the lattice as nx, ny, nz
+        # The data is stored such that the first value has index (0, 0, 0) then
+        # (1, 0, 0), ..., (nx-1, 0, 0), (0, 1, 0), (1, 1, 0), ..., (nx-1, 1, 0)
+        # In other words, the first index changes fastest.
+        # The last index is thus the stack index
+        # (see pg. 720 of https://assets.thermofisher.com/TFS-Assets/MSD/Product-Guides/user-guide-amira-software.pdf
         if self._header.format == 'BINARY':
             # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
             is_little_endian = self._header.endian == 'LITTLE'
             if self.format is None:
-                if isinstance(self.shape, (list, np.ndarray,)):
-                    new_shape = self.shape.tolist() + [self.dimension]
-                    return np.frombuffer(
-                        data,
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(*new_shape)
-                elif isinstance(self.shape, int):
-                    return np.frombuffer(
-                        data,
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(self.shape, self.dimension)
+                return np.frombuffer(
+                    data,
+                    dtype=_type_map[is_little_endian][self.type]
+                ).reshape(*new_shape)
             elif self.format == 'HxZip':
-                if isinstance(self.shape, (list, np.ndarray,)):
-                    new_shape = self.shape.tolist() + [self.dimension]
-                    return np.frombuffer(
-                        zlib.decompress(data),
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(*new_shape)
-                else:
-                    return np.frombuffer(
-                        zlib.decompress(data),
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(self.shape, self.dimension)
+                return np.frombuffer(
+                    zlib.decompress(data),
+                    dtype=_type_map[is_little_endian][self.type]
+                ).reshape(*new_shape)
             elif self.format == 'HxByteRLE':
-                # these seem to always be bytes so no type introspection
-                if isinstance(self.shape, (list, np.ndarray,)):
-                    new_shape = self.shape.tolist() + [self.dimension]
-                    return hxbyterle_decode(
-                        data,
-                        int(self.shape.prod())
-                    ).reshape(*new_shape)
-                else:
-                    return hxbyterle_decode(
-                        data,
-                        int(self.shape.prod())
-                    ).reshape(self.shape, self.dimension)
+                size = int(np.prod(np.array(self.shape)))
+                return hxbyterle_decode(
+                    data,
+                    size
+                ).reshape(*new_shape)
             else:
-                raise ValueError('what in the world is {}?'.format(self.format))
-        # assume the file is ASCII
-        else:
+                raise ValueError('unknown data stream format: \'{}\''.format(self.format))
+        # explicit instead of assumption
+        elif self._header.format == 'ASCII':
             return np.fromstring(
                 data,
                 dtype=_type_map[self.type],
                 sep="\n \t"
-            ).reshape(self.shape, self.dimension)
+            ).reshape(*new_shape)
+        else:
+            raise ValueError("unknown file format: {}".format(self._header.format))
 
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):

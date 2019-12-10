@@ -2,13 +2,14 @@
 from __future__ import print_function
 
 import os
-import sys
 import re
+import sys
+
 import ahds
 from . import Py23FixTestCase, TEST_DATA_PATH
 from ..ahds import parse_args, get_debug, get_literal, get_paths, set_file_and_paths, get_amira_file
-from ..core import _str
-
+from ..core import _str, _print
+import numpy
 
 def _parse_with_shlex(cmd):
     import shlex
@@ -133,7 +134,6 @@ class TestMain(Py23FixTestCase):
         mat_m = mat.match(string)
         self.assertIsNotNone(mat_m)
 
-
     def test_get_paths_full(self):
         """Test that we can view the paths full"""
         args = _parse_with_shlex("ahds {}".format(self.af_fn))
@@ -154,7 +154,6 @@ class TestMain(Py23FixTestCase):
         self.assertIsNotNone(h_m)
         ds_m = ds.match(string)
         self.assertIsNotNone(ds_m)
-
 
     def test_get_paths_meta(self):
         """Test that we can fiew partial paths"""
@@ -198,4 +197,23 @@ class TestMain(Py23FixTestCase):
         self.assertIsNone(am_m)
         m_m = m.match(string)
         self.assertIsNotNone(m_m)
+
+    def test_data(self):
+        """Test that the data is correctly oriented"""
+        af = ahds.AmiraFile(os.path.join(TEST_DATA_PATH, 'EM04226_2_U19_Cropped_YZ_binned.labels.am'))
+        # af = ahds.AmiraFile(os.path.join(TEST_DATA_PATH, 'testscalar.am'))
+        _print(af)
+        # _print(af.data_streams.Labels.data.shape)
+        # _print(af.header.Lattice.length)
+        # import h5py
+        # with h5py.File('EM04226_2_U19_Cropped_YZ_binned.labels.h5', 'w') as h:
+        #     h['/data'] = af.data_streams.Labels.data
+        # import mrcfile
+        # _print(af.data_streams.Labels.data.dtype)
+        # _print('unique values: ', numpy.unique(af.data_streams.Labels.data.astype(numpy.float32)))
+        # with mrcfile.new('EM04226_2_U19_Cropped_YZ_binned.labels.mrc', overwrite=True) as m:
+        #     m.set_data(af.data_streams.Labels.data.astype(numpy.float32))
+        #     m.voxel_size = (9.0, 9.0, 15.0)
+        #     m.update_header_from_data()
+
 

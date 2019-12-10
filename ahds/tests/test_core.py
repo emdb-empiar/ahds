@@ -6,17 +6,13 @@ import random
 import sys
 import unittest
 
-# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
-# pip install -e /path/to/folder/with/setup.py
-# or
-# python setup.py develop
 from . import TEST_DATA_PATH, Py23FixTestCase
 from .. import AmiraFile
-from ..core import Block, ListBlock
+from ..core import Block, ListBlock, _print
 
 
-class TestUtils(unittest.TestCase):
-    pass
+# class TestUtils(unittest.TestCase):
+#     pass
 
 
 class TestBlock(Py23FixTestCase):
@@ -437,7 +433,9 @@ class TestAmiraFile(unittest.TestCase):
         self.assertIsNotNone(data)
         # print(data.attrs())
         self.assertEqual(data.data_index, 1)
-        self.assertEqual(data.shape.all(), af.header.Lattice.length.all())
+        _print(data.shape, type(data.shape))
+        _print(af.header.Lattice.length, type(af.header.Lattice.length))
+        self.assertEqual(data.shape, tuple(af.header.Lattice.length.tolist()))
         print(data.shape)
 
     def test_amreader_hxsurface(self):

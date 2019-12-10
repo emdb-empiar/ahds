@@ -1,27 +1,26 @@
-import sys
+# -*- coding: utf-8 -*-
+"""
+extra
+=====
 
-if sys.version_info[0] > 2:
-    from collections import UserList
-else:
-    from UserList import UserList
+Additional functionality that is not currently used and may be deprecated in future.
+
+* process an AmiraMesh lattice as a stack of images (`Image` and `ImageSet`)
+* compute contours around segment for each image (`Contour` and `ContourSet`)
+
+"""
 
 import numpy as np
 from skimage.measure._find_contours import find_contours
 
-# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
-# pip install -e /path/to/folder/with/setup.py
-# or
-# python setup.py develop
-
-# definition of numpy data types with dedicated endianess and number of bits
-# they are used by the below lookup table
 from .core import (
-    _dict_iter_items, _dict_iter_values, xrange
+    _dict_iter_items, _dict_iter_values, xrange, _UserList
 )
 
 
 class Image(object):
     """Encapsulates individual images"""
+
     def __init__(self, z, array):
         self.z = z
         self._array = array
@@ -91,7 +90,7 @@ class Image(object):
         return "<Image with dimensions {}>".format(self.array.shape)
 
 
-class ImageSet(UserList):
+class ImageSet(_UserList):
     """Encapsulation for set of ``Image`` objects"""
 
     def __getitem__(self, index):
@@ -122,7 +121,7 @@ class ImageSet(UserList):
         return "<ImageSet with {} images>".format(len(self))
 
 
-class ContourSet(UserList):
+class ContourSet(_UserList):
     """Encapsulation for a set of ``Contour`` objects"""
 
     def __getitem__(self, index):
@@ -138,13 +137,13 @@ class Contour(object):
 
     def __init__(self, z, array):
         self.z = z
-        self.__array = array
+        self._array = array
 
     def __len__(self):
-        return len(self.__array)
+        return len(self._array)
 
     def __iter__(self):
-        return iter(self.__array)
+        return iter(self._array)
 
     @staticmethod
     def string_repr(self):

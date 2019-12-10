@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
-# ahds.py
 """
+console entry point
+===================
 
-Main entry point for console.
+The `ahds` command calls this script which performs the following tasks:
+
+* parse command-line arguments
+* run the command
 
 """
 
@@ -12,10 +16,6 @@ import argparse
 import os
 import sys
 
-# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
-# pip install -e /path/to/folder/with/setup.py
-# or
-# python setup.py develop
 from . import AmiraFile, WIDTH
 from .core import _str
 
