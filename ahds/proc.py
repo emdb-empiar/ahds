@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-# amira_grammar_parser.py
 """
-Dispatch processor used to verify the tokens identified according to
-the grammar defined in gramma.py and to assemble the parsed data structure.
+proc
+====
+
+The `simpleparse` library requires applications to define `dispatch processors` that are called for each token in the
+grammar. This module defines the `dispatch processor`.
+
 """
 
 import re

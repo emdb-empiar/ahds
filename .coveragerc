@@ -2,3 +2,4 @@
 omit =
     ahds/tests/*
     ahds/data
+    ahds/extra.py

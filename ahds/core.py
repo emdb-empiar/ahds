@@ -1,16 +1,28 @@
 # -*- coding: utf-8 -*-
-# core.py
-""" Common data structures and utils used accross all submodules of ahds """
+"""
+core
+====
+
+Core functionality for `ahds` package
+
+Contains:
+
+* Python2/3 adapters
+* decorator for marking deprecation
+* core base classes: `Block` and `ListBlock`
+
+"""
 from __future__ import print_function
 
 import functools as ft
 import inspect
-# import re
 import sys
 import warnings
 
-
 import numpy as np
+
+# print to stderr
+_print = ft.partial(print, file=sys.stderr)
 
 if sys.version_info[0] > 2:
     # All definitions for Python3 and newer which differ from their counterparts in Python2.x
@@ -40,9 +52,16 @@ if sys.version_info[0] > 2:
     def _qualname(o):
         return o.__qualname__
 
+
     _str = str
+
+    # UserList
+    from collections import UserList
+    _UserList = UserList
+
 else:
     import __builtin__
+
 
     # Python2.x definitions
     def _decode_string(data):
@@ -64,111 +83,18 @@ else:
 
     _dict = OrderedDict
 
-
     def _qualname(o):
         return o.__name__
 
     _str = __builtin__.unicode
 
-
-# def deprecated(description=None):
-#     """Decorator used to mark methods, classes, classmethods and properies as deprecated
-#
-#     :param str description: the additional information printed along with the DeprecationWarning
-#     """
-#     # check if description parameter is set and whether it is a valid string
-#     if description is None:
-#         # no addtional message just print a '!' at the end of the basic DeprecationWarning
-#         # message
-#         description = '!'
-#         _func = None
-#     elif isinstance(description, (type(b''), type(r''), type(''))):
-#         # extend the description such that it can be appended to the DeprecationWarning separating
-#         # it from the latter by ': '
-#         description = ': {}'.format(description)
-#         _func = None
-#     else:
-#         # description is likely the decorated entity it self gehave like a simple decorator
-#         _func = description
-#         description = ''
-#
-#     def deprecated_decorator(func, msg=None):
-#         _deprecated_message = '<!?!>'
-#         _message_filter = '<!?!>'
-#
-#         @ft.wraps(func)
-#         def decorated_deprecated(*args, **kwargs):
-#             # issue DeprecationWarning within the context of the module the decorated entitiy
-#             # is accessed
-#             _callstack = inspect.stack()
-#             # locate caller of deprecated entity. In case this message decorates a mixed_property
-#             # the immediate caller following this function on callstack is  the __get__, __set__
-#             # or __delete__ special methods of the above mixed_property decorator class or any other
-#             # element which is defined within this module. Just walk up the call stack until
-#             # __name__ points to any other module
-#             # fixme: I'm not sure how necessary this is
-#             _select_level = 1
-#             _self = _callstack[0]
-#             _selfframe = _self.frame
-#             _selffname = (
-#                 _selfframe.f_globals['__name__'][:-3] if _selfframe.f_globals['__name__'][-3:].lower() == '.py' else
-#                 _selfframe.f_globals['__name__']) if '__name__' in _selfframe.f_globals else "<string>"
-#             _fname = _selffname
-#             while _select_level < len(_callstack):
-#                 _caller = _callstack[_select_level]
-#                 _callerframe = _caller.frame
-#                 _fname = (_callerframe.f_globals['__name__'][:-3] if _callerframe.f_globals['__name__'][
-#                                                                      -3:].lower() == '.py' else _callerframe.f_globals[
-#                     '__name__']) if '__name__' in _callerframe.f_globals else "<string>"
-#                 if _fname != _selffname:
-#                     break
-#                 _select_level += 1
-#
-#             # define filter ensuring warning for func is issued only once per module and file it is called
-#             warnings.filterwarnings('module', message=_message_filter, category=DeprecationWarning, module=_fname)
-#             warnings.warn(
-#                 _deprecated_message,
-#                 category=DeprecationWarning,
-#                 stacklevel=_select_level + 1
-#             )
-#             return func(*args, **kwargs)
-#
-#         if inspect.isclass(func):
-#             # issue DeprecationWarning specific to class object and its instances
-#             _deprecated_message = "Class '{}' is deprecated{}".format(
-#                 getattr(func, '__qualname__', getattr(func, '__name__')), description)
-#             _message_filter = re.escape(
-#                 r"Class '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
-#         elif inspect.ismethod(func):
-#             # func is a staticmethod or a classmethod or a classmember issue related DeprecationWarning
-#             _deprecated_message = "Method '{}' is deprecated{}".format(
-#                 getattr(func, '__qualname__', getattr(func, '__name__')), description)
-#             _message_filter = re.escape(
-#                 r"Method '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
-#         elif inspect.isfunction(func):
-#             # func is a function issue related DeprecationWarning
-#             _deprecated_message = "Function '{}' is deprecated{}".format(
-#                 getattr(func, '__qualname__', getattr(func, '__name__')), description)
-#             _message_filter = re.escape(
-#                 r"Function '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
-#         else:
-#             # func is none of the above entities issue a general DeprecationWarning stating that it's use
-#             # is deprecated
-#             _deprecated_message = "Use of '{}' is deprecated{}".format(
-#                 getattr(func, '__qualname__', getattr(func, '__name__')), description)
-#             _message_filter = re.escape(
-#                 r"Use of '{}' is deprecated".format(getattr(func, '__qualname__', getattr(func, '__name__'))))
-#         # return function wrapping the decorated item
-#         return decorated_deprecated
-#
-#     if _func is None:
-#         # called with description, setter or getter attribute set return decorating method
-#         return deprecated_decorator
-#     # called with the item to be decorated as first parameter decorate it
-#     return deprecated_decorator(_func)
+    # UserList
+    from UserList import UserList
+    _UserList = UserList
 
 
 def deprecated(description):
+    """Function/Class/Method decorator for warning about deprecations"""
     def outer_wrapper(o):
         @ft.wraps(o)
         def inner_wrapper(*args, **kwargs):
@@ -180,12 +106,13 @@ def deprecated(description):
             return o(*args, **kwargs)
 
         return inner_wrapper
+
     return outer_wrapper
 
 
 @ft.total_ordering
 class Block(object):
-    """Generic block"""
+    """Data content block for atomic entities"""
     __slots__ = ('_name', '_attrs', '_is_parent', '__dict__', '__weakref__')
 
     def __init__(self, name):
@@ -367,7 +294,7 @@ class Block(object):
 
 
 class ListBlock(Block):
-    """Extension of Block which has an iterable attribute to which Block objects can be added"""
+    """Data content block for sequence entities"""
     __slots__ = ('_list', '_material_dict')
 
     def __init__(self, *args, **kwargs):
@@ -505,9 +432,8 @@ class ListBlock(Block):
         except KeyError:
             raise IndexError("missing item at index'{}'".format(key))
 
-    """
-    Mutable sequences should provide methods append(), count(), index(), extend(), insert(), pop(), remove(), reverse() and sort(), like Python standard list objects."""
-
+    # Mutable sequences should provide methods append(), count(), index(), extend(), insert(), pop(), remove(),
+    # reverse() and sort(), like Python standard list objects.
     def append(self, item):
         try:
             assert isinstance(item, Block)

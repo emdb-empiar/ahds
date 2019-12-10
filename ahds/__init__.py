@@ -1,27 +1,44 @@
 # -*- coding: utf-8 -*-
-# ahds
+"""
+ahds
+====
 
-# to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
-# pip install -e /path/to/folder/with/setup.py
-# or
-# python setup.py develop
+This module provides a simple entry-point for using the underlying functionality
+through the `AmiraFile` class which automatically handles both `AmiraMesh` and
+`HxSurface` files. An `AmiraFile` is also a `Block` subclass with special attributes
+`meta` - for metadata not explicitly provided in the file (such as `header_length`),
+`header` - for the parse header and `data_streams` with the actual data stream data.
+
+The only required argument is the name of the file to be read. By default, data streams
+are loaded but can be turned off (for quick reading) by
+setting `load_stream=False`. Additional `kwargs` are passed to the `AmiraHeader` class
+call.
+
+There is a `read` method which (if data streams have not yet been read) will read
+the data streams.
+
+An `AmiraFile` object may be printed to view the hierarchy of entities above or
+passed to `repr` to view the instatiation call that represents it.
+
+"""
 
 import sys
 
 from .core import Block
-from .header import AmiraHeader
 from .data_stream import set_data_stream
-
+from .header import AmiraHeader
 
 if sys.version_info[0] > 2:
     from shutil import get_terminal_size
+
     _get_terminal_size = get_terminal_size
 else:
     from backports.shutil_get_terminal_size import get_terminal_size
+
     _get_terminal_size = get_terminal_size
 
-
 WIDTH = _get_terminal_size().columns
+
 
 class AmiraFile(Block):
     """Main entry point for working with Amira files"""

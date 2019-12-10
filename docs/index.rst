@@ -6,8 +6,22 @@
 ``ahds`` package
 =========================================================================
 
-.. image:: https://badge.fury.io/py/ahds.svg
-    :target: https://badge.fury.io/py/ahds
+.. image:: https://img.shields.io/pypi/v/ahds/0.2.3.dev0
+    :alt: PyPI
+
+.. image:: https://img.shields.io/pypi/pyversions/ahds/0.2.3.dev0
+    :alt: PyPI - Python Version
+
+.. image:: https://travis-ci.org/emdb-empiar/ahds.svg?branch=master
+    :target: https://travis-ci.org/emdb-empiar/ahds
+
+.. image:: https://readthedocs.org/projects/ahds/badge/?version=latest
+    :target: https://ahds.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+.. image:: https://coveralls.io/repos/github/emdb-empiar/ahds/badge.svg
+    :target: https://coveralls.io/github/emdb-empiar/ahds
+
 
 .. toctree::
    :maxdepth: 2
