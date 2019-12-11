@@ -198,11 +198,11 @@ class TestMain(Py23FixTestCase):
         m_m = m.match(string)
         self.assertIsNotNone(m_m)
 
-    def test_data(self):
-        """Test that the data is correctly oriented"""
-        af = ahds.AmiraFile(os.path.join(TEST_DATA_PATH, 'EM04226_2_U19_Cropped_YZ_binned.labels.am'))
+    # def test_data(self):
+    #     """Test that the data is correctly oriented"""
+    #     af = ahds.AmiraFile(os.path.join(TEST_DATA_PATH, 'EM04226_2_U19_Cropped_YZ_binned.labels.am'))
         # af = ahds.AmiraFile(os.path.join(TEST_DATA_PATH, 'testscalar.am'))
-        _print(af)
+        # _print(af)
         # _print(af.data_streams.Labels.data.shape)
         # _print(af.header.Lattice.length)
         # import h5py
