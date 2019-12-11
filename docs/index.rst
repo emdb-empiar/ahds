@@ -6,10 +6,10 @@
 ``ahds`` package
 =========================================================================
 
-.. image:: https://img.shields.io/pypi/v/ahds/0.2.3.dev0
+.. image:: https://img.shields.io/pypi/v/ahds
     :alt: PyPI
 
-.. image:: https://img.shields.io/pypi/pyversions/ahds/0.2.3.dev0
+.. image:: https://img.shields.io/pypi/pyversions/ahds
     :alt: PyPI - Python Version
 
 .. image:: https://travis-ci.org/emdb-empiar/ahds.svg?branch=master
