@@ -15,9 +15,10 @@ from skimage.measure._find_contours import find_contours
 
 # definition of numpy data types with dedicated endianess and number of bits
 # they are used by the below lookup table
-from .core import (
-    _dict_iter_items, _dict_iter_values, xrange
-)
+if __package__:
+    from .core import _dict_iter_items, _dict_iter_values, xrange
+else:
+    from core import _dict_iter_items, _dict_iter_values, xrange
 
 
 class Image(object):

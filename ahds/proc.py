@@ -6,6 +6,7 @@ the grammar defined in gramma.py and to assemble the parsed data structure.
 """
 
 import re
+import sys
 
 import numpy as np
 
@@ -27,12 +28,25 @@ _compatibilitymap = {
 # materials
 _strip_material_name = re.compile(r'^\s*"\s*|\s*",*$')
 
+# used to extract counter indices from the tail of array_names
+# and collect them within a common meta_array_declaration of the
+# common base_name. Is applied to reversed array_name string
+# a counter is any trailing number which is preceeded by non numerical
+# character exempt '-' and '_' if they are preceeded by at least one digit
+_extract_trailing_counter = re.compile(r'^\d+(?![-_]\d)')
+
 # simpleparse
 from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, singleMap
 
 
 class AmiraDispatchProcessor(DispatchProcessor):
     """Class defining methods to handle each token specified in the grammar"""
+    def __init__(self,*args,**kwargs):
+        if sys.version_info[0] > 2:
+            super(AmiraDispatchProcessor,self).__init__(*args,**kwargs)
+        else:
+            super(type(self),self).__init__(*args,**kwargs)
+        self._meta_array_declarations = dict()
 
     def designation(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
@@ -68,11 +82,54 @@ class AmiraDispatchProcessor(DispatchProcessor):
 
     def array_declarations(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
-        return {'array_declarations': dispatchList(self, value[3], buffer_)}
+        array_declarations_list = dispatchList(self, value[3], buffer_)
+
+        def filter_meta_declaration(declaration):
+            # Confirm that meta_declaration is referred to by more than one
+            # parsed array_declaration. In case only the initiating array_declaration
+            # referse to this meta_declaration cleanup reset initiating array_declaratoin
+            # to its inital state as parsed and reject corresponding meta_array_declaration
+            if declaration["sub_declarations"] > 1:
+                return True
+            cleanup = declaration["initiated_by"]
+            del cleanup["array_parent"]
+            del cleanup["array_itemid"]
+            return False
+            
+        return {
+            'array_declarations': [
+                meta_declaration
+                for meta_declaration in self._meta_array_declarations.values()
+                if filter_meta_declaration(meta_declaration)
+            ] + array_declarations_list
+        }
 
     def array_declaration(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
-        return singleMap(value[3], self, buffer_)
+        declaration = singleMap(value[3], self, buffer_)
+        array_name = declaration.get('array_name',None)
+        if array_name is None:
+            return declaration
+        has_counter = _extract_trailing_counter.match(array_name[::-1])
+        if has_counter is None:
+            return declaration
+        base_name = array_name[:-has_counter.end()]
+        array_index = int(array_name[-has_counter.end():])
+        meta_declaration = self._meta_array_declarations.get(base_name,None)
+        if meta_declaration is None:
+            self._meta_array_declarations[base_name] = meta_declaration = dict(
+                array_name = base_name,
+                array_dimension = array_index + 1,
+                array_blocktype = 'list',
+                sub_declarations = 0,
+                initiated_by = declaration
+            )
+        elif meta_declaration["array_dimension"] >= array_index:
+            meta_declaration["array_dimension"] = array_index + 1
+        meta_declaration['sub_declarations'] += 1
+        declaration['array_parent'] = base_name
+        declaration['array_itemid'] = array_index
+        return declaration
 
     def array_name(self, value, buffer_):
         # value = (tag, left, right, taglist)

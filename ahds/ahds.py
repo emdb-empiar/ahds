@@ -16,8 +16,12 @@ import sys
 # pip install -e /path/to/folder/with/setup.py
 # or
 # python setup.py develop
-from . import AmiraFile, WIDTH
-from .core import _str
+if __package__:
+    from . import AmiraFile, WIDTH
+    from .core import _str
+else:
+    from __init__ import AmiraFile, WIDTH
+    from core import _str
 
 
 def parse_args():
@@ -82,7 +86,7 @@ def get_debug(af, args):
         string += u"*" * WIDTH + "\n"
         string += u"ahds: Displaying parsed header data\n"
         string += u"-" * WIDTH + "\n"
-        string += pformat(af.header.parsed_data) + '\n'
+        string += pformat(af.parsed_data) + '\n'
     return string
 
 

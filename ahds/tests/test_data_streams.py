@@ -7,7 +7,7 @@ import unittest
 import numpy
 
 import ahds
-from ahds import data_stream, AmiraFile, header
+from ahds import data_stream, AmiraFile, header,IMMEDIATE
 from ahds.tests import TEST_DATA_PATH
 
 
@@ -15,7 +15,7 @@ class TestDataStreams(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.af_am = AmiraFile(os.path.join(TEST_DATA_PATH, 'test9.am'))
-        cls.af_am_hxsurf = AmiraFile(os.path.join(TEST_DATA_PATH, 'test8.am'))
+        cls.af_am_hxsurf = AmiraFile(os.path.join(TEST_DATA_PATH, 'test8.am'),load_streams=IMMEDIATE)
         cls.af_hxsurf = AmiraFile(os.path.join(TEST_DATA_PATH, 'test7.surf'))
 
     def test_amirafile(self):
@@ -29,13 +29,13 @@ class TestDataStreams(unittest.TestCase):
         # test9.am
         self.assertIsInstance(self.af_am.data_streams, ahds.Block)
         self.assertEqual(self.af_am.header.data_stream_count, 1)
-        self.assertEqual(self.af_am.data_streams.name, 'data_streams')
+        self.assertIn(self.af_am.data_streams.name,[ 'data_streams','header'])
         self.assertEqual(self.af_am.data_streams.Labels.name, 'Labels')
 
         # test8.am
         self.assertIsInstance(self.af_am_hxsurf.data_streams, ahds.Block)
         self.assertEqual(self.af_am_hxsurf.header.data_stream_count, 3)
-        self.assertEqual(self.af_am_hxsurf.data_streams.name, 'data_streams')
+        self.assertIn(self.af_am_hxsurf.data_streams.name, ['data_streams','header'])
         self.assertEqual(self.af_am_hxsurf.data_streams.Vertices.name, 'Vertices')
         self.assertEqual(self.af_am_hxsurf.data_streams.Triangles.name, 'Triangles')
         self.assertEqual(getattr(self.af_am_hxsurf.data_streams, "Patches-0").name, "Patches-0")
@@ -43,7 +43,7 @@ class TestDataStreams(unittest.TestCase):
         # test7.surf
         self.assertIsInstance(self.af_hxsurf.data_streams, ahds.Block)
         self.assertEqual(self.af_hxsurf.header.data_stream_count, 1)
-        self.assertEqual(self.af_hxsurf.data_streams.name, 'data_streams')
+        self.assertIn(self.af_am_hxsurf.data_streams.name, ['data_streams','header'])
         self.assertEqual(self.af_hxsurf.data_streams.Data.name, 'Data')
 
 

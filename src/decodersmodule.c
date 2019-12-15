@@ -165,7 +165,11 @@ decoders_byterle_decode(PyObject *self, PyObject *args)
 	}
 
 	int nd=1;
+#if 0
 	npy_intp dims[1] = {static_cast<npy_intp>(j)};
+#else
+	npy_intp dims[1] = {(npy_intp)j};
+#endif
 	// create a numpy array using the buffer as the data source
 	PyObject *output_array = PyArray_SimpleNewFromData(nd, dims, NPY_UINT8, output);
 	Py_INCREF(output_array); // ... because it will be managed from Python

@@ -7,10 +7,16 @@
 # python setup.py develop
 
 import sys
+import copy
 
-from .core import Block
-from .header import AmiraHeader
-from .data_stream import set_data_stream
+if __package__:
+    from .core import Block,READONLY
+    from .header import AmiraHeader
+    from .data_stream import set_stream_policy,get_stream_policy,ONDEMMAND,IMMEDIATE,HEADERONLY,set_data_stream,load_streams
+else:
+    from core import Block,READONLY
+    from header import AmiraHeader
+    from data_stream import set_stream_policy,get_stream_policy,ONDEMMAND,IMMEDIATE,HEADERONLY,set_data_stream,load_streams
 
 
 if sys.version_info[0] > 2:
@@ -23,11 +29,11 @@ else:
 
 WIDTH = _get_terminal_size().columns
 
-class AmiraFile(Block):
+class AmiraFile(AmiraHeader):
     """Main entry point for working with Amira files"""
-    __slots__ = ('_fn', '_load_streams', '_meta' '_header', '_data_streams')
+    __slots__ = ('_read',READONLY("header"),READONLY("data_streams"),READONLY('meta'))#'_fn', '_load_streams', '_meta' '_header', '_data_streams')
 
-    def __init__(self, fn, load_streams=True, *args, **kwargs):
+    def __init__(self, fn, load_streams=True, **kwargs):
         """Initialise a new AmiraFile object given the Amira file.
 
         Passes additional args/kwargs to AmiraHeader class for initialisation of the reading process
@@ -41,43 +47,44 @@ class AmiraFile(Block):
         :param str fn: Amira file name
         :param bool load_streams: whether (default) or not to load data streams
         """
-        super(AmiraFile, self).__init__(fn)
-        self._fn = fn
-        self._load_streams = load_streams
-        self._streams_loaded = False
-        # the header contains a lot of information relied on for reading streams
-        self._header = AmiraHeader(fn, load_streams=load_streams, *args, **kwargs)
+        super(AmiraFile, self).__init__(fn,load_streams=load_streams,**kwargs)
+        self._read = self.load_streams == IMMEDIATE
+        self.header = self
         # meta block
-        super(AmiraFile, self).add_attr('meta', Block('meta'))
-        self.meta.add_attr('file', self._fn)
-        self.meta.add_attr('header_length', len(self._header))
-        self.meta.add_attr('data_streams', self._header.data_stream_count)
-        self.meta.add_attr('streams_loaded', self._load_streams)
-        # header block
-        super(AmiraFile, self).add_attr('header', self._header)
-        # data streams block
-        super(AmiraFile, self).add_attr(Block('data_streams'))
-        if self._load_streams:
-            self.read()
-            self._streams_loaded = True
+        self.meta = Block('meta')
+        self.meta.add_attr('file', self.filename)
+        self.meta.add_attr('header_length', len(self))
+        self.meta.add_attr('streams_loaded', self._read)
+        self.data_streams = Block('data_streams')
+        if self.filetype == "AmiraMesh":
+            self.meta.add_attr('data_streams', self.data_stream_count)
+            for stream in self._data_streams_block_list:
+                if stream is None:
+                    continue
+                self.data_streams.add_attr(stream,isparent=None)
+        else:
+            data_block = set_data_stream("Data",self)
+            self.data_streams.add_attr(data_block)
+            vertices = getattr(self,'Vertices',None)
+            if vertices is not None:
+                vertices = copy.copy(vertices.Coordinates)
+                data_block.add_attr('Vertices',vertices)
+            for stream_attribute_name in ('BoundaryCurves','Patches','Surfaces'):
+                stream_attribute = getattr(self,stream_attribute_name,None)
+                if stream_attribute is None:
+                    continue
+                vertices.add_attr(stream_attribute_name,stream_attribute,None)
+            self.meta.add_attr('data_streams',1)
+            self.data_stream_count = 1
+                
 
     def read(self):
-        """Read the data streams if they are not read yet"""
-        if not self._streams_loaded:
-            if self._header.filetype == "AmiraMesh":
-                for ds in self._header._data_streams_block_list:
-                    ds.read()
-                    ds.add_attr('data', ds.get_data())
-                    self.data_streams.add_attr(ds)
-            elif self._header.filetype == "HyperSurface":
-                block = set_data_stream('Data', self._header)
-                block.read()
-                self.data_streams.add_attr(block)
-            self._load_streams = self._header.load_streams = True
-            self._streams_loaded = True
+        if not self._read:
+            load_streams(self)
+            self._read = True
 
     def __repr__(self):
-        return "AmiraFile('{}', read={})".format(self._fn, self._read)
+        return "AmiraFile('{}', read={})".format(self.filename, self._read)
 
     def __str__(self, prefix="", index=None):
         width = 140
@@ -90,4 +97,4 @@ class AmiraFile(Block):
         return string
 
 
-__all__ = ['AmiraFile', 'AmiraHeader']
+__all__ = ['AmiraFile', 'AmiraHeader', 'set_stream_policy' , 'get_stream_policy', 'IMMEDIATE', 'ONDEMMAND', 'HEADERONLY']
