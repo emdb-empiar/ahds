@@ -31,7 +31,7 @@ Credits: https://blog.driftingruby.com/updated-to-mojave/
 """
 decoders = Extension(
     'ahds.decoders',
-    sources=['src/decodersmodule.cpp'],
+    sources=['src/decodersmodule.c'],
 )
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -48,7 +48,7 @@ AHDS_DESCRIPTION_CONTENT_TYPE = 'text/x-rst'
 AHDS_URL = "https://github.com/emdb-empiar/ahds.git"
 AHDS_LICENSE = "Apache License"
 AHDS_KEYWORDS = "header, parser, data streams"
-AHDS_ENTRY_POINT = 'ahds = ahds.ahds:main'
+AHDS_ENTRY_POINT = 'ahds = ahds.py:main'
 AHDS_CLASSIFIERS = [
     u"Development Status :: 2 - Pre-Alpha",
     u"Environment :: Console",
@@ -61,6 +61,7 @@ AHDS_CLASSIFIERS = [
     u"Programming Language :: Python :: 3.5",
     u"Programming Language :: Python :: 3.6",
     u"Programming Language :: Python :: 3.7",
+    u"Programming Language :: Python :: 3.8",
     u"Topic :: Software Development :: Libraries :: Python Modules",
     u"Topic :: Terminals",
     u"Topic :: Text Processing",
@@ -69,11 +70,11 @@ AHDS_CLASSIFIERS = [
 ]
 
 if sys.version_info[0] > 2:
-    AHDS_INSTALL_REQUIRES = ["simpleparse>=2.1.1", "scikit-image"]
+    AHDS_INSTALL_REQUIRES = ["simpleparse>=2.1.1"]
     if sys.version_info[1] > 5:
-        pass
+        AHDS_INSTALL_REQUIRES += ["scikit-image"]
     else:
-        AHDS_INSTALL_REQUIRES += ["matplotlib<3.1"]
+        AHDS_INSTALL_REQUIRES += ["scikit-image<=0.15","matplotlib<3.1","scipy<=1.4"]
     setup(
         name=AHDS_NAME,
         version=AHDS_VERSION,
@@ -114,7 +115,7 @@ else:
         setup_requires=["numpy"],
         # additional dependencies to prevent failed install due to no support for Py27
         install_requires=["simpleparse==2.1.1", "scikit-image<0.14", "scipy<1.2", "backports.shutil_get_terminal_size",
-                          "networkx==2.2", "matplotlib<3.0"],
+                          "networkx==2.2", "matplotlib<3.0","PyWavelets<=1.0.3", "Pillow<=6.2.1","kiwisolver<=1.1.0"],
         ext_modules=[decoders],
         include_dirs=[np.get_include()],
         entry_points={

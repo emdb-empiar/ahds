@@ -89,7 +89,22 @@ Electrodes { int LeadIdentifer } @2
 0.0251081 0.105864 -0.0687883 
 -0.0152655 0.105756 -0.068724 
 -0.0541714 0.106164 -0.0681102 
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
+#some more very complex coment repeating it self over and over
 
+# electrode name map
 @2
 0 
 6 

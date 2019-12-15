@@ -7,6 +7,9 @@ Vertices 6
 	1.0 0.0 0.0
 	0.0 -1.0 0.0
 
+#some comment here
+#some more long comment here trying to somenting
+
 NBranchingPoints 2
 
 NVerticesOnCurves 2
@@ -22,6 +25,173 @@ BoundaryCurves 3
 	Vertices 3
 		1 4 2
 }
+
+# here another one not sure if achieving what is intended
+# by simple lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+#
+# here another one not sure if achieving what is intended
+# by simple lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# here another one not sure if achieving what is intended
+# by simple lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+#
+# here another one not sure if achieving what is intended
+# by simple lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
+# lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
 Patches 5
 {
 	InnerRegion Material1
@@ -78,6 +248,7 @@ Surfaces 3
 	Region Material2
 	Patches 3
 		2 -4 5
+# here another one not sure if achieving what is intended by simple lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum # here another one not sure if achieving what is intended by simple lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum lore ipsum
 } {
 	Region Material3
 	Patches 2

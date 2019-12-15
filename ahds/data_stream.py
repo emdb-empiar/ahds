@@ -23,8 +23,9 @@ import numpy as np
 # pip install -e /path/to/folder/with/setup.py
 # or
 # python setup.py develop
-from .core import _dict_iter_keys, _dict_iter_values, ListBlock, deprecated
-from .grammar import _hyper_surface_file
+from .core import _dict_iter_keys, _dict_iter_values, Block,ListBlock, deprecated 
+from .grammar import next_amiramesh_ascii_stream, next_amiramesh_binary_stream,_rescan_overlap,set_content_type_filter,clear_content_type_filter,AHDSStreamError
+    
 
 # definition of numpy data types with dedicated endianess and number of bits
 # they are used by the below lookup table
@@ -128,15 +129,10 @@ _type_map = {
     'ascii': _np_char
 }
 
-# try to import native byterele_decoder binary and fallback to python implementation
 try:
-    # if import failed for whatever reason
-    if sys.version_info[0] > 2:
-        from ahds.decoders import byterle_decoder
-    else:
-        from .decoders import byterle_decoder
+    from .decoders import byterle_decoder
 except ImportError:
-    def byterle_decoder(data, output_size):
+    def byterle_decoder(data, count,**kwargs):
         """If the C-ext. failed to compile or is unimportable use this slower Python equivalent
 
         :param str data: a raw stream of data to be unpacked
@@ -147,349 +143,326 @@ except ImportError:
         from warnings import warn
         warn("using pure-Python (instead of Python C-extension) implementation of byterle_decoder")
 
+        # load input data into numpy array buffer
         input_data = np.frombuffer(data, dtype=_np_ubytelittle, count=len(data))
-        output = np.zeros(output_size, dtype=np.uint8)
-        i = 0
-        count = True
-        repeat = False
-        no = None
-        j = 0
-        while i < len(input_data):
-            if count:
-                no = input_data[i]
-                if no > 127:
-                    no &= 0x7f  # 2's complement
-                    count = False
-                    repeat = True
-                    i += 1
-                    continue
-                else:
-                    i += 1
-                    count = False
-                    repeat = False
-                    continue
-            elif not count:
-                if repeat:
-                    # value = input_data[i:i + no]
-                    repeat = False
-                    count = True
-                    # output[j:j+no] = np.array(value)
-                    output[j:j + no] = input_data[i:i + no]
-                    i += no
-                    j += no
-                    continue
-                elif not repeat:
-                    # value = input_data[i]
-                    # output[j:j+no] = value
-                    output[j:j + no] = input_data[i]
-                    i += 1
-                    j += no
-                    count = True
-                    repeat = False
-                    continue
+        # output buffer 
+        output = np.zeros(count, dtype=np.uint8)
+        get = 0 # index of next byte to read
+        put = 0 # index to write next decoded byte to
+        while get < len(input_data):
+            # read size of next output block
+            numbytes = input_data[get]
+            get += 1
+            if numbytes & 128:
+                # MSB set indicating that following block of bytes is not encoded
+                # copy as is. The lower 7 Bytes provide the number of bytes to be
+                # copied
+                numbytes &= 0x7F
+                nextput = put + numbytes
+                nextget = get + numbytes
+                output[put:nextput] = input_data[get:nextget]
+                get = nextget
+                put = nextput
+                continue
+            # encoded block of numbytes bytes expand
+            nextput = put + numbytes
+            output[put:nextput] = input_data[get]
+            get += 1
+            put = nextput
 
-        assert j == output_size
+        assert put == count
 
         return output
 
 # define common alias for the selected byterle_decoder implementation
 hxbyterle_decode = byterle_decoder
+def hxraw_decode(data):
+    return data
 
+ONDEMMAND = -1
+HEADERONLY = 0
+IMMEDIATE = 1
 
-def hxzip_decode(data, output_size):
-    """Decode HxZip data stream
+# TODO need common decision what should be the default stream policy
+#      current suggestion ONDEMMAND
+_stream_policy = ONDEMMAND
 
-    :param str data: a raw stream of data to be unpacked
-    :param int output_size: the number of items when ``data`` is uncompressed
-    :return np.array output: an array of ``np.uint8``
+def set_stream_policy(policy):
     """
-    return np.frombuffer(zlib.decompress(data), dtype=_np_ubytelittle, count=output_size)
+    sets global stream loading policy
+    HEADERONLY: load file hader and structure only,
+         data attribute of AmiraMesh and HyperSuface streams is not available, 
+    ONDEMMAND: load and decode data on first access to data attribute of
+        AmiraMesh and HyperSuface streams
+    IMMEDIATE: load immediately along with the header and file structure
+    """
+
+    if policy not in (ONDEMMAND, HEADERONLY,IMMEDIATE):
+        raise ValueError('stream policy must be one of HEADERONLY, ONDEMMAND, IMMEDIATE')
+
+    global _stream_policy
+
+    _stream_policy = policy
+
+def get_stream_policy():
+    """
+    returns the global stream loading policy currently set
+    """
+
+    global _stream_policy
+
+    return _stream_policy
 
 
-def set_data_stream(name, header):
+# used to extract counter indices from the tail of array_names
+# and collect them within a common meta_array_declaration of the
+# common base_name. Is applied to reversed array_name string
+# a counter is any trailing number which is preceeded by non numerical
+# character exempt '-' and '_' if they are preceeded by at least one digit
+_extract_trailing_counter = re.compile(r'^\d+(?![-_]\d)')
+
+def select_array_block(array_declaration):
+    """
+    return Block corresponding to provided array_declaration
+
+    currently only array_name and array_dimension keys are considered to either
+    create ListBlock or Block type block. In case filter functions emmit not None
+    other_meta dict than this method has to be modified to reflect the additional
+    array_declaration keys injected by other_meta dict.
+    """
+    block_type = array_declaration.get('array_blocktype',Block)
+    if issubclass(block_type,ListBlock):
+        return block_type(array_declaration['array_name'],initial_len=array_declaration['array_dimension'])
+    block = block_type(array_declaration['array_name'])
+    block.add_attr('length',array_declaration['array_dimension'])
+    return block
+
+class AmiraSpreadSheet(ListBlock):
+    """
+    ListBlock joining array declarations representing columns of
+    HxSpreadSheet object.
+    """
+    def __init__(self,name,initial_len,*args,**kwargs):
+        super(AmiraSpreadSheet,self).__init__(name,initial_len,*args,**kwargs)
+
+    @staticmethod
+    def identify_columns(typed_meta_declaration,array_declaration,content_type,base_contenttype):
+        """
+        filter function called by AmiraDispatchProcessor to collect all array declaration
+        structures which could be part of HxSpreadSheet structure
+        """
+        if content_type != 'HxSpreadSheet' and base_contenttype != 'HxSpreadSheet':
+            return None
+        
+        array_name = array_declaration.get('array_name',None)
+        if array_name is None:
+            return None
+        has_counter = _extract_trailing_counter.match(array_name[::-1])
+        if has_counter is None:
+            return None
+        base_name = array_name[:-has_counter.end()]
+        array_index = int(array_name[-has_counter.end():])
+        return 'Sheet1',array_index,AmiraSpreadSheet,None,None
+
+set_content_type_filter('HxSpreadSheet',AmiraSpreadSheet.identify_columns)
+
+def set_data_stream(name, header,file_offset = None,encoded_data = None):
     """Factory function used by AmiraHeader to determine the type of data stream present"""
     if header.filetype == 'AmiraMesh':
-        return AmiraMeshDataStream(name, header)
+        return AmiraMeshDataStream(name, header,file_offset,encoded_data)
     elif header.filetype == 'HyperSurface':
-        return AmiraHxSurfaceDataStream(name, header)
-
+        return AmiraHxSurfaceDataStream(name, header,file_offset,encoded_data)
 
 class AmiraDataStream(ListBlock):
-    """"""
-    __slots__ = ('_stream_data', '_header')
+    """common base for all datastreams in AmiraMesh or HxSurface format"""
+    __slots__ = ('_stream_data', '_header','_offset',READONLY('data'))
 
-    def __init__(self, name, header):
+    def __init__(self, name, header,file_offset = None,encoded_data = None):
         self._header = header  # contains metadata for extracting streams
-        self._stream_data = None
+        if header.load_streams is not HEADERONLY:
+            self._offset = file_offset
+            if encoded_data is not None:
+                assert self._offset is not None
+                self._stream_data = encoded_data
+            else:
+                assert self._offset is None
         super(AmiraDataStream, self).__init__(name)
 
-    @property
-    def load_stream(self):
-        """Reports whether data streams are loaded or not"""
-        return self._header.load_streams
 
-    def get_data(self):
-        """Decode and return the stream data in this stream"""
-        try:
-            assert len(self._stream_data) > 0
-        except AssertionError:
-            raise ValueError('empty stream found')
-        return self._decode(self._stream_data)
+    def __getattr__(self,attr):
+        if self._header.load_streams != HEADERONLY:
+            if attr == "data":
+                if not self._stream_data:
+                    raise AHDSStreamError('empty stream')
+                self._data = self._decode(self._stream_data)
+                return self._data
+            if attr == '_stream_data':
+                self._read()
+                assert self._offset is not None and self._offset > len(self._header)
+                return self._stream_data
+        raise AttributeError("'{}' type object has no '{}' attribute".format(self.__class__.name,attr))
 
+def load_streams(header):
+    """
+    called by AmiraFile.read and AmiraHeader._load method when load_streams = IMMEDIATE was used when
+    loading header of amria file or default stream loading policy is set to IMMEDIATE
+    """
+    if header.load_streams == HEADERONLY:
+        raise AHDSStreamError("HADERONLY stream policy for '{}' file".format(header.filename))
+    if header.filetype == "HyperSurface":
+        # nothing to load for HypeSurface encoded_data has either already been
+        # added or is not needed
+        return
+    stream_with_highest_index = header.get_stream_by_index(header.data_stream_count)
+    stream_with_highest_index._read()
+    for validate_stream in ( 
+        validate
+        for validate in (
+            header.get_stream_by_index(stream_index) 
+            for stream_index in range(1,header.data_stream_count+1)
+        )
+        if validate._offset is None
+    ):
+        validate_stream._read()
 
 class AmiraMeshDataStream(AmiraDataStream):
     """Class that defines an AmiraMesh data stream"""
+    decode_data = {
+        'HxZip':(np.frombuffer,zlib.decompress),
+        'HxByteRLE':(hxbyterle_decode,hxraw_decode),
+        None:(np.frombuffer,hxraw_decode)
+    }
 
-    def read(self):
+    def _read(self):
         """Extract the data streams from the AmiraMesh file"""
+
+        if self._header.load_streams == HEADERONLY:
+            raise AHDSStreamError("HADERONLY stream policy for '{}' file".format(self._header.filename))
+        if self._offset is not None and self._offset > len(self._header):
+            # stream_data already loaded
+            return
+        next_stream = next_amiramesh_ascii_stream if self._header.format == 'ASCII' else next_amiramesh_binary_stream
         with open(self._header.filename, 'rb') as f:
             # rewind the file pointer to the end of the header
-            f.seek(len(self._header))
-            start = int(self.data_index)  # this data streams index
-            end = start + 1
-            if self._header.data_stream_count == start:  # this is the last stream
-                data = f.read()
-                _regex = ".*?\n@{}\n(?P<stream>.*)\n".format(start).encode('ASCII')
-                regex = re.compile(_regex, re.S)
-                match = regex.match(data)
-                _stream_data = match.group('stream')
-                self._stream_data = _stream_data[:-1] if _stream_data[-1] == 10 else _stream_data
-            else:
-                data = f.read()
-                _regex = ".*?\n@{}\n(?P<stream>.*)\n@{}\n".format(start, end).encode('ASCII')
-                regex = re.compile(_regex, re.S)
-                match = regex.match(data)
-                self._stream_data = match.group('stream')
+            current_offset = self._header.get_stream_offset(self)
+            f.seek(current_offset)
+            stream_data,stream_remainder,next_stream_index,next_offset = next_stream(f)
+            while next_stream_index != self.data_index:
+                if next_stream_index < 0:
+                    raise AHDSStreamError("AmiraMesch file '{}' corrupted".format(self._header.filename))
+                side_loaded_stream = self._header.get_stream_by_index(next_stream_index)
+                side_loaded_stream._offset = next_offset
+                num_stream_bytes = np.prod(side_loaded_stream.shape) * side_loaded_stream.dimension * _type_map[side_loaded_stream.type].itemsize
+                side_loaded_stream._stream_data,stream_remainder,next_stream_index,next_offset = next_stream(
+                    f,
+                    stream_bytes = num_stream_bytes if num_stream_bytes > 32768 else 32768,
+                    stream_data = stream_remainder,
+                )
+            self._offset = next_offset
+            num_stream_bytes = np.prod(self.shape) * self.dimension * _type_map[self.type].itemsize
+            self._stream_data,stream_remainder,next_stream_index,next_offset = next_stream(
+                f,
+                stream_bytes = num_stream_bytes,
+                stream_data = stream_remainder
+            )
+            if next_stream_index >= 0:
+                next_offset -= _rescan_overlap
+            self._header.set_stream_offset(self,next_offset)
 
     def _decode(self, data):
         """Performs data stream decoding by introspecting the header information"""
         # first we handle binary files
+        if isinstance(self.shape,np.ndarray):
+            new_shape = self.shape.tolist()
+        else:
+            new_shape = [self.shape] if not isinstance(self.shape,(list,tuple)) else list(self.shape)
+        if self.dimension > 1:
+            new_shape += [self.dimension]
         if self._header.format == 'BINARY':
             # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
             is_little_endian = self._header.endian == 'LITTLE'
-            if self.format is None:
-                if isinstance(self.shape, (list, np.ndarray,)):
-                    new_shape = self.shape.tolist() + [self.dimension]
-                    return np.frombuffer(
-                        data,
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(*new_shape)
-                elif isinstance(self.shape, int):
-                    return np.frombuffer(
-                        data,
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(self.shape, self.dimension)
-            elif self.format == 'HxZip':
-                if isinstance(self.shape, (list, np.ndarray,)):
-                    new_shape = self.shape.tolist() + [self.dimension]
-                    return np.frombuffer(
-                        zlib.decompress(data),
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(*new_shape)
-                else:
-                    return np.frombuffer(
-                        zlib.decompress(data),
-                        dtype=_type_map[is_little_endian][self.type]
-                    ).reshape(self.shape, self.dimension)
-            elif self.format == 'HxByteRLE':
-                # these seem to always be bytes so no type introspection
-                if isinstance(self.shape, (list, np.ndarray,)):
-                    new_shape = self.shape.tolist() + [self.dimension]
-                    return hxbyterle_decode(
-                        data,
-                        int(self.shape.prod())
-                    ).reshape(*new_shape)
-                else:
-                    return hxbyterle_decode(
-                        data,
-                        int(self.shape.prod())
-                    ).reshape(self.shape, self.dimension)
-            else:
-                raise ValueError('what in the world is {}?'.format(self.format))
+            try:
+                decode,extract = self.decode_data[self.format]
+            except KeyError:
+                raise AHDSStreamError("Data stream format '{}' not supported".format(self.format))
+            return decode(
+                extract(data),
+                dtype=_type_map[is_little_endian][self.type],
+                count=np.prod(new_shape).tolist()
+            ).reshape(*new_shape)
         # assume the file is ASCII
         else:
             return np.fromstring(
                 data,
                 dtype=_type_map[self.type],
                 sep="\n \t"
-            ).reshape(self.shape, self.dimension)
+            ).reshape(*new_shape)
 
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):
     """Class that defines an Amira HxSurface data stream"""
 
-    def read(self):
-        """Extract the data streams from the HxSurface file"""
-        with open(self._header.filename, 'rb') as f:
-            # rewind the file pointer to the end of the header
-            f.seek(len(self._header))
-            data = f.read()
-            # get the vertex count and streams
-            _vertices_regex = ".*?\n" \
-                              "Vertices (?P<vertex_count>\d+)\n" \
-                              "(?P<streams>.*)".encode('ASCII')
-            vertices_regex = re.compile(_vertices_regex, re.S)
-            match_vertices = vertices_regex.match(data)
-            # todo: fix for full.surf and simple.surf
-            # print(f"streams: {match_vertices.group('streams')}")
-            vertex_count = int(match_vertices.group('vertex_count'))
-            # get the patches
-            # fixme: general case for NBranchingPoints, NVerticesOnCurves, BoundaryCurves being non-zero
-            stream_regex = "(?P<vertices>.*?)\n" \
-                           "NBranchingPoints (?P<branching_point_count>\d+)\n" \
-                           "NVerticesOnCurves (?P<vertices_on_curves_count>\d+)\n" \
-                           "BoundaryCurves (?P<boundary_curve_count>\d+)\n" \
-                           "Patches (?P<patch_count>\d+)\n" \
-                           "(?P<patches>.*)".encode('ASCII')
-            match_streams = re.match(stream_regex, match_vertices.group('streams'), re.S)
-            # instatiate the vertex block
-            vertices_block = AmiraHxSurfaceDataStream('Vertices', self._header)
-            # set the data for this stream
-            vertices_block._stream_data = match_streams.group('vertices')
-            # length, type and dimension are needed for decoding
-            vertices_block.add_attr('length', vertex_count)
-            vertices_block.add_attr('type', 'float')
-            vertices_block.add_attr('dimension', 3)
-            vertices_block.add_attr('data', vertices_block.get_data())
-            vertices_block.add_attr('NBranchingPoints', 0)
-            vertices_block.add_attr('NVerticesOnCurves', 0)
-            vertices_block.add_attr('BoundaryCurves', 0)
-            # instantiate the patches block
-            patches_block = AmiraHxSurfaceDataStream('Patches', self._header)
-            patch_count = int(match_streams.group('patch_count'))
-            patches_block.add_attr('length', patch_count)
-            # get the triangles and contents of each patch
-            # fixme: general case for BoundaryID, BranchingPoints being non-zero
-            #  i've not seen an example with loaded fields
-            # todo: consider compiling regular expressions
-            # NOTE:
-            # There is a subtlety with this regex:
-            # It might be the case that the last part matches bytes that end in '\n[}]\n'
-            # that are not the end of the stream. The only way to remede this is to include the
-            # extra brace [{] so that it now matches '\n[}]\n[{]', which is more likely to
-            # correspond to the end of the patch. However this introduces a problem:
-            # we will not be able to match the last patch unless we also add [{] to the stream to match.
-            # This also means that start_from argument will be wrong given that it will have past
-            # the starting point of the next patch. This is trivial to solve because we simply
-            # backtrack start_from by 1.
-            # These are noted in NOTE A and NOTE B below.
-            _patch_regex = "[{]\n" \
-                           "InnerRegion (?P<patch_inner_region>.*?)\n" \
-                           "OuterRegion (?P<patch_outer_region>.*?)\n" \
-                           "BoundaryID (?P<patch_boundary_id>\d+)\n" \
-                           "BranchingPoints (?P<patch_branching_points>\d+)\n" \
-                           "\s+\n" \
-                           "Triangles (?P<triangle_count>.*?)\n" \
-                           "(?P<triangles>.*?)\n" \
-                           "[}]\n[{]".encode('ASCII')
-            patch_regex = re.compile(_patch_regex, re.S)
-            # start from the beginning
-            start_from = 0
-            for p_id in range(patch_count):
-                # NOTE A
-                match_patch = patch_regex.match(match_streams.group('patches') + b'{', start_from)
-                patch_block = AmiraHxSurfaceDataStream('Patch', self._header)
-                patch_block.add_attr('InnerRegion', match_patch.group('patch_inner_region').decode('utf-8'))
-                patch_block.add_attr('OuterRegion', match_patch.group('patch_outer_region').decode('utf-8'))
-                patch_block.add_attr('BoundaryID', int(match_patch.group('patch_boundary_id')))
-                patch_block.add_attr('BranchingPoints', int(match_patch.group('patch_branching_points')))
-                # let's now add the triangles from the patch
-                triangles_block = AmiraHxSurfaceDataStream('Triangles', self._header)
-                # set the raw data stream
-                triangles_block._stream_data = match_patch.group('triangles')
-                # decoding needs to have the length, type, and dimension
-                triangles_block.add_attr('length', int(match_patch.group('triangle_count')))
-                triangles_block.add_attr('type', 'int')
-                triangles_block.add_attr('dimension', 3)
-                # print('debug:', int(match_patch.group('triangle_count')), len(match_patch.group('triangles')))
-                # print('debug:', match_patch.group('triangles')[:20])
-                # print('debug:', match_patch.group('triangles')[-20:])
-                triangles_block.add_attr('data', triangles_block.get_data())
-                # now we can add the triangles block to the patch...
-                patch_block.add_attr(triangles_block)
-                # then we collate the patches
-                patches_block.append(patch_block)
-                # the next patch begins where the last patch ended
-                # NOTE B
-                start_from = match_patch.end() - 1  # backtrack by 1
-            # add the patches to the vertices
-            vertices_block.add_attr(patches_block)
-            # add the vertices to the data stream
-            self.add_attr(vertices_block)
+    def _read(self):
+        if self._header.load_streams == HEADERONLY:
+            raise AHDSStreamError("HADERONLY stream policy for '{}' file".format(self._header.filename))
+        # data either already stored or not available
+        return
 
     def _decode(self, data):
         is_little_endian = self._header.endian == 'LITTLE'
+        new_shape = [self.shape] if not isinstance(self.shape,(list,tuple)) else list(self.shape)
+        if self.dimension > 1:
+            new_shape += [self.dimension]
         if self._header.format == 'BINARY':
             return np.frombuffer(
                 data,
                 dtype=_type_map[is_little_endian][self.type]
-            ).reshape(self.length, self.dimension)
+            ).reshape(*new_shape)
         elif self._header.format == 'ASCII':
             return np.fromstring(
                 data,
                 dtype=_type_map[self.type],
                 sep="\n \t"
-            ).reshape(self.length, self.dimension)
+            ).reshape(*new_shape)
 
+def check_stream_data(datastream): # pragma: nocover
+    if datastream.filetype == "AmiraMesh":
+        if datastream.format != "ASCII":
+            vertices = getattr(datastream,'Nodes',None)
+            if vertices is None:
+                vertices = getattr(datastream,'Vertices',None)
+                if vertices is None:
+                    return 0
+            coordinates = getattr(vertices,'Coordinates',None)
+            if coordinates is None:
+                coordinates = getattr(vertices,'Vertices',None)
+                if coordinates is None:
+                    return 0
+            print(coordinates.data)
+            tetrahedra = getattr(datastream,"Tetrahedra",None)
+            if tetrahedra is None:
+                return 0
+            materials = getattr(tetrahedra,"Materials",None)
+            if materials is None:
+                return 0
+            print(materials.data)
+            return 0
+        electrodes = getattr(datastream,"Electrodes",None)
+        if electrodes is None:
+            return 0
+        leadidentifier = getattr(electrodes,"LeadIdentifer",None)
+        if leadidentifier is None:
+            return 0
+        print(leadidentifier.data)
+        return 0
+    print(datastream.Vertices.Coordinates.data)
+    print(datastream.Patches[1].Triangles.data)
+    return 0
+    
+    
+    
 
-@deprecated(
-    "DataStreams class is obsolete, access data using stream_data and data attributes of corresponding metadata block attributes of AmiraHeader instance")
-class DataStreams(object):
-    __slots__ = ("_header", "__stream_data")
-
-    def __init__(self, header):
-        self._header = header
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            if self._header.filetype == "AmiraMesh":
-                self.__stream_data = self._header.data_pointers
-            else:
-                self.__stream_data = dict()
-                for _streamblock in _dict_iter_keys(_hyper_surface_file):
-                    _streamlist = _streamblock  # self._header._stream_loader.__class__._group_array_map.get(_streamblock,_streamblock).format('List')
-                    _streamlist = getattr(self._header, _streamlist, None)
-                    if _streamlist is None:
-                        continue
-                    self.__stream_data[_streamblock] = _streamlist
-
-    def __getattribute__(self, attr):
-        if attr in ("file", "header", "stream_data", "filetype"):
-            return super(DataStreams, self).__getattribute__(attr)()
-        return super(DataStreams, self).__getattribute__(attr)
-
-    @deprecated("use <AmiraHeader>.filename instead")
-    def file(self):
-        return self._header.filename
-
-    @deprecated("use AmiraHeader instance directly")
-    def header(self):
-        return self._header
-
-    @deprecated(
-        "access data of individual streams through corresponding attributes and dedicated stream_data and data attributes of meta data blocks")
-    def stream_data(self):
-        return self.__stream_data
-
-    @deprecated("use <AmiraHeader>.filetype attribute instead")
-    def filetype(self):
-        return self._header.filetype
-
-    @deprecated
-    def __len__(self):
-        return len(self.__stream_data)
-
-    @deprecated
-    def __iter__(self):
-        return iter(_dict_iter_values(self.__stream_data))
-
-    @deprecated
-    def __getitem__(self, key):
-        return self.__stream_data[key]
-
-    @deprecated
-    def __repr__(self):
-        return "{} object with {} stream(s): {} ".format(
-            self.__class__,
-            len(self),
-            ", ".join(_dict_iter_keys(self.__stream_data))
-        )
+if __name__ == "__main__": # pragma: nocover
+    from ahds.header import main
+    import sys
+    sys.exit( main(check_stream_data))

@@ -1,0 +1,10 @@
+# AmiraMesh 3D BINARY 2.0
+# CreationDate: Fri Jun  2 10:03:59 2006
+
+
+define Lattice 319 286 280
+
+Lattice { byte Labels } @1(HxByteRLE,404583)
+
+# Data section follows
+@1

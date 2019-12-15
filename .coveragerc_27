@@ -9,4 +9,4 @@ omit =
 show_missing = True
 exclude_lines =
 	pragma: nocover
-	pragma: cover_py2
+	pragma: cover_py3

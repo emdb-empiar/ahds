@@ -1,5 +1,5 @@
 # data files
-*.am
+#*.am
 .vscode
 
 #PyCharm  project 
