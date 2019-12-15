@@ -1,0 +1,55 @@
+# HyperSurface 0.1 ASCII
+Parameters {
+	Info "GMC: 3 colors, case 13"
+}
+Materials { {
+	color 0.83562 0.78 0.06,
+	Name "Yellow"
+} {
+	color 0.21622 0.8 0.16,
+	name "Green"
+} {
+	color 0.8 0.16 0.596115,
+	name "Magenta"
+} }
+Vertices 11
+	1.000000 0.666667 0.500000
+	0.666667 0.500000 1.000000
+	1.000000 0.500000 0.000000
+	0.500000 1.000000 0.000000
+	0.000000 0.000000 0.500000
+	0.000000 1.000000 0.500000
+	1.000000 1.000000 0.500000
+	0.500000 0.000000 1.000000
+	1.000000 0.500000 1.000000
+	0.500000 1.000000 1.000000
+	0.523810 0.523809 0.500000
+
+Patches 3
+{
+	InnerRegion Green
+	OuterRegion Yellow
+	Triangles 7
+		3 1 11
+		4 3 11
+		6 4 11
+		5 6 11
+		8 5 11
+		2 8 11
+		1 2 11
+}
+{
+	InnerRegion Magenta
+	OuterRegion Yellow
+	Triangles 1
+	9 2 1
+}
+{
+	InnerRegion Magenta
+	OuterRegion Green
+	Triangles 2
+		2 10 7
+		7 1 2
+	Surfaces 3
+		1 -3 9
+}

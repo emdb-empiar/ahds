@@ -1,0 +1,30 @@
+# AmiraMesh ASCII 1.0
+define Lattice 2 2 2
+
+Parameters {
+	CoordType "uniform",
+	# BoundingBox is xmin xmax ymin ymax zmin zmax
+	BoundingBox 0 1 0 1 0 1
+	Materials {
+		Outerspace {
+			Id 9
+		    Color 0 0 0
+		}
+	}
+}
+Materials {
+	{ Id 0, Name "Exterior" }
+	{ Id 4, Name "Something" }
+	{ Id 7, Name "Interior", Color 12 4 5 }
+}
+Lattice { byte Labels } = @1
+Lattice { byte Probability } = @2
+
+@1
+0 0 0 4
+0 0 4 4
+
+@2
+255 255 130 180
+255 200 190 230
+

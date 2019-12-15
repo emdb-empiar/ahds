@@ -35,7 +35,8 @@ def parse_args():
     return args
 
 
-def main():
+def main(): # pragma: nocover
+    # TODO come up with appropriate test if required for coverage
     args = parse_args()
 
     _file, _paths = set_file_and_paths(args)
@@ -64,7 +65,7 @@ def get_paths(_paths, af):
             for block in _path_list:
                 current_block = getattr(current_block, block, None)
             if current_block is None:
-                print("""Path '{}' not found.""".format(_path))
+                print("""Path '{}' not found.""".format(_path)) # pragma: nocover
             else:
                 string += u'*' * WIDTH + u'\n'
                 string += u"ahds: Displaying path '{}'\n".format(_path)
@@ -82,7 +83,7 @@ def get_debug(af, args):
         string += u"*" * WIDTH + "\n"
         string += u"ahds: Displaying parsed header data\n"
         string += u"-" * WIDTH + "\n"
-        string += pformat(af.header.parsed_data) + '\n'
+        string += pformat(af.parsed_data) + '\n'
     return string
 
 
@@ -107,4 +108,4 @@ def set_file_and_paths(args):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main()) # pragma: nocover

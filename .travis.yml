@@ -3,9 +3,9 @@ language: python
 
 python:
   - "2.7"
-  - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
 
 sudo: true
 
@@ -21,12 +21,13 @@ before_install:
   - pip install numpy
   - pip install pytest
   - pip install pytest-cov
+  - pip install tox-travis
 
 install:
   - python setup.py develop
 
 script:
-  - pytest --cov=./ahds ahds/tests
+  tox
 
 after_success:
   - coveralls
