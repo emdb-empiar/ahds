@@ -9,11 +9,11 @@ we also define how `HxSurface` files are structured.
 
 This module also includes several helper functions that use the grammar resources:
 
-* the `get_header` function returns only the header up to the first data stream; data is returned as a
-decoded string (`UTF-8`);
-* the `parse_header` function applies the grammar to return a nested set of Python primitives to be transformed
-into an `AmiraHeader` object;
-* the `get_parsed_data` function transparently applied both above functions given the Amira (R) filename
+*   the `get_header` function returns only the header up to the first data stream; data is returned as a decoded string (`UTF-8`);
+
+*   the `parse_header` function applies the grammar to return a nested set of Python primitives to be transformed into an `AmiraHeader` object;
+
+*   the `get_parsed_data` function transparently applied both above functions given the Amira (R) filename
 
 """
 

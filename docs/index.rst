@@ -27,9 +27,9 @@
    :maxdepth: 2
    
    overview
-   about
    ahds
 
+.. about
 
 Indices and tables
 ==================

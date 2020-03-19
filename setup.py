@@ -7,7 +7,7 @@ import sys
 
 import numpy as np
 
-AHDS_VERSION = '0.2.3'
+from ahds.conf import AHDS_VERSION
 
 from setuptools import setup, find_packages, Extension
 
@@ -103,7 +103,7 @@ else:
         setup_requires=["numpy"],
         # additional dependencies to prevent failed install due to no support for Py27
         install_requires=["simpleparse==2.1.1", "scikit-image<0.14", "scipy<1.2", "backports.shutil_get_terminal_size",
-                          "networkx==2.2", "matplotlib<3.0", "PyWavelets<1.1.0"],
+                          "networkx==2.2", "matplotlib<3.0", "PyWavelets<1.1.0", "Pillow<7.0.0"],
         ext_modules=[decoders],
         include_dirs=[np.get_include()],
         entry_points={
