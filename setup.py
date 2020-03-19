@@ -7,7 +7,7 @@ import sys
 
 import numpy as np
 
-from ahds.conf import AHDS_VERSION
+AHDS_VERSION = '0.2.3'
 
 from setuptools import setup, find_packages, Extension
 
