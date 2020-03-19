@@ -15,7 +15,7 @@
 import sys
 import os
 
-autodoc_mock_imports = ['simpleparse', 'skimage', 'backports.shutil_get_terminal_size']
+autodoc_mock_imports = ['simpleparse', 'skimage', 'backports']
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
