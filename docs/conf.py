@@ -15,9 +15,11 @@
 import sys
 import os
 
-sys.path.append('..')
+# sys.path.append('..')
 
-from setup import AHDS_VERSION
+# from setup import AHDS_VERSION
+
+AHDS_VERSION = '0.2.3'
 
 autodoc_mock_imports = ['simpleparse', 'skimage', 'backports']
 
