@@ -8,11 +8,10 @@ import unittest
 import random
 import ahds
 
-from ahds.tests import Py23FixTestCase, TEST_DATA_PATH
+from . import Py23FixTestCase, TEST_DATA_PATH
 from ahds.ahds import parse_args, get_debug, get_literal, get_paths, set_file_and_paths, get_amira_file, AmiraFile
 from ahds.core import _str
 from ahds.grammar import AHDSStreamError
-from ahds.tests import TEST_DATA_PATH
 
 
 def _parse_with_shlex(cmd):

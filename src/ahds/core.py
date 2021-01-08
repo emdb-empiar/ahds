@@ -289,9 +289,9 @@ if sys.version_info[0] >= 3: #pragma: cover_py3
     _dict_iter_keys = dict.keys
     # pylint: enable=E1101
 
-    if sys.version_info[1] >= 7:
+    if sys.version_info[0] > 3 or sys.version_info[1] >= 7: # pragma: nocover
         _dict = dict
-    else:
+    else: # pragma: nocover
         from collections import OrderedDict
         _dict = OrderedDict
 
@@ -1068,13 +1068,14 @@ def _main(): # pragma: nocover
         pass
     print("model:\n",block_test)
     import copy
+
     silblings = copy.copy(block_test)
     print("shallow:\n",silblings)
     deep_silblings = copy.deepcopy(block_test)
     print("deep:\n",deep_silblings)
     print(dir(block_test),"\n",dir(second_block))
     print("Works")
-    #ahds: block=block_test attribute=Dimension value=c"[3,5,6]"
+    #ahds: block=block_test attribute=Dimension value=p```[3,5,6]```
     block_test.add_attr("Dimension",[3,5,6])
     dir(block_test)
     nblock = ListBlock("k")
@@ -1085,8 +1086,8 @@ somestring
 """
     print("Dimension:",block_test.Dimension[0] + 12)
     third_block.add_attr("Dimension",4)
-    #ahds: block=block_test attribute=FlowerPower value=c"ahds.Block("FlowerPower")"
-    #ahds: block=block_test.FlowerPower attribute=Dimension value=c"[3,5,6]"
+    #ahds: block=block_test attribute=FlowerPower value=p```ahds.Block("FlowerPower")```
+    #ahds: block=block_test.FlowerPower attribute=Dimension value=p```[3,5,6]```
     print("Fulldimension:",block_test.Dimension , block_test.FlowerPower.Dimension)
     a = block_test.FlowerPower.Dimension + 12
     

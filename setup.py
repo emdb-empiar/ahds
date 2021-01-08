@@ -3,6 +3,8 @@
 from __future__ import print_function
 
 import os
+import os.path
+import glob
 import sys
 
 # fixme: how can I pre-install numpy???
@@ -78,7 +80,9 @@ if sys.version_info[0] > 2:
     setup(
         name=AHDS_NAME,
         version=AHDS_VERSION,
-        packages=find_packages(),
+        packages=find_packages('src'),
+        package_dir={'':'src'},
+        py_modules=[os.path.splitext(os.path.basename(path))[0] for path in glob.glob('src/*.py')],
         author=AHDS_AUTHOR,
         author_email=AHDS_AUTHOR_EMAIL,
         description=AHDS_DESCRIPTION,
@@ -103,7 +107,9 @@ else:
     setup(
         name=AHDS_NAME,
         version=AHDS_VERSION,
-        packages=find_packages(),
+        packages=find_packages('src'),
+        package_dir={'':'src'},
+        py_modules=[os.path.splitext(os.path.basename(path))[0] for path in glob.glob('src/*.py')],
         author=AHDS_AUTHOR,
         author_email=AHDS_AUTHOR_EMAIL,
         description=AHDS_DESCRIPTION,

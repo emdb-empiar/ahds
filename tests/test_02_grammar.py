@@ -8,7 +8,7 @@ import copy
 import re
 
 from ahds import grammar, core, proc
-from ahds.tests import TEST_DATA_PATH
+from . import TEST_DATA_PATH
 
 class TestGramarBase(unittest.TestCase):
     filename = 'testscalar.am'
