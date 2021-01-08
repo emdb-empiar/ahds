@@ -1,10 +1,7 @@
 [run]
 omit =
-    ahds/tests/*
-    ahds/data
-    ahds/data/*
-	*/.*
 	*.ast.py
+	
 [report]
 show_missing = True
 exclude_lines =

@@ -9,7 +9,7 @@ import numpy
 
 import ahds
 from ahds import header, data_stream, IMMEDIATE,HEADERONLY,ONDEMMAND
-from ahds.tests import TEST_DATA_PATH,Py23FixTestCase
+from . import TEST_DATA_PATH,Py23FixTestCase
 from ahds.grammar import AHDSStreamError
 
 

@@ -7,7 +7,7 @@ import sys
 import types
 from unittest import TestCase
 
-AHDS_PACKAGE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AHDS_PACKAGE_PATH = os.path.dirname(os.path.abspath(__file__))
 TEST_DATA_PATH = os.path.join(AHDS_PACKAGE_PATH, 'data')
 
 class Py23FixAssertWarnsContext():

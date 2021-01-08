@@ -5,7 +5,7 @@ import os
 import sys
 
 from ahds import header
-from ahds.tests import Py23FixTestCase, TEST_DATA_PATH
+from . import Py23FixTestCase, TEST_DATA_PATH
 from ahds.data_stream import HEADERONLY,IMMEDIATE
 from ahds.grammar import get_header,AHDSStreamError
 from ahds.core import Block
