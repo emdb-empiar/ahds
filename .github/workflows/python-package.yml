@@ -57,5 +57,4 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true
-          COVERALLS_REPO_TOKEN: v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF
 
