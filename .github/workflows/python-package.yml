@@ -40,8 +40,7 @@ jobs:
         run: |
           coverage run --rcfile=.coveragerc -m pytest
       - name: Compile coverage reports
-        run: |
-          coveralls
+        uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.github_token }}
           flag-name: run-${{ matrix.python-version }}
@@ -54,9 +53,9 @@ jobs:
     container: python:3-slim
     steps:
       - name: Coveralls Finished
-        run: |
-          COVERALLS_REPO_TOKEN=v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF coveralls --finish
+        uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true
+          COVERALLS_REPO_TOKEN: v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF
 
