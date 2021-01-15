@@ -50,11 +50,11 @@ jobs:
     name: Indicate completion to coveralls.io
     needs: test
     runs-on: ubuntu-latest
-    container: python:3-slim
     steps:
     - name: Finished
       run: |
         pip3 install --upgrade coveralls
         coveralls --finish
       env:
+        GITHUB_TOKEN: ${{ secrets.github_token }}
         COVERALLS_REPO_TOKEN: v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF
