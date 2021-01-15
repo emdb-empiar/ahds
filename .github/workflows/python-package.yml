@@ -41,7 +41,6 @@ jobs:
         pytest --cov=./ahds ahds/tests
     - name: Upload coverage data to coveralls.io
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COVERALLS_REPO_TOKEN: v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF
         COVERALLS_PARALLEL: true
       run: |
@@ -58,5 +57,4 @@ jobs:
         pip3 install --upgrade coveralls
         coveralls --finish
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COVERALLS_REPO_TOKEN: v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF
