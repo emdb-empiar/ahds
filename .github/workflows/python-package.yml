@@ -38,14 +38,14 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          pytest --cov-report= --cov=./ahds ahds/tests
+          pytest --cov-report xml --cov=./ahds ahds/tests
       - name: Upload coverage data to coveralls.io
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.github_token }}
           flag-name: run-${{ matrix.python-version }}
           parallel: true
-          path-to-lcov: ./.coverage
+          path-to-lcov: ./coverage.xml
 
   coveralls:
     name: Indicate completion to coveralls.io
@@ -58,4 +58,4 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true
-          path-to-lcov: ./.coverage
+
