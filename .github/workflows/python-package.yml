@@ -43,5 +43,20 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COVERALLS_REPO_TOKEN: v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF
+        COVERALLS_PARALLEL: true
       run: |
         coveralls
+
+  coveralls:
+    name: Indicate completion to coveralls.io
+    needs: test
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    steps:
+    - name: Finished
+      run: |
+        pip3 install --upgrade coveralls
+        coveralls --finish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_REPO_TOKEN: v3DDPnpWR2lPJeTt9g2IVswitCGJzwdMF
