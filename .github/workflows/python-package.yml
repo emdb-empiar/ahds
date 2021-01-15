@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
     strategy:
@@ -39,8 +39,7 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --cov=./ahds ahds/tests
-    - name: Coveralls
+    - name: Upload coverage data to coveralls.io
+      run: coveralls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls
