@@ -56,21 +56,10 @@ Feel free to join this initiative.
 --------------------------------------------
 Installation
 --------------------------------------------
-``ahds`` works with Python 2.7, 3.5, 3.6 and 3.7. It requires ``numpy`` to build.
+``ahds`` works with Python 2.7, 3.5, 3.6, 3.7 and 3.8. It requires ``numpy`` to build.
 
-::
-
-    pip install numpy
-
-Afterwards you may run
-
-::
 
     pip install ahds
-
-.. todo::
-
-    Figure out a way to avoid the need for ``numpy`` as part of the build.
 
 --------------------------------------------
 Getting Started
@@ -85,23 +74,26 @@ You can begin playing with ``ahds`` out of the box using the provided console co
     ********************************************************************************************************************************************
     AMIRA (R) HEADER AND DATA STREAMS
     --------------------------------------------------------------------------------------------------------------------------------------------
-    +-ahds/data/FieldOnTetraMesh.am                                                                  AmiraFile [is_parent? True ]
-    |  +-meta                                                                                            Block [is_parent? False]
-    |  |  +-file: ahds/data/FieldOnTetraMesh.am
-    |  |  +-header_length: 182
-    |  |  +-data_streams: 1
-    |  |  +-streams_loaded: False
-    |  +-header                                                                                    AmiraHeader [is_parent? True ]
-    |  |  +-filetype: AmiraMesh
-    |  |  +-dimension: 3D
-    |  |  +-format: BINARY
-    |  |  +-endian: BIG
-    |  |  +-version: 2.0
-    |  |  +-extra_format: None
-    |  |  +-Parameters                                                                                   Block [is_parent? False]
-    |  |  +-Tetrahedra                                                                                   Block [is_parent? False]
-    |  |  |  +-length: 23685
-    |  +-data_streams                                                                                    Block [is_parent? False]
+    +-header                                                                                         AmiraFile [is_parent? False]
+    |  +-dimension: 3D
+    |  +-format: BINARY
+    |  +-endian: BIG
+    |  +-version: 2.0
+    |  +-content_type: None
+    |  +-Parameters                                                                                      Block [is_parent? False]
+    |  |  +<Parent>: header
+    |  +-Tetrahedra                                                                                      Block [is_parent? False]
+    |  |  +<Parent>: header
+    |  |  +-length: 23685
+    |  |  +-Data                                                                           AmiraMeshDataStream [is_parent? False]
+    |  |  |  +<Parent>: Tetrahedra
+    |  |  |  +-data_index: 1
+    |  |  |  +-dimension: 3
+    |  |  |  +-type: float
+    |  |  |  +-shape: 23685
+    |  |  |  +-format: None
+    |  |  |  +-interpolation_method: Constant
+    |  |  |  +-field_name: f
     ********************************************************************************************************************************************
 
 The ``ahds`` command takes the following arguments
@@ -126,20 +118,22 @@ You can specify a **dotted path** after the filename to only render that the con
 
 .. code:: bash
 
-    me@home ~$ ahds ahds/data/FieldOnTetraMesh.am header
+    me@home ~$ ahds ahds/data/FieldOnTetraMesh.am header.Tetraheder
     ***********************************************************************************************************************************
-    ahds: Displaying path 'header'
+    ahds: Displaying path 'header.Tetrahedra'
     -----------------------------------------------------------------------------------------------------------------------------------
-    +-header                                                                                       AmiraHeader [is_parent? True ]
-    |  +-filetype: AmiraMesh
-    |  +-dimension: 3D
-    |  +-format: BINARY
-    |  +-endian: BIG
-    |  +-version: 2.0
-    |  +-extra_format: None
-    |  +-Parameters                                                                                      Block [is_parent? False]
-    |  +-Tetrahedra                                                                                      Block [is_parent? False]
-    |  |  +-length: 23685
+    +-Tetrahedra                                                                                         Block [is_parent? False]
+    |  +<Parent>: header
+    |  +-length: 23685
+    |  +-Data                                                                              AmiraMeshDataStream [is_parent? False]
+    |  |  +<Parent>: Tetrahedra
+    |  |  +-data_index: 1
+    |  |  +-dimension: 3
+    |  |  +-type: float
+    |  |  +-shape: 23685
+    |  |  +-format: None
+    |  |  +-interpolation_method: Constant
+    |  |  +-field_name: f
 
 
 For debugging you can display the literal header (the exact header present in the file) using the ``-l/--literal`` flag.
@@ -153,13 +147,13 @@ Also, you can display the parsed data structure using the ``-d/--debug`` flag.
     -----------------------------------------------------------------------------------------------------------------------------------
     # AmiraMesh 3D BINARY 2.0
     # CreationDate: Tue Nov  2 11:46:31 2004
-
-
+    
+    
     nTetrahedra 23685
-
+    
     TetrahedronData { float[3] Data } @1
     Field { float[3] f } Constant(@1)
-
+    
     # Data section follows
     ***********************************************************************************************************************************
     ahds: Displaying parsed header data
@@ -170,6 +164,7 @@ Also, you can display the parsed data structure using the ``-d/--debug`` flag.
                       'version': '2.0'}},
      {'comment': {'date': 'Tue Nov  2 11:46:31 2004'}},
      {'array_declarations': [{'array_dimension': 23685,
+                              'array_links': {},
                               'array_name': 'Tetrahedra'}]},
      {'data_definitions': [{'array_reference': 'Tetrahedra',
                             'data_dimension': 3,
@@ -182,28 +177,31 @@ Also, you can display the parsed data structure using the ``-d/--debug`` flag.
                             'data_name': 'f',
                             'data_type': 'float',
                             'interpolation_method': 'Constant'}]}]
-
-    ********************************************************************************************************************************************
+    
+    ***********************************************************************************************************************************
     AMIRA (R) HEADER AND DATA STREAMS
-    --------------------------------------------------------------------------------------------------------------------------------------------
-    +-ahds/data/FieldOnTetraMesh.am                                                                  AmiraFile [is_parent? True ]
-    |  +-meta                                                                                            Block [is_parent? False]
-    |  |  +-file: ahds/data/FieldOnTetraMesh.am
-    |  |  +-header_length: 182
-    |  |  +-data_streams: 1
-    |  |  +-streams_loaded: False
-    |  +-header                                                                                    AmiraHeader [is_parent? True ]
-    |  |  +-filetype: AmiraMesh
-    |  |  +-dimension: 3D
-    |  |  +-format: BINARY
-    |  |  +-endian: BIG
-    |  |  +-version: 2.0
-    |  |  +-extra_format: None
-    |  |  +-Parameters                                                                                   Block [is_parent? False]
-    |  |  +-Tetrahedra                                                                                   Block [is_parent? False]
-    |  |  |  +-length: 23685
-    |  +-data_streams                                                                                    Block [is_parent? False]
-    ********************************************************************************************************************************************
+    -----------------------------------------------------------------------------------------------------------------------------------
+    +-header                                                                                         AmiraFile [is_parent? False]
+    |  +-dimension: 3D
+    |  +-format: BINARY
+    |  +-endian: BIG
+    |  +-version: 2.0
+    |  +-content_type: None
+    |  +-Parameters                                                                                      Block [is_parent? False]
+    |  |  +<Parent>: header
+    |  +-Tetrahedra                                                                                      Block [is_parent? False]
+    |  |  +<Parent>: header
+    |  |  +-length: 23685
+    |  |  +-Data                                                                           AmiraMeshDataStream [is_parent? False]
+    |  |  |  +<Parent>: Tetrahedra
+    |  |  |  +-data_index: 1
+    |  |  |  +-dimension: 3
+    |  |  |  +-type: float
+    |  |  |  +-shape: 23685
+    |  |  |  +-format: None
+    |  |  |  +-interpolation_method: Constant
+    |  |  |  +-field_name: f
+    ***********************************************************************************************************************************
 
 By default, data streams are not read --- only the header is parsed. You may obtain the data streams using the
 ``-s/--load-streams`` flag.
@@ -214,31 +212,34 @@ By default, data streams are not read --- only the header is parsed. You may obt
     ********************************************************************************************************************************************
     AMIRA (R) HEADER AND DATA STREAMS
     --------------------------------------------------------------------------------------------------------------------------------------------
-    +-ahds/data/FieldOnTetraMesh.am                                                                  AmiraFile [is_parent? True ]
-    |  +-meta                                                                                            Block [is_parent? False]
-    |  |  +-file: ahds/data/FieldOnTetraMesh.am
-    |  |  +-header_length: 182
-    |  |  +-data_streams: 1
-    |  |  +-streams_loaded: True
-    |  +-header                                                                                    AmiraHeader [is_parent? True ]
-    |  |  +-filetype: AmiraMesh
-    |  |  +-dimension: 3D
-    |  |  +-format: BINARY
-    |  |  +-endian: BIG
-    |  |  +-version: 2.0
-    |  |  +-extra_format: None
-    |  |  +-Parameters                                                                                   Block [is_parent? False]
-    |  |  +-Tetrahedra                                                                                   Block [is_parent? False]
-    |  |  |  +-length: 23685
-    |  +-data_streams                                                                                    Block [is_parent? True ]
+    +-header                                                                                         AmiraFile [is_parent? False]
+    |  +-dimension: 3D
+    |  +-format: BINARY
+    |  +-endian: BIG
+    |  +-version: 2.0
+    |  +-content_type: None
+    |  +-Parameters                                                                                      Block [is_parent? False]
+    |  |  +<Parent>: header
+    |  +-Tetrahedra                                                                                      Block [is_parent? False]
+    |  |  +<Parent>: header
+    |  |  +-length: 23685
     |  |  +-Data                                                                           AmiraMeshDataStream [is_parent? False]
+    |  |  |  +<Parent>: Tetrahedra
     |  |  |  +-data_index: 1
     |  |  |  +-dimension: 3
     |  |  |  +-type: float
-    |  |  |  +-interpolation_method: None
     |  |  |  +-shape: 23685
     |  |  |  +-format: None
-    |  |  |  +-data: [  0.8917308   0.9711809 300.       ],...,[  1.4390504   1.1243758 300.       ]
+    |  |  |  +-interpolation_method: Constant
+    |  |  |  +-field_name: f
+    |  |  |  +-data:
+    |  |  |  |   [[ 8.9173079e-01  9.7118092e-01  3.0000000e+02]
+    |  |  |  |    [-1.4623085e-01  7.1288460e-01  3.0000000e+02]
+    |  |  |  |    [ 6.3208640e-01 -3.5754296e-01  3.0000000e+02]
+    |  |  |  |    ...
+    |  |  |  |    [-7.2582179e-01  5.2918231e-01  3.0000000e+02]
+    |  |  |  |    [ 1.2271983e-01  4.3120453e-01  3.0000000e+02]
+    |  |  |  |    [ 1.4390504e+00  1.1243758e+00  3.0000000e+02]]
     ********************************************************************************************************************************************
 
 ----------------------------------------------
@@ -274,11 +275,11 @@ AmiraMesh and HyperSurface headers can be divided into four main sections:
 
 *     **designation**
 
-*     **definitions**
+*     **declarations**
 
 *     **parameters**, and
 
-*     **data pointers**.
+*     **definitions**.
 
 The `designation` is the first line and conveys several important details about the format and structure of the file such as:
 
@@ -292,7 +293,7 @@ The `designation` is the first line and conveys several important details about 
 
 *     extra format data e.g. ``<hxsurface>`` specifying that an AmiraMesh file will contain HyperSurface data
 
-A series of `definitions` follow that refer to data found in the data pointer sections that either begin with the word â€˜defineâ€™ or have â€˜nâ€™ prepended to a variable. For example:
+        A series of `declarations` defines the sturcture and layout of the data and how many elements the corresponding array, vector or matrix contains. A declaration lline starts with the word â€˜defineâ€™ or in files created by early Amira versions have â€˜nâ€™ prepended. For example:
 
 ::
 
@@ -303,6 +304,7 @@ or
 ::
 
     nVertices 85120
+
 
 This is followed by grouped `parameters` enclosed in a series of braces beginning with the word â€˜Parametersâ€™. Various parameters are then enclosed each beginning with the name of that group of parameters e.g. â€˜Materialsâ€™
 
@@ -335,15 +337,14 @@ This is followed by grouped `parameters` enclosed in a series of braces beginnin
 
 The most important set of parameters are materials as these specify colours and identities of distinct segments/datasets within the file.
 
-Finally, AmiraMesh files list a set of `data pointers` that point to data labels within the file together with additional information to decode the data. We refer to these as data streams because they consist of continuous streams of raw byte data that need to be decoded. Here is an example of data pointers that refer to the location of 3D surface primitives:
-
+Finally, AmiraMesh files list a set of `definitions` which detail the type,number of values and name for the item of the indicated data array, vector or matrix declared in the `declarations` section. Each datastream is identified by its unique ``@<number>`` label. We refer to these as data streams because they consist of continuous streams of raw byte data that need to be decoded. Here is an example of `definitions` that define 3D surface primitives encoded by the corresponding datastreams.
 ::
 
     Vertices { float[3] Vertices } @1
     TriangleData { int[7] Triangles } @2
     Patches-0 { int Patches-0 } @3
 
-These refer to three raw data streams each found beginning with the delimiter ``@<number>``. Data stream one (``@1``) is called ``Vertices`` and consists of float triples, two is called ``TriangleData`` and has integer 7-tuples and three called ``Patches-`` is a single integer (the number of patches). In some cases the data pointer contains the data encoding for the corresponding data pointer.
+These refer to three raw data streams each found beginning with the delimiter ``@<number>``. Data stream one (``@1``) is called ``Vertices`` and consists of float triples, two is called ``TriangleData`` and has integer 7-tuples and three called ``Patches-`` is a single integer (the number of patches). In some cases the data stream label  includes the data encoding for the corresponding data pointer.
 
 ::
 
@@ -356,6 +357,15 @@ which is a run-length encoded data stream of the specified length, while
     Lattice { byte Data } @1(HxZip,919215)
 
 contains zipped data of the specified length.
+
+In case a datastream represents a field defined on geometric primitives like vertices, triangles, tetrahedra this indicated by a field defintion. For example:
+
+::
+
+   Field { float[3] f1 } Constant(@1)
+
+The field defintion starts with the keyword ``Field`` repeates the type, number of values and specifies the name of the field. Further this linke inclueds the type of interpolation to be used for example when displaying the field along with the underlying primitive. 
+
 
 Data Streams in Detail
 ==============================================
@@ -371,9 +381,15 @@ HyperSurface data streams structured to have the following sections:
     
     NBranchingPoints <nbranching_points>
     NVerticesOnCurves <nvertices_on_curves>
+    # optional Boundary curves section 
     BoundaryCurves <nboundary_curves>
-    Patches <npatches>
     {
+        Vertices <num_vertices>
+        # bounday curve data stream ( vertex indices )
+    } # repeats for as <noundary_curves> times
+
+    Patches <npatches>
+    { # section for patch 1
     InnerRegion <inner_region_name>
     OuterRegion <outer_region_name>
     BoundaryID <boundary_id>
@@ -382,12 +398,22 @@ HyperSurface data streams structured to have the following sections:
     # triangles data stream
     } # repeats for as <npatches> times
 
+    # optional surfaces section
+    Surfaces <nsurfaces>
+    {
+        Region <material name>
+        Patches <num_patches>
+        # surface data stream (patch indices)
+    } # repeats for as <nsurfaces> times
+
 HyperSurface data streams can be either plain ASCII or binary.
 
 ----------------------------------------------
 ``ahds`` Modules
 ----------------------------------------------
-``ahds`` has three main modules:
+``ahds`` has four main modules:
+
+*    :py:mod:`ahds.core` 
 
 *    :py:mod:`ahds.grammar` specifies an EBNF grammar
 
@@ -395,75 +421,39 @@ HyperSurface data streams can be either plain ASCII or binary.
 
 *     :py:mod:`ahds.data_stream`
 
-These modules are tied into a user-level class called :py:class:`ahds.AmiraFile` that does all the work for you.
+These modules are tied into the latter user-level classes called :py:class:`ahds.AmiraHeader` and :py:class:`ahds.AmiraFile` that do all the work for you. The :py:class`ahds.AmiraFile` class provides backwards compatibility for older user level Python code. For new projects and for using new features of `ahds` it is recommended to replace it by :py:class:`ahds.AmiraHeader` class.
 
 .. code:: python
 
-    >>> from ahds import AmiraFile
+    >>> from ahds import AmiraHeader
     >>> # read an AmiraMesh file
-    >>> af = AmiraFile('am/test7.am')
-    >>> af.header
+    >>> am = AmiraHeader('am/test7.am')
+    >>> am
     <AmiraHeader with 4 bytes>
-    >>> # empty data streams
-    >>> af.data_streams
-    >>> print af.data_streams
-    None
-    >>> # we have to explicitly read to get the data streams
-    >>> af.read()
-    >>> af.data_streams
-    <class 'ahds.data_stream.DataStreams'> object with 13 stream(s): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
-    >>> for ds in af.data_streams:
-    ...   print ds
-    ...
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 2,608 bytes
-    # we get the n-th data stream using the index/key notation
-    >>> af.data_streams[1].encoded_data
-    '1 \n2 \n3 \n'
-    >>> af.data_streams[1].decoded_data
-    [1, 2, 3]
-    >>> af.data_streams[2].encoded_data
-    '69 \n120 \n116 \n101 \n114 \n105 \n111 \n114 \n0 \n73 \n110 \n115 \n105 \n100 \n101 \n0 \n109 \n111 \n108 \n101 \n99 \n117 \n108 \n101 \n0 \n'
-    >>> af.data_streams[2].decoded_data
-    [69, 120, 116, 101, 114, 105, 111, 114, 0, 73, 110, 115, 105, 100, 101, 0, 109, 111, 108, 101, 99, 117, 108, 101, 0]
+    >>> am.Vertices.Vertices
 
 
 .. code:: python
 
     >>> # read an HyperSurface file
-    >>> af = AmiraFile('surf/test4.surf')
-    >>> af.read()
-    >>> af.data_streams
-    <class 'ahds.data_stream.DataStreams'> object with 5 stream(s): Patches, NBranchingPoints, BoundaryCurves, Vertices, NVerticesOnCurves
-    # HyperSurface files have pre-set data streams
-    >>> af.data_streams['Vertices'].decoded_data[:10]
-    [(560.0, 243.0, 60.96875), (560.0, 242.9166717529297, 61.0), (559.5, 243.0, 61.0), (561.0, 243.0, 60.95833206176758), (561.0, 242.5, 61.0), (561.0384521484375, 243.0, 61.0), (559.0, 244.0, 60.94444274902344), (559.0, 243.5, 61.0), (558.9722290039062, 244.0, 61.0), (560.0, 244.0, 60.459999084472656)]
+    >>> surf = AmiraHeader('surf/test4.surf')
+    >>> surf.Vertices.Vertices
 
 
 :py:mod:`ahds.grammar`
 ==============================================
-This module describes the header grammar for Amira (R) (AmiraMesh and HyperSurface) files and so depends on :py:mod:`simpleparse` Python package. It defines a single class (:py:class:`ahds.grammar.AmiraDispatchProcessor`) and four functions.
+This module describes the header grammar for Amira (R) (AmiraMesh and HyperSurface) and so depends on :py:mod:`simpleparse` and the :py:mod:`ahds.core` module which defines the :py:class:`ahds.grammar.AmiraDispatchProcessor` class. It defines functions for loading the raw header of AmiraMesh and HyperSurface files, accessing the AmiraMesh datastreams as well as parsing the HyperSurface data sections. 
 
 :py:class:`ahds.grammar.AmiraDispatchProcessor` is a subclass of :py:class:`simpleparse.dispatchprocessor` which implements the core functionality required to use the grammar. Each grammar token has a corresponding method defined on this class which determines how the data associated with that token will be rendered. Data can be rendered as a single or multimap, string, number, or in custom format.
 
-*     :py:func:`ahds.grammar.get_parsed_data(fn, *args, **kwargs)` is the user-level function that takes a filename and returns structured parsed data. It depends on the other three functions defined:
+*     :py:func:`ahds.grammar.get_header(fhnd, header_bytes=20000, verbose=False)` returns the fileformat, parsed_header, residual bytes following the header portion and either None or the raw header bytes based on the identified file format. 
 
-*     :py:func:`ahds.grammar.detect_format(fn, format_bytes=50, verbose=False)` returns either ``AmiraMesh`` or ``HyperSurface`` given a file name and arguments,
+*     :py:func:`ahds.grammar.next_amiramesh_binary_stream(fhnd,stream_bytes=32768,stream_data = _empty_stream_data,**kwargs)` returns the bytes of the next binary amira mesh data stream following the current position within the file represented by fhnd file or file like object.
 
-*     :py:func:`ahds.grammar.get_header(fn, file_format, header_bytes=20000, verbose=False)` returns the header portion based on the file format determined by detect_format(...), and
+*     :py:func:`ahds.grammar.next_amiramesh_ascii_stream(fhnd,stream_bytes=32768,stream_data = _empty_stream_data,**kwargs)` returns the bytes of the next ascii encoded amira mesh data stream following the current position within the file represented by fhnd file or file like object
 
-*     :py:func:`ahds.grammar.parse_header(data, verbose=False)` converts the raw header data returned by :py:func:`ahds.grammar.get_header(...)` into a structured header based on AmiraDispatchProcessor.
+*     :py:func:`ahds.grammar.parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_bytes=32768,stream_data = _empty_stream_data,**kwargs)` parses the hyper surface data sections and inserts the content of the BounaryCurves, Patches and Surfaces sections into the parsed raw header dictionary represented by `parsed_data` argument. If the `drop_data` keyword argument is encountered and set to True the vertex, triangle, surface or boundary curve data streams will not be loaded.
+
 
 :py:mod:`ahds.header`
 ==============================================
@@ -514,66 +504,42 @@ into an :py:class:`ahds.header.AmiraHeader` object.
 .. code:: python
 
     >>> from ahds.header import AmiraHeader
-    >>> amira_header = AmiraHeader.from_file('am/test2.am')
+    >>> amira_header = AmiraHeader('am/test2.am')
     >>> amira_header.designation.attrs
     ['filetype', 'dimension', 'format', 'version', 'extra_format']
-    >>> amira_header.designation.filetype
+    >>> amira_header.file_format
     'AmiraMesh'
-    >>> amira_header.designation.dimension
-    >>> amira_header.designation.format
-    'BINARY-LITTLE-ENDIAN'
-    >>> amira_header.definitions.attrs
-    ['Lattice']
-    >>> amira_header.definitions.Lattice
-    [862, 971, 200]
-    >>> amira_header.parameters.attrs
-    ['Materials', 'Content', 'BoundingBox', 'CoordType']
-    >>> amira_header.parameters.Materials.attrs
-    ['Exterior', 'Inside', 'Mitochondria', 'Mitochondria_', 'mitochondria__', 'NE']
-    >>> amira_header.parameters.Materials.Exterior.attrs
-    ['Id']
-    >>> amira_header.parameters.Materials.Exterior.Id
-    1
-    >>> amira_header.parameters.Content
-    '"862x971x200 byte, uniform coordinates",'
-    >>> amira_header.parameters.BoundingBox
-    [0, 13410.7, 0, 15108.4, 1121.45, 4221.01]
-    >>> amira_header.parameters.CoordType
-    '"uniform"'
-    >>> amira_header.data_pointers.attrs
-    ['data_pointer_1']
-    >>> amira_header.data_pointers.data_pointer_1.attrs
-    ['pointer_name', 'data_format', 'data_dimension', 'data_type', 'data_name', 'data_index', 'data_length']
-    >>> amira_header.data_pointers.data_pointer_1.pointer_name
-    'Lattice'
-    >>> amira_header.data_pointers.data_pointer_1.data_format
-    'HxByteRLE'
-    >>> amira_header.data_pointers.data_pointer_1.data_dimension
-    >>> amira_header.data_pointers.data_pointer_1.data_type
-    'byte'
-    >>> amira_header.data_pointers.data_pointer_1.data_name
-    'Labels'
-    >>> amira_header.data_pointers.data_pointer_1.data_index
-    1
-    >>> amira_header.data_pointers.data_pointer_1.data_length
-    4014522
+    >>> amira_header.dimension
+    >>> amira_header.format
+    'BINARY'
+    >>> amira_header.endian
+    'LITTLE'
 
-This module consists of two main classes: :py:class:`ahds.header.AmiraHeader` is the user-level class and :py:class:`ahds.header.Block` which is a container class for a block of structured data from an Amira (R) header.
+This module consists of one main class: :py:class:`ahds.header.AmiraHeader` is the user-level class
 
-AmiraHeader has one constructor: :py:func:`ahds.header.AmiraHeader.from_file(fn, *args, **kwargs)` which takes an Amira (R) file by name and arguments and returns an :py:class:`ahds.header.AmiraHeader` object with all attributes set as described above. Alternatively, one can use the initiator form to pass structured data directly: :py:class:`ahds.header.AmiraHeader(parsed_data)` which returns an :py:class:`ahds.header.AmiraHeader` object configured appropriately.
+AmiraHeader has one constructor: :py:func:`ahds.header.AmiraHeader(fn, *args, **kwargs)` which takes an Amira (R) file by name and arguments and returns an :py:class:`ahds.header.AmiraHeader` object with all attributes set as described above.
 
-*     The raw data structured data is available as read-only property: :py:attr:`ahds.header.AmiraHeader.raw_header`
+*     The raw data structured data is available as read-only property: :py:attr:`ahds.header.AmiraHeader.parsed_data`
 
-*     Internally the :py:class:`ahds.header.AmiraHeader` class implements a set of private methods which individually load the four data sections (``designation``, ``definitions``, ``parameters``, and ``data pointers``).
+*     Internally the :py:class:`ahds.header.AmiraHeader` class implements a set of private methods which individually load the four data sections (``designation``, ``array declarations``, ``parameters``, and ``data definitions``) into attributes of the :py:class:`àhds.header.AmiraHeader` object.
 
-The :py:class:`ahds.header.Block` class is a container class which converts structured groups to attributes and has two main attributes:
 
-*     :py:attr:`ahds.header.Block.name` provides the name of the current block
+:py:mod:`ahds.core`
+==============================================
+The :py:class:`ahds.core.Block` class is a container class which converts structured groups to attributes. It is the base class for all other ahds container classes including :py:class:`ahds.header.AmiraHeader` and :py:class:`ahds.AmiraFile` and has two main attributes:
+
+*     :py:attr:`ahds.core.Block.name` provides the name of the current block
+
+*     :py:attr:`ahds.core.Block.parent` provides a link to the parent :py:class:`ahds.core.Block` instance. Is automatically set to None if current :py:class:`ahds.core.Block` does not belong to any :py:class:`ahds.core.Block` hierarchy.
+
+Attributes which are specific for a single :py:class:`ahds.core.Block` instance are created using the :py:method:`ahds.core.Block..add_attr` method and are only available and accessible on the instance they were defined for.
+
+The :py:class:`ahds.core.ListBlock` class represents a list of :py:class:`ahds.core.Block` type objects.
+
+ 
 
 .. code:: python
 
-    >>> amira_header.designation.name
-    'designation'
     >>> amira_header.parameters.Materials.name
     'Materials'
     >>> amira_header.parameters.Materials.Exterior.name
@@ -605,13 +571,11 @@ The :py:class:`ahds.header.Block` class is a container class which converts stru
 
 :py:mod:`ahds.data_stream`
 ==============================================
-This is most complex module implementing a hierarchy of classes describing various data streams within Amira (R) files. It has 22 classes and five functions
+This module implements a hierarchy of classes describing the data streams within Amira (R) files. It has 4 classes and seven functions
 
 Classes
 ----------------------------------------------
-There are three categories of classes:
-
-*     A user-level class that encapsulates (2) below.
+There are two categories of classes:
 
 *     Classes describing Amira (R) data streams
 
@@ -619,56 +583,35 @@ There are three categories of classes:
     
     *     Classes describing HyperSurface data streams
 
-*    Data conversion classes (AmiraMesh only)
-
-    *     Classes abstracting images
-
-    *     Classes abstracting contours
-
-The user-level :py:class:`ahds.data_stream.DataStreams` class is the preferred way to use the module. It takes the name of an Amira (R) file and encapsulates an iterator of data streams.
-
-.. code:: python
-
-    >>> from ahds import data_stream
-    >>> data_streams = data_stream.DataStreams('am/test6.am')
-    >>> data_streams
-    <class 'ahds.data_stream.DataStreams'> object with 2 stream(s): 1, 2
-    >>> for ds in data_streams:
-    ...   print ds
-    ...
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 968,909 bytes
-    <class 'ahds.data_stream.AmiraMeshDataStream'> object of 968,909 bytes
+*    Classes describing special AmiraMesh FileTypes (AmiraMesh only)
 
 Functions
 ----------------------------------------------
-The functions implemented in this module decode data streams.
+The functions implemented in this module
 
 *    :py:func:`ahds.data_stream.hxbyterle_decode` decodes ``HxByteRLE`` data streams
 
-*     :py:func:`ahds.data_stream.hxzip_decode(data_size, data)` unzips zlib-compressed data streams
+*    :py:func:`ahds.data_stream.hxraw_decode` returns the input data stream unchanged
 
-*    :py:func:`ahds.data_stream.unpack_binary(data_pointer, definitions, data)` unpacks the structured data stream according to the attributes specified in the dataâ€™s data pointer
+*    :py:func:`ahds.data_stream.set_stream_policy` sets the default stream loading policy which can be any of the followong constants
 
-*     :py:func:`ahds.data_stream.unpack_ascii(data)` converts rows of ASCII data into numerical data
+    *    :py:const:`ahds.data_stream.HEADERONLY` only the AmiraMesh header data and HyperSurface structure is loaded the actual data is not read at all.
 
-Classes in Detail
+    *    :py:const:`ahds.data_stream.ONDEMMAND` lazy loading. Content of data streams is loaded and decoded when the data attribute of the corresponding :py:class:`ahds.data_stream.AmiraDataStream` block is accessed for the first time
+
+    *    :py:const:`ahds.data_stream.IMMEDIATE` all data is loaded instantly along with the header data
+
+*    :py:func:`ahds.data_stream.get_stream_policy` returns the currently set stream loading policy 
+
+*    :py:func:`ahds.data_stream.select_array_block` factory function instanticating the :py:class:`ahds.core.Block` to be selected for a specific data declaration
+
+*    :py:func:`ahds.data_stream.set_data_stream` factory function instanticating the appropriate :py:class:`ahds.data_stream.AmiraDataStream` class for each datastream as described by the correponding data definition
+
+*    :py:func:`ahds.data_stream.load_streams` enforces immediate loading of all data streams. Is implicitly called by :py:class:`ahds.header.AmiraHeader` when ``load_streams`` argument is set to :py:const:`ahds.data_stream.IMMEDIATE` or when calling:py:class:`ahds.AmiraFile.read` method of backward compatibility :py:class:`ahds.AmiraFile` class.
+
+
+Classes 
 ----------------------------------------------
-
-DataStreams class
-``````````````````````````````````````````````
-The following attributes are available on objects of this class:
-
-*     :py:attr:`ahds.data_stream.DataStreams.file` - filename of Amira (R) file
-
-*    :py:attr:`ahds.data_stream.DataStreams.header` - an object of class :py:class:`ahds.header.AmiraHeader` encapsulating the header data in four sections (``designation``, ``definitions``, ``parameters``, and ``data pointers``)
-
-*    :py:attr:`ahds.data_stream.DataStreams.filetype` - the filetype as specified in (ii) above.
-
-*    :py:attr:`ahds.data_stream.DataStreams.stream_data` - all raw data from the file (including the header)
-
-*    ``len(DataStreams)`` - the number of data streams contained
-
-*    :py:class:`ahds.data_stream.DataStreams[<index>]` - returns the data stream of the index specified (as defined in the data_pointers section of the header object
 
 Classes describing Amira (R) data streams
 ``````````````````````````````````````````````
@@ -679,91 +622,22 @@ The following diagrams illustrates the hierarchy of classes:
 Classes describing Amira (R) data streams
 
 
-*    :py:class:`ahds.data_stream.AmiraDataStream` is the base class for all data stream classes and defines the following attributes:
+*    :py:class:`ahds.data_stream.AmiraDataStream` is the abstract base class for all data stream classes and defines the following attributes:
 
-    *    :py:attr:`ahds.data_stream.AmiraDataStream.header` - an :py:class:`ahds.header.AmiraHeader` object
+    *    :py:attr:`ahds.data_stream.AmiraDataStream.data` - an :py:class:`numpy.ndarray` object
     
-    *    :py:attr:`ahds.data_stream.AmiraDataStream.data_pointer` - the :py:attr:`ahds.header.AmiraHeader.data_pointers.data_pointer_X` for this data stream
+    *    :py:attr:`ahds.data_stream.AmiraDataStream._header` - reference to the :py:class:`ahds.header.AmiraHeader` object the data stream belongs to
     
-    *    :py:attr:`ahds.data_stream.AmiraDataStream.stream_data` - the raw file data
+    *    :py:attr:`ahds.data_stream.AmiraDataStream._stream_data` - the raw file data
     
-    *    :py:attr:`ahds.data_stream.AmiraDataStream.encoded_data` - the encoded data for this stream; ``None`` for ``VoidDataStream`` subclasses
-    
-    *    :py:attr:`ahds.data_stream.AmiraDataStream.decoded_data` - the decoded data for this stream; ``None`` for ``VoidDataStream`` subclasses
-    
-    *    :py:attr:`ahds.data_stream.AmiraDataStream.decoded_length` - the number of items (tuples, integers) in decoded data
-    
-The two main subclasses of :py:class:`ahds.data_stream.AmiraDataStream` are :py:class:`ahds.data_stream.AmiraMeshDataStream`, which is a concrete class representing all AmiraMesh data streams, and :py:class:`ahds.data_stream.AmiraHxSurfaceDataStream`, which abstractly defines HyperSurface data streams.
+    *    :py:attr:`ahds.data_stream.AmiraDataStream._offset` - byte offset of the data stream within the underlying AmiraMesh or HyperSurface file or None if data not yet loaded
 
-There are two main AmiraHxSurfaceDataStream subclasses:
+    The special method :py:meth:`ahds.data_stream.AmiraDataStream.__getattr__` handles the lazy loading of the data stream by calling the :py:meth:`ahds.data_stream.AmiraDataStream._read` and :py:meth:`ahds.data_strean.AmiraDataStrean._decode` methods which must be implemented by any non abstract subclass.
+    
+The two main subclasses of :py:class:`ahds.data_stream.AmiraDataStream` are :py:class:`ahds.data_stream.AmiraMeshDataStream`, which is a concrete class representing all AmiraMesh data streams, and :py:class:`ahds.data_stream.AmiraHxSurfaceDataStream`, which defines HyperSurface data streams.
 
-*    :py:class:`ahds.data_stream.VoidDataStream` represents :py:class:`ahds.data_stream.AmiraHxSurfaceDataStream` data streams that only have a name and value but no actual encoded data (on the following line). There are two subclasses:
 
-    *    :py:class:`ahds.data_stream.NamedDataStream` subclasses have a strings after data stream name. The two concrete subclasses are:
-    
-        *    :py:class:`ahds.data_stream.PatchesInnerRegionDataStream` for the name of an inner region of a patch (see :py:class:`PatchesDataStream`), and
-        
-        *    :py:class:`ahds.data_stream.PatchesOuterRegionDataStream` for corresponding name of the outer region of a patch.
-    
-    *    :py:class:`ahds.data_stream.ValuedDataStream` have an integer value after the data stream name. The three concrete subclasses are:
-    
-        *    :py:class:`ahds.data_stream.PatchesBoundaryIDDataStream` hold the boundary ID of a patch,
-        
-        *    :py:class:`ahds.data_stream.PatchesBranchingPointsDataStream` stores the number of branching points, and
-        
-        *    :py:class:`ahds.data_stream.PatchesDataStream` with the number of patches, which is a special :py:class:`ahds.data_stream.ValueDataStream` that contains an iterable of patches each containing a ``Patches<X>DataStream`` objects.
-        
-    *    :py:class:`ahds.data_stream.LoadedDataStream` represent :py:class:`ahds.data_stream.AmiraHxSurfaceDataStream` data streams that have a name, a value and encoded data. The two main concrete subclasses are:
-    
-        *    :py:class:`ahds.data_stream.VerticesDataStream` represents data streams with float-triples, and
-        
-        *    :py:class:`ahds.data_stream.PatchesTrianglesDataStream` represents data streams within a patch with triples of 1-based indices (triangles) of vertices specified in the :py:class:`ahds.data_stream.VerticesDataStream`.
-        
-
-Conversion classes
+AmiraMesh ContentType classes
 ``````````````````````````````````````````````
-There are two groups of conversion classes which only apply to (some) AmiraMesh data streams:
-Conversion classes
-
-
-*    Image conversion classes consist of a image container class :py:class:`ahds.data_stream.ImageSet` and an :py:class:`ahds.data_stream.Image` class. ImageSet objects that can be iterated to give :py:class:`ahds.data_stream.Image` objects are returned from the :py:meth:`ahds.data_stream.AmiraMeshDataStream.to_images()` method call.
-
-..    code:: python
-
-    >>> # decode the data stream to images
-    >>> images = ds[1].to_images()
-    >>> images
-    <ImageSet with 200 images>
-    >>> for image in images:
-    ...     print image
-    ...
-    <Image with dimensions (971, 862)>
-    <Image with dimensions (971, 862)>
-    <Image with dimensions (971, 862)>
-    ...
-    <Image with dimensions (971, 862)>
-    <Image with dimensions (971, 862)>
-
-*    Contour conversion classes convert individual images into sets of contours (:py:class:`ahds.data_stream.ContourSet`) iterable as individual :py:class:`ahds.data_stream.Contours` objects. They are obtained from calls to the :py:attr:`ahds.data_stream.Image.as_contours` property. Furthermore, the :py:attr:`ahds.data_stream.Image.as_segments` property call returns a dictionary of the corresponding :py:class:`ahds.data_stream.ContourSet` object indexed by the *z* plane.
-
-..    code:: python
-
-    >>> # contours per image
-    >>> # the dictionary key is the Amira Id for the segment (the Id of the Material)
-    >>> # a segment can have several non-overlapping contours (or polylines)
-    >>> for image in images:
-    ...     print image.as_contours
-    ...
-    {2: <class 'ahds.data_stream.ContourSet'> with 15 contours, 3: <class 'ahds.data_stream.ContourSet'> with 3 contours, 5: <class 'ahds.data_stream.ContourSet'> with 2 contours}
-    {2: <class 'ahds.data_stream.ContourSet'> with 18 contours, 3: <class 'ahds.data_stream.ContourSet'> with 3 contours, 5: <class 'ahds.data_stream.ContourSet'> with 2 contours}
-    ...
-    {2: <class 'ahds.data_stream.ContourSet'> with 15 contours, 3: <class 'ahds.data_stream.ContourSet'> with 1 contours, 5: <class 'ahds.data_stream.ContourSet'> with 3 contours}
-    {2: <class 'ahds.data_stream.ContourSet'> with 15 contours, 3: <class 'ahds.data_stream.ContourSet'> with 1 contours, 5: <class 'ahds.data_stream.ContourSet'> with 3 contours}
-    
-    
-    >>> # separate individual segments
-    >>> images.segments
-    {1: {110: <class 'ahds.data_stream.ContourSet'> with 1 contours}, 2: {0: <class 'ahds.data_stream.ContourSet'> with 15 contours, 1: <class 'ahds.data_stream.ContourSet'> with 18 contours, ..., 198: <class 'ahds.data_stream.ContourSet'> with 3 contours, 199: <class 'ahds.data_stream.ContourSet'> with 3 contours}}
-    
-
+This kind of classes allows to adjust the structure of the :py:class:`ahds.header.AmiraHeader` object as indicated by the the special ContentType parameter. Currently the ``HxSpreadSheet`` conent type is supported throught the :py:class:`ahds.data_stream.AmiraSpreadSheet` class is supported.
 

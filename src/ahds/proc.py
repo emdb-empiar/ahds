@@ -124,8 +124,6 @@ class AmiraDispatchProcessor(DispatchProcessor):
         self._base_contenttype = kwargs.pop('content_type',None)
         if sys.version_info[0] > 2: # pragma: cover_py3
             super(AmiraDispatchProcessor,self).__init__(*args,**kwargs)
-        else: # pragma: cover_py2
-            super(type(self),self).__init__(*args,**kwargs)
         self._meta_array_declarations = dict()
         self._designation = []
         self._array_declarations = []
@@ -255,13 +253,15 @@ class AmiraDispatchProcessor(DispatchProcessor):
         # numpy.int64 array
         if len(_av) == 1:
             return int(_av[0])
-        return np.array(_av, dtype=np.int64)
+        return np.array(_av, dtype=int)
 
     def parameters(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
         _av = singleMap(value[3], self, buffer_)
-        if len(_av) == 1 and type(_av) in {dict} and "parameter_list" in _av:
-            return {'parameters': _av["parameter_list"]}
+        if len(_av) == 1 and isinstance(_av,dict):
+            _pl = _av.get("parameter_list",value)
+            if _pl is not value:
+                return {'parameters': _pl}
         
         warnings.warn("parameters without parameterlist: save data as testcase") # pragma: nocover
         return {'parameters': _av} # pragma: nocover
@@ -273,29 +273,31 @@ class AmiraDispatchProcessor(DispatchProcessor):
         # parameters section starting with Materials instead of Parameters.
         # rewrite it to materials struture to ensure they do not overwrite 
         # the preceeding parameters section
+        def filter():
+            _item = None
+            for _item,_id in (
+                (
+                    _itm,
+                    _index
+                )
+                for _itm in _av
+                for _index, _val in enumerate(_itm) if _item is not _itm and _val['parameter_name'] in ['name', 'Name']
+            ):
+                yield _strip_material_name.sub('', _item[_id]['parameter_value']),_item[:_id] + _item[_id + 1:]
         return {
             'materials': [
-                {
-                    'parameter_name': _strip_material_name.sub('', _item[_id]['parameter_value']),
-                    'parameter_value': _item[:_id] + _item[_id + 1:]
-                }
-                for _item, _id in (
-                    (
-                        _item,
-                        [_index for _index, _val in enumerate(_item) if _val['parameter_name'] in ['name', 'Name']][0]
-                    ) for _item in _av
-                )
+                {'parameter_name':name,'parameter_value':value}
+                for name,value in filter()
             ]
         }
 
     def parameter(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
-        #return singleMap(value[3], self, buffer_)
         parameter = singleMap(value[3], self, buffer_)
-        parameter_name = parameter.get("parameter_name",None)
+        parameter_name = parameter.get("parameter_name",r'')
         if _sub_content_type.match(parameter_name) is None:
             return parameter
-        parameter_value = parameter.get("parameter_value",[])
+        parameter_value = parameter.get("parameter_value",None)
         if not isinstance(parameter_value,str):
             return parameter
         content_type = self._designation.get('content_type',None)

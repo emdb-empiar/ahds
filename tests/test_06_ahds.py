@@ -10,6 +10,7 @@ import ahds
 
 from . import Py23FixTestCase, TEST_DATA_PATH
 from ahds.ahds import parse_args, get_debug, get_literal, get_paths, set_file_and_paths, get_amira_file, AmiraFile
+from ahds import check_format
 from ahds.core import _str
 from ahds.grammar import AHDSStreamError
 
@@ -137,6 +138,14 @@ def extract_segments(af, *args, **kwargs):
         else:
             segments[patch_id] += [hxsurfsegment]
     return segments
+
+class test_init_functions(unittest.TestCase):
+    """
+    Test for check_format public function
+    """
+    def test_check_format(self):
+        self.assertEqual(check_format(os.path.join(TEST_DATA_PATH, 'testscalar.am')),'AmiraMesh')
+        
 
 
 class TestAmiraFile(unittest.TestCase):
