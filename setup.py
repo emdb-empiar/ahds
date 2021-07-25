@@ -50,7 +50,7 @@ AHDS_DESCRIPTION_CONTENT_TYPE = 'text/x-rst'
 AHDS_URL = "https://github.com/emdb-empiar/ahds.git"
 AHDS_LICENSE = "Apache License"
 AHDS_KEYWORDS = "header, parser, data streams"
-AHDS_ENTRY_POINT = 'ahds = ahds.py:main'
+AHDS_ENTRY_POINT = 'ahds = ahds.ahds:main'
 AHDS_CLASSIFIERS = [
     u"Development Status :: 2 - Pre-Alpha",
     u"Environment :: Console",

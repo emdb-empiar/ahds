@@ -1,15 +1,32 @@
 ``ahds`` package
 ================
 
-.. automodule:: ahds
+.. automodule:: src.ahds
 	:members:
 	:show-inheritance:
+
+``ahds.core`` module
+-----------------------
+
+.. automodule:: src.ahds.core
+	:members:
+	:show-inheritance:
+	:inherited-members:
+
+
+``ahds.proc`` module
+-----------------------
+
+.. automodule:: src.ahds.proc
+	:members:
+	:show-inheritance:
+	:inherited-members:
 
 
 ``ahds.grammar`` module
 -----------------------
 
-.. automodule:: ahds.grammar
+.. automodule:: src.ahds.grammar
 	:members:
 	:show-inheritance:
 	:inherited-members:
@@ -18,7 +35,7 @@
 ``ahds.header`` module
 ----------------------
 
-.. automodule:: ahds.header
+.. automodule:: src.ahds.header
 	:members:
 	:show-inheritance:
 	:inherited-members:
@@ -27,7 +44,7 @@
 ``ahds.data_stream`` module
 ---------------------------
 
-.. automodule:: ahds.data_stream
+.. automodule:: src.ahds.data_stream
 	:members:
 	:show-inheritance:
 	:inherited-members:

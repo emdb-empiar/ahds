@@ -78,7 +78,7 @@ The lookup table is split into three sections:
    http://www1.udel.edu/ctcr/sites/udel.edu.ctcr/files/Amira%20Reference%20Guide.pdf
 """
 _type_map = {
-    True: {
+    True: {# dtypes for binary little endian encoded data
         'byte': _np_ubytelittle,
         'ubyte': _np_ubytelittle,
         'short': _np_shortlittle,
@@ -95,7 +95,7 @@ _type_map = {
         'string': _np_char,
         'ascii': _np_char
     },
-    False: {
+    False: {# dtypes for binary big endian encoded data
         'byte': _np_ubytebig,
         'ubyte': _np_ubytebig,
         'short': _np_shortbig,
@@ -111,7 +111,7 @@ _type_map = {
         'char': _np_char,
         'string': _np_char,
         'ascii': _np_char
-    },
+    },# dtypes for for ascii encoded data 
     'byte': np.dtype(np.int8),
     'ubyte': np.dtype(np.uint8),
     'short': np.dtype(np.int16),
@@ -153,7 +153,7 @@ except ImportError:
             # read size of next output block
             numbytes = input_data[get]
             get += 1
-            if numbytes & 128:
+            if numbytes & 0x80:
                 # MSB set indicating that following block of bytes is not encoded
                 # copy as is. The lower 7 Bytes provide the number of bytes to be
                 # copied
@@ -177,6 +177,9 @@ except ImportError:
 # define common alias for the selected byterle_decoder implementation
 hxbyterle_decode = byterle_decoder
 def hxraw_decode(data):
+    """
+    noop decoder to keep code below simple happy
+    """
     return data
 
 ONDEMMAND = -1
@@ -268,10 +271,11 @@ set_content_type_filter('HxSpreadSheet',AmiraSpreadSheet.identify_columns)
 
 def set_data_stream(name, header,file_offset = None,encoded_data = None):
     """Factory function used by AmiraHeader to determine the type of data stream present"""
-    if header.filetype == 'AmiraMesh':
+    if header.file_format == 'AmiraMesh':
         return AmiraMeshDataStream(name, header,file_offset,encoded_data)
-    elif header.filetype == 'HyperSurface':
+    elif header.file_format == 'HyperSurface':
         return AmiraHxSurfaceDataStream(name, header,file_offset,encoded_data)
+    raise AHDSStreamError("'{}' data stream format not supported'".format(header.file_format)) # pragma: nocover
 
 class AmiraDataStream(ListBlock):
     """common base for all datastreams in AmiraMesh or HxSurface format"""
@@ -292,8 +296,8 @@ class AmiraDataStream(ListBlock):
     def __getattr__(self,attr):
         if self._header.load_streams != HEADERONLY:
             if attr == "data":
-                if not self._stream_data:
-                    raise AHDSStreamError('empty stream')
+                #if not self._stream_data:
+                #    raise AHDSStreamError('empty stream')
                 self._data = self._decode(self._stream_data)
                 return self._data
             if attr == '_stream_data':
@@ -302,14 +306,34 @@ class AmiraDataStream(ListBlock):
                 return self._stream_data
         raise AttributeError("'{}' type object has no '{}' attribute".format(self.__class__.name,attr))
 
+    def __str__(self, prefix="", index=None,is_parent=False,printed = set(),name = None):
+        """Convert the ListBlock into a string
+
+        :param str prefix: prefix to signify depth in the tree
+        :param int index: applies for list items [default: None]
+        :returns str string: formatted string of attributes
+        """
+        # first we use the superclass to populate everything else
+        string = super(AmiraDataStream, self).__str__(prefix=prefix, index=index,is_parent=is_parent,printed=printed,name = name)
+        if self._header.load_streams == HEADERONLY:
+            return string
+        if self._offset is None or self._offset <= len(self._header):
+            return string + "{}|  +-{}: {}\n".format(prefix,"data", "<<not loaded>>")
+        try:
+            return string + self._format_array(prefix,"data",self._data,80)
+        except AttributeError:
+            if self._header.load_streams == IMMEDIATE:
+                return string + self._format_array(prefix,"data",self.data,80)
+            return string + "{}|  +-{}: {}\n".format(prefix,"data", "<<not loaded>>")
+
 def load_streams(header):
     """
     called by AmiraFile.read and AmiraHeader._load method when load_streams = IMMEDIATE was used when
     loading header of amria file or default stream loading policy is set to IMMEDIATE
     """
     if header.load_streams == HEADERONLY:
-        raise AHDSStreamError("HADERONLY stream policy for '{}' file".format(header.filename))
-    if header.filetype == "HyperSurface":
+        raise AHDSStreamError("HADERONLY stream policy set for '{}' file".format(header.filename))
+    if header.file_format == "HyperSurface":
         # nothing to load for HypeSurface encoded_data has either already been
         # added or is not needed
         return
@@ -327,7 +351,7 @@ def load_streams(header):
 
 class AmiraMeshDataStream(AmiraDataStream):
     """Class that defines an AmiraMesh data stream"""
-    decode_data = {
+    __decode_data__ = {
         'HxZip':(np.frombuffer,zlib.decompress),
         'HxByteRLE':(hxbyterle_decode,hxraw_decode),
         None:(np.frombuffer,hxraw_decode)
@@ -371,32 +395,32 @@ class AmiraMeshDataStream(AmiraDataStream):
 
     def _decode(self, data):
         """Performs data stream decoding by introspecting the header information"""
-        # first we handle binary files
         if isinstance(self.shape,np.ndarray):
             new_shape = self.shape.tolist()
         else:
             new_shape = [self.shape] if not isinstance(self.shape,(list,tuple)) else list(self.shape)
         if self.dimension > 1:
             new_shape += [self.dimension]
+        # first we handle binary files
         if self._header.format == 'BINARY':
-            # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
-            is_little_endian = self._header.endian == 'LITTLE'
             try:
-                decode,extract = self.decode_data[self.format]
+                decode,extract = self.__decode_data__[self.format]
             except KeyError:
                 raise AHDSStreamError("Data stream format '{}' not supported".format(self.format))
+            # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
+            is_little_endian = self._header.endian == 'LITTLE'
             return decode(
                 extract(data),
                 dtype=_type_map[is_little_endian][self.type],
                 count=np.prod(new_shape).tolist()
             ).reshape(*new_shape)
         # assume the file is ASCII
-        else:
-            return np.fromstring(
-                data,
-                dtype=_type_map[self.type],
-                sep="\n \t"
-            ).reshape(*new_shape)
+        #else:
+        return np.fromstring(
+            data,
+            dtype=_type_map[self.type],
+            sep="\n \t"
+        ).reshape(*new_shape)
 
 
 class AmiraHxSurfaceDataStream(AmiraDataStream):
@@ -405,28 +429,28 @@ class AmiraHxSurfaceDataStream(AmiraDataStream):
     def _read(self):
         if self._header.load_streams == HEADERONLY:
             raise AHDSStreamError("HADERONLY stream policy for '{}' file".format(self._header.filename))
-        # data either already stored or not available
-        return
+        # nothing to read: data either already stored or not available
 
     def _decode(self, data):
-        is_little_endian = self._header.endian == 'LITTLE'
         new_shape = [self.shape] if not isinstance(self.shape,(list,tuple)) else list(self.shape)
         if self.dimension > 1:
             new_shape += [self.dimension]
         if self._header.format == 'BINARY':
+            is_little_endian = self._header.endian == 'LITTLE'
             return np.frombuffer(
                 data,
                 dtype=_type_map[is_little_endian][self.type]
             ).reshape(*new_shape)
-        elif self._header.format == 'ASCII':
-            return np.fromstring(
-                data,
-                dtype=_type_map[self.type],
-                sep="\n \t"
-            ).reshape(*new_shape)
+        # assume file is ascii
+        #elif self._header.format == 'ASCII':
+        return np.fromstring(
+            data,
+            dtype=_type_map[self.type],
+            sep="\n \t"
+        ).reshape(*new_shape)
 
 def check_stream_data(datastream): # pragma: nocover
-    if datastream.filetype == "AmiraMesh":
+    if datastream.file_format == "AmiraMesh":
         if datastream.format != "ASCII":
             vertices = getattr(datastream,'Nodes',None)
             if vertices is None:

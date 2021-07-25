@@ -112,7 +112,7 @@ initdecoders(void)
 }
 
 static PyObject * stream_error(char * format,...) {
-	// helper function to raise grammar.AHDSStreamError exceptoin
+	// helper function to raise grammar.AHDSStreamError exception
 	// in case a corrupted input stream is encountered
 	va_list args;
 
@@ -192,7 +192,7 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *kwargs)
 	while ( terminal != input ) { // while we still have some input
 		num_char = (size_t)input[0];
 		if ( num_char & 0x80 ) {
-			// MSB is set the remaining 7 Bytes contain count of follwoing not encoded
+			// MSB is set the remaining 7 Bytes contain count of following not encoded
 			// bytes they have to be copied as are to output
 			num_char &= 0x7F;
 			if ( ( buffer_end - output ) < num_char ) {

@@ -10,11 +10,12 @@ import re
 import sys
 import collections
 import warnings
+import functools as ft
 from pprint import pprint
 
 # simpleparse
 from simpleparse.parser import Parser
-from simpleparse.common import numbers, strings
+from simpleparse.common import numbers, strings, SOURCES
 from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, dispatch, singleMap, multiMap
 
 # to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
@@ -263,7 +264,7 @@ def readbytes(fhnd,count,stream_data,drop_data = False,**kwargs):
 
 def collect_hypersurface_ascii_stream(fhnd,count,stream_data,stream_bytes = 32768,drop_data = False,**kwargs):
     if not stream_data:
-        warnings.warn("can this reached at all?? or is it a bug if or a corrupted file as no stream end found??",RuntimeWarning)# pragma: nocover
+        warnings.warn("can this be reached at all?? or is it a bug or a corrupted file as no stream end found??",RuntimeWarning)# pragma: nocover
         stream_data = fhnd.read(stream_bytes - len(stream_data) if stream_bytes > _rescan_overlap else _rescan_overlap) # pragma: nocover
     at_end_of_file = stream_data
     stream_data = b''
@@ -314,7 +315,6 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
     
     array_declarations = None
     designation = parsed_data[0]['designation']
-    parsed_item_id = -1
     for parsed_id,parsed_item in enumerate(parsed_data):
         array_declarations = parsed_item.get('array_declarations',None)
         if array_declarations is not None:
@@ -322,7 +322,7 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
             if parsed_item_id >= len(parsed_data):
                 parsed_item_id = 0
             break
-    if parsed_item_id < 0:
+    else:
         parsed_item_id = 0
         array_declarations = []
         parsed_data[1:1] = [dict(array_declarations = array_declarations)]
@@ -331,12 +331,12 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
         data_definitions = parsed_item.get('data_definitions',None)
         if data_definitions is not None:
             break
-    if data_definitions is None:
+    else:
         for parsed_item in parsed_data[:parsed_item_id]:
             data_definitions = parsed_item.get('data_definitions',None)
             if data_definitions is not None:
                 break
-        if data_definitions is None:
+        else:
             data_definitions = []
             parsed_data[len(parsed_data):len(parsed_data)] =  [dict(data_definitions = data_definitions)]
     data_format = designation.get("format",'')
@@ -356,34 +356,37 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
     max_items = 0
     # strange replacement for nonlocal statement as python2 does not recognize it
     # clear parse_hypersurface_data. after switch to python3 only
-    def iter_hypersurface_stream():
-        # TODO uncomment after switching to python3 only
+    def iter_hypersurface_stream(stream_data):
+        # TODO uncomment after switching to python3 only and convert remaining_bytes to closure variable
+        # continue_scanning_at and fhnd are implicitly in python2 as they are not modified inhere but
+        # accessible
         #nonlocal remaining_bytes
-        #nonlocal stream_data
+        #nonlocal continue_scanning_at
         #nonlocal fhnd
-
-        while True:
-            if len(iter_hypersurface_stream.remaining_bytes) < _rescan_overlap or iter_hypersurface_stream.force_expand:
-                at_end_of_file = fhnd.read(stream_bytes)
-                if not at_end_of_file:
-                    if iter_hypersurface_stream.remaining_bytes:
-                        # yield the tail one last time to ensure all
-                        # relevant tail bytes are parsed
-                        yield iter_hypersurface_stream.remaining_bytes
-                    return
-                iter_hypersurface_stream.remaining_bytes += at_end_of_file
-            iter_hypersurface_stream.force_expand = False
+        iter_hypersurface_stream.remaining_bytes = stream_data
+        if len(stream_data)>_rescan_overlap:
+            at_end_of_file = stream_data
+        else:
+            at_end_of_file = fhnd.read(stream_bytes)
+            iter_hypersurface_stream.remaining_bytes += at_end_of_file
+        while at_end_of_file:
+            #iter_hypersurface_stream.force_expand = False
             yield iter_hypersurface_stream.remaining_bytes
-    iter_hypersurface_stream.remaining_bytes = stream_data
-    iter_hypersurface_stream.force_expand = len(stream_data) < _rescan_overlap
-    stream_data = b''
+            if len(iter_hypersurface_stream.remaining_bytes) - continue_scanning_at <= _rescan_overlap:# or iter_hypersurface_stream.force_expand:
+                at_end_of_file = fhnd.read(stream_bytes)
+                iter_hypersurface_stream.remaining_bytes += at_end_of_file
+        else:
+            if iter_hypersurface_stream.remaining_bytes:
+                # yield the tail one last time to ensure all
+                # relevant tail bytes are parsed
+                yield iter_hypersurface_stream.remaining_bytes
+
                 
     continue_scanning_at = 0
-    for stream_data in iter_hypersurface_stream():
-        next_stream = _stream_delimiters[1].search(stream_data,continue_scanning_at)
+    for stream_data in iter_hypersurface_stream(stream_data):
+        next_stream = _stream_delimiters[1].search(stream_data, continue_scanning_at)
         if next_stream is None:
             continue_scanning_at = len(stream_data) - _rescan_overlap if len(stream_data) > _rescan_overlap else 0
-            iter_hypersurface_stream.force_expand = True
             continue
         if _stream_delimiters[4].search(stream_data,0,next_stream.start()) is not None:
             if group_level > 0:
@@ -406,19 +409,17 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
                         )
                     )
         stream_name = next_stream.group("stream")
-        if stream_name is None: # pragma: nocover
-            # if _stream_delimiters regular expression for HyperSurface stream headers is not
-            # broken than stream group must be valid string or next_stream would be None and thus
-            # not reaching here
-            raise AHDSStreamError("'{}' unknown HyperSurface file stream: blame ahds team".format(_decode_string(stream_name)))
+        # if _stream_delimiters regular expression for HyperSurface stream headers is not
+        # broken than stream group must be valid string or next_stream would be None and thus
+        # would not trigger assert here
+        assert stream_name is not None , "'{}' unknown HyperSurface file stream: blame ahds team".format(_decode_string(stream_name))
         stream_info = _hyper_surface_file.get(stream_name,None)
-        if stream_info is None: # pragma: nocover
-            # if the _hyper_surface_file table and the _stream_delimiters regular expression table are in
-            # sync than this can not occur. In other words code would be severly broken if this would be
-            # ever seen
-            raise AHDSStreamError("'{}' unknown HyperSurface file stream: blame ahds team".format(_decode_string(stream_name)))
+        # if the _hyper_surface_file table and the _stream_delimiters regular expression table are in
+        # sync than this can not occur. In other words code would be severly broken if this assert would be
+        # ever triggered
+        assert stream_info is not None,"'{}' unknown HyperSurface file stream: blame ahds team".format(_decode_string(stream_name))
         if isinstance(stream_info[0],(list,tuple)):
-            assert len(stream_info) > group_level
+            assert len(stream_info) > group_level,"'{}' invalid table len ({}) for group_level {}: blame ahds team".format(_decode_string(stream_name),len(stream_info),group_level)
             stream_info =  stream_info[group_level]
         stream_name = _decode_string(stream_name)
         # <stream_name>: [<group_stream_belongs_to>,<Block.Name>,<itemsize>,<datatype>,<optional>]
@@ -526,109 +527,104 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
         )
     return parsed_data
 
-def detect_format(fhnd, format_bytes=50, verbose=False, **kwargs):
-    """Detect Amira (R) file format (AmiraMesh or HyperSurface)
-    
-    :param str,file fhnd: filename or file handle
-    :param int format_bytes: number of bytes in which to search for the format [default: 50]
-    :param bool verbose: verbose (default) or not
-    :return str file_format: either ``AmiraMesh`` or ``HyperSurface``
-    """
-    assert format_bytes > 0
-    assert verbose in [True, False]
 
-    if isinstance(fhnd,str):
-        with open(fhnd,'rb') as fhnd:
-            rough_header = fhnd.read(format_bytes if format_bytes > 50 else 50)
-    else:
-        rough_header = fhnd.read(format_bytes if format_bytes > 50 else 50)
-    _known_format = _file_format_match.match(rough_header)
-    if verbose: # pragma: nocover
-        print("{} file detected...".format(_known_format.group("format") if _known_format is not None else "Undefined", file=sys.stderr))
-    return ( _decode_string(_known_format.group("format")) if _known_format is not None else "Undefined"),rough_header
+class AmiraMeshParser(Parser):
+    __content_type__ = None
+    def __init__(self,**kwargs):
+        if sys.version_info[0] > 2: # pragma: cover_py3
+            super().__init__(amira_header_grammar,root='amira')
+        else: # pragma: cover_py2
+            Parser.__init__(self,amira_header_grammar,root='amira')
+            self._27init=True
+        self._kwargs = kwargs
+        
+    def buildProcessor(self):
+        return AmiraDispatchProcessor(content_type=self.__content_type__)
 
-def get_header(fhnd, header_bytes=16384, verbose=False, **kwargs):
+class HyperSufaceParser(AmiraMeshParser):
+    __content_type__ = 'hxsurface'
+
+    def parse(self, data, production=None, processor=None, start=0, stop=None):
+        if sys.version_info[0] > 2: # pragma: cover_py3
+            success,parsed_data,next_item = super().parse(data,production,processor,start,stop)
+        else: # pragma: cover_py2
+            success,parsed_data,next_item = AmiraMeshParser.parse(self,data,production,processor,start,stop)
+        if success:
+            try:
+                return success,parse_hypersurface_data(parsed_data = parsed_data,**self._kwargs),next_item
+            except AHDSStreamError as stream_error:
+                if self._kwargs.get('verbose',False):
+                    stream_error.args += (success,parsed_data,next_item)
+                raise
+        return success,parsed_data,next_item
+            
+
+def get_header(fhnd, header_bytes=16384, check_format=False, verbose = False,**kwargs):
     """Apply rules for detecting the boundary of the header
     
     :param str,file fhnd: file handle
-    :param int header_bytes: number of bytes in which to search for the header [default: 20000]
-    :return str data: the header as per the ``file_format``
+    :param int header_bytes: number of bytes in which to search for the header [default: 16384]
+    :param bool check_format: if true only the file format string is returned
+    :return (str,str,bytes) (file_format,header_string,data_bytes): tuple describing the file_format
+            the header string and any residual data bytes following the header which have been read 
+            while searching for the end of the header. 
     """
     assert header_bytes > 0
 
-    if isinstance(fhnd,str):
-        with open(fhnd,'rb') as fhnd:
-            return get_header(fhnd,header_bytes = header_bytes,verbose = verbose,**kwargs)
-    # read a first chunk, parse the file_format from it and store it in the first element of
-    # the list of header chunks
-    file_format,data = detect_format(fhnd,format_bytes = header_bytes if header_bytes >= _rescan_overlap else _rescan_overlap,verbose = verbose,**kwargs)
-
-    if file_format == "AmiraMesh":
-        stream_delimiter = _stream_delimiters[0]
-    elif file_format == "HyperSurface":
-        stream_delimiter = _stream_delimiters[1]
-    elif file_format == "Undefined":
+    data = fhnd.read(max(_rescan_overlap,50))
+    _detected_format = _file_format_match.match(data)
+    if _detected_format is not None:
+        file_format = _detected_format.group('format')
+        if verbose: # pragma: nocover
+            print("{} file detected...".format(file_format), file=sys.stderr)
+        if check_format:
+            return _decode_string(file_format)
+    
+        if file_format == b"AmiraMesh":
+            stream_delimiter = _stream_delimiters[0]
+            parser_cls = AmiraMeshParser
+        elif file_format == b"HyperSurface":
+            stream_delimiter = _stream_delimiters[1]
+            parser_cls = HyperSufaceParser
+        else: # pragma: nocover # only triggered during adding support for new format
+            # file_format == "Undefined":
+            raise ValueError("'{}' file detected: not yet supported".format(file_format))
+    else:
+        if verbose: # pragma: nocover
+            print("Undefined file detected...", file=sys.stderr)
         raise ValueError("Unable to parse undefined file")
     if verbose: # pragma: nocover
         print("Using pattern: {}".format(stream_delimiter.pattern), file=sys.stderr)
-    # scan the latests chunk for the first @<n> data block start marker or keys listed above
-    m = stream_delimiter.search(data)
-    while m is None:
-        _chunklen = len(data) - _rescan_overlap
-        more_header_data = fhnd.read(header_bytes)
-        if not more_header_data:
-            return file_format,_decode_string(data),b''
-        data += more_header_data
+    # scan the latest chunk for the first @<n> data block start marker or keys listed above
+    stream_data,data = data,b''
+    _chunklen = 0
+    while stream_data:
+        data += stream_data
         m = stream_delimiter.search(data, _chunklen)
-    # cut the data before the delimiter and encode the remaining byte string into ASCII
-    # string in case of python 2 and UTF-8 string for python3
-    return file_format,_decode_string(data[:m.start()]),data[m.start():]
-
-
-def parse_header(data, verbose=False,  **kwargs):
-    """Parse the data using the grammar specified in this module
-    
-    :param str data: delimited data to be parsed for metadata
-    :return dict parsed_data: structured metadata 
-    """
-    # the parser
-    if verbose: # pragma: nocover
-        print("Creating parser object...", file=sys.stderr)
-    parser = Parser(amira_header_grammar)
-
-    # the processor
-    if verbose: # pragma: nocover
-        print("Defining dispatch processor...", file=sys.stderr)
-    file_format = kwargs.get('file_format',None)
-    if file_format == 'HyperSurface':
-        amira_processor = AmiraDispatchProcessor(content_type = 'hxsurface')
-    else:
-        amira_processor = AmiraDispatchProcessor()
-
+        if m is not None:
+            # cut the data before the delimiter and encode the remaining byte string into ASCII
+            # string in case of python 2 and UTF-8 string for python3
+            data,stream_data = data[:m.start()],data[m.start():]
+            break
+            #return _decode_string(file_format),_decode_string(data[:m.start()]),data[m.start():]
+        _chunklen = len(data) - _rescan_overlap
+        stream_data = fhnd.read(header_bytes)
+    parser = parser_cls(fhnd=fhnd,stream_data=stream_data,verbose=verbose,**kwargs)
     # parsing
     if verbose: # pragma: nocover
         print("Parsing data...", file=sys.stderr)
-    success, parsed_data, next_item = parser.parse(data, production='amira', processor=amira_processor)
+    try:
+        success, parsed_data, next_item = parser.parse(_decode_string(data))
+    except AHDSStreamError as err:
+        if verbose:
+            err.args += (len(data),data)
+        raise
 
     if not success:
         raise TypeError("Parse: {}\nNext: {}\n".format(parsed_data, next_item))
-    
-    #groups  array_declarations which only differ by trailing counter
     if verbose: # pragma: nocover
         print("Successfully parsed data...", file=sys.stderr)
-    return parsed_data
+        return _decode_string(file_format),parsed_data,len(data),data
+    return _decode_string(file_format),parsed_data,len(data),None
 
-
-def get_parsed_data(fn, **kwargs):
-    """All above functions as a single function
-    
-    :param str fn: file name
-    :return tuple(list,int) parsed_data,header_length: structured metadata and total number of header bytes
-    """
-    with open(fn,'rb') as fhnd:
-        file_format,data,stream_remainder = get_header(fhnd, **kwargs)
-        parsed_data = parse_header(data,file_format = file_format, **kwargs)
-        if file_format == "HyperSurface":
-            parsed_data = parse_hypersurface_data(fhnd,parsed_data = parsed_data,stream_data = stream_remainder,**kwargs)
-    return data, parsed_data, len(data), file_format
 

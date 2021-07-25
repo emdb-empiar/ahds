@@ -8,46 +8,40 @@ Usage:
 ::
 
     >>> from ahds.header import AmiraHeader
-    >>> ah = AmiraHeader.from_file('<somfile>.am')
+    >>> ah = AmiraHeader('<somfile>.am')
     >>> print ah
 
 Each nested object is constructed from the :py:class:``Block`` class defined.
 
 There are fife top-level attributes that every ``AmiraHeader`` will have:
 
-*    designation
-
-*    definitions
-
-*    parameters
-
-*    materials
-
-*    data_pointers
-
-All of them, exempt materials and parameters are marked deprecated and may be removed in
-future. The designation and defintions attributes just return the reference to the AmiraHeader
-instance which host all the attributes and data array declarations (definitions) found within
-the AmiraMesh and HyperSurface files. The data_pointers attribute collects from each
-attribute representing a valid array declaration the defined data definitions and returns the resulting
-list. New code should directly access the Block objects describing the available data directly
-from the corresponding array attribute of the AmiraHeader object. 
+ * filename
+ * file_format
+ * dimension
+ * format
+ * endian
+ * version
+ * content_type
+ * Parameters
 
 The blocks defining the available data structures extend the basic Block to the corresponding 
 AmiraMeshDataStream and AmiraHxSurfaceDataStream blocks which allow to load and access the correspinding
-data using the data property defined by theses blocks. The additional stream_data, encoded_data and
-decoded_data attributes are deprecated and may be removed in future versions.
+data using the data property defined by theses blocks. The additional filetype, designation, definitions,
+data_pointers, stream_data, encoded_data and decoded_data attributes are deprecated and thus may be disfunct
+and will be removed in future versions.
 
 The attrs attribute of all Blocks and extended Block objects including AmiraHeader it self
 which allows to query the attributes added during loading is deprecated and may be removed in future version.
 To query which attributes are defined on each block use the builtin dir function instead. To 
 access the defined attributes just use them liḱe any other static attribute.
 
-The following attributes are moved from the designation attribute to the basic header block:
+The following attributes are moved from the designation attribute to the basic header block or replaced
+by multiple attributes of the basic header block:
+        
         
         *    filetype e.g. ``AmiraMesh`` or ``HyperSurface``
-        *    dimensions e.g. ``3D``
-        *    format e.g. ``BINARY-LITTLE-ENDIAN``
+        *    dimension e.g. ``3D``
+        *    format e.g. ``BINARY-LITTLE-ENDIAN`` -> format e.g. ``BINARY`` + endian e.g ``LITTLE``
         *    version e.g. ``2.1``
         *    extra_format (if present)
         
@@ -197,6 +191,8 @@ the AmiraHeader Block.
 NOTE!!!
 NEW DESCRIPTION OF THE FILE FORMAT:
 https://assets.thermofisher.com/TFS-Assets/MSD/Product-Guides/user-guide-amira-software.pdf
+REMARK!!!
+dose not contain any file format definitions just read/write api functions within xpat developer extension
 
 """
 from __future__ import print_function
@@ -207,16 +203,10 @@ import warnings
 
 from .core import Block, deprecated, ListBlock, _dict_iter_items 
 from .data_stream import set_data_stream, HEADERONLY, ONDEMMAND, IMMEDIATE, get_stream_policy,load_streams,select_array_block
-from .grammar import get_parsed_data,AHDSStreamError
+from .grammar import get_header,AHDSStreamError
 
 
-def flatten_dict(in_dict):
-    block_data = dict()
-    for block in in_dict:
-        for block_keys0 in block.keys():
-            block_data[block_keys0] = block[block_keys0]
-            break
-    return block_data
+_NoneBlock = Block('None')
 
 class AmiraHeader(Block):
     """Class to encapsulate Amira metadata and accessors to amria data streams"""
@@ -226,14 +216,14 @@ class AmiraHeader(Block):
     # which will be stored inside the __dict__ attribute of the Block base class
     __slots__ = (
         READONLY('filename'), READONLY('parsed_data'), '_header_length', READONLY('file_format'), READONLY('load_streams'),
-        READONLY('data_stream_count'),'_data_streams_block_list','_stream_offset'
+        READONLY('data_stream_count'),'_data_streams_block_list','_stream_offset', READONLY('literal_data')
     )
 
     def __init__(self, fn, load_streams=None, *args, **kwargs):
         if load_streams not in (None, ONDEMMAND, HEADERONLY,IMMEDIATE):
             if not isinstance(load_streams,bool):
                 raise ValueError('stream policy must be one of HEADERONLY, ONDEMMAND, IMMEDIATE')
-            # for compatibility with older version where load_streams could either be True of False
+            # for compatibility with older version where load_streams could either be True or False
             # not testable as long as comparison of bool with int 0 and 1 yields true therefor no cover
             load_streams = IMMEDIATE if load_streams else HEADERONLY # pragma: nocover
         super(AmiraHeader, self).__init__('header')
@@ -241,11 +231,13 @@ class AmiraHeader(Block):
         self._filename = fn
         # set policy for loading streams, if load_streams is None use global policy
         self._load_streams = load_streams if load_streams is not None else get_stream_policy()
-        self._literal_data, self._parsed_data, self._header_length, self._file_format = get_parsed_data(fn,drop_data = ( self.load_streams == HEADERONLY ), **kwargs)
+        with open(fn,'rb') as fhnd:
+            self._file_format,self._parsed_data, self._header_length,self._literal_data = get_header(
+                fhnd, drop_data = ( self.load_streams == HEADERONLY ), **kwargs
+            )
         # data stream count
         self._data_stream_count = None
         self._stream_offset = self._header_length
-        # super(AmiraHeader, self).__init__(fn)
         # load the parse data into this object
         self._load()
 
@@ -255,37 +247,17 @@ class AmiraHeader(Block):
         """Deprecated classmethod"""
         return cls(fn, *args, **kwargs)
 
-    @property
-    def literal_data(self):
-        return self._literal_data
-
-    #def parsed_data(self):
-    #    return self._parsed_data
-
-    #@property
-    #def load_streams(self):
-    #    return self._load_streams
-
-    #@load_streams.setter
-    #def load_streams(self, value):
-    #    if not isinstance(value,bool):
-    #        raise ValueError("must be a bool")
-    #    self._load_streams = value
-
-    #@property
-    #def data_stream_count(self):
-    #    return self._data_stream_count
-
-    #def load(self):
-    #    """Public loading method"""
-    #    self._load()
-
     def __len__(self):
         return self._header_length
 
     def _load(self):
         # first flatten the dict
-        block_data = flatten_dict(self.parsed_data)
+        #block_data = flatten_dict(self.parsed_data)
+        block_data = { 
+            block_key:block_data
+            for block in self._parsed_data
+            for block_key,block_data in _dict_iter_items(block)
+        }
         # load file designations
         self._load_designation(block_data['designation'])
         _extra_materials_spec = block_data.get('materials',None)
@@ -293,35 +265,27 @@ class AmiraHeader(Block):
         # is properly integrated within Parameters structure
         if _extra_materials_spec is not None:
             # load parameters force their existence if not defined
-            _parameter_spec = block_data.get('parameters',None)
-            if _parameter_spec is None:
-                _parameter_spec = []
-            _materials = None
+            _parameter_spec = block_data.get('parameters',[])
             for param in _parameter_spec:
                 param_name = param.get('parameter_name',None)
                 if param_name in {'Materials','materials'}:
                     _param_value = param.get('parameter_value',list)
                     if not isinstance(_param_value,list): # pragma: nocover
-                        param['parameter_value'] = _param_value = [{'parameter_name':'<N/A>','parameter_value':_param_value}]
+                        param['parameter_value'] = _param_value = [] if _param_value is list else [{'parameter_name':'<N/A>','parameter_value':_param_value}]
                     _param_value.extend(_extra_materials_spec)
-                    _materials = _param_value
                     break
-            if _materials is None:
+            else:
                  _parameter_spec.append({'parameter_name':'Materials','parameter_value':_extra_materials_spec})
         else:
             # load parameters if present
-            _parameter_spec = block_data.get('parameters',None)
-        if _parameter_spec is not None:
-            _parameters = self._load_parameters(_parameter_spec, 'Parameters', parent=self)
-        else:
-            # just create an empty parameters block to keep header consistent
-            _parameters = Block('Parameters')
+            _parameter_spec = block_data.get('parameters',[])
+        _parameters = self._load_parameters(_parameter_spec, 'Parameters', parent=self)
         # if we have a Materials block in parameters we create a convenience dictionary for
         # accessing materials e.g. for patches
-        #assert(block_data.get('materials',None) is None)
-        if hasattr(_parameters, 'Materials'):
+        _materials = getattr(_parameters,'Materials',[])#assert(block_data.get('materials',None) is None)
+        if _materials: #hasattr(_parameters, 'Materials'):
             material_dict = dict()
-            for material in _parameters.Materials:
+            for material in _materials:#_parameters.Materials:
                 if material is not None:
                     material_dict[material.name] = material
             _parameters.Materials.material_dict = material_dict
@@ -330,10 +294,13 @@ class AmiraHeader(Block):
         self._load_declarations(block_data['array_declarations'])
         self._data_streams_block_list = self._load_definitions(block_data['data_definitions'])
         self._data_stream_count = len(self._data_streams_block_list) - 1
-        # cleanup any temporary protected subarray_declartion 
-        for sub_decl_name in dir(self):
-            if sub_decl_name[:2] != '_@':
-                continue
+        # cleanup any temporary protected subarray_declartion these should be inserted by setattr
+        # below in self.__dict__ thus filtering its keys should be faster than filtering
+        # full dir(self) which also contains inherited attributes, dynamic attributes and
+        # other stuff to be ignored anyway
+        for sub_decl_name in ( key for key in tuple(self.__dict__) if key[:2] == '_@' ):
+            #if sub_decl_name[:2] != '_@':
+            #    continue
             delattr(self,sub_decl_name)
         if self.load_streams == IMMEDIATE:
             load_streams(self)
@@ -349,7 +316,7 @@ class AmiraHeader(Block):
         
         *    dimensions e.g. ``3D``
         
-        *    format e.g. ``BINARY-LITTLE-ENDIAN``
+        *    format e.g. ``BINARY-LITTLE-ENDIAN`` -> format e.g ``BINARY`` + endian e.g. ``LITTLE``
         
         *    version e.g. ``2.1``
         
@@ -361,7 +328,7 @@ class AmiraHeader(Block):
         return self
 
     @property
-    @deprecated(" use data array attributes instead eg. Vertices, Triangles, ...")
+    @deprecated(" use data array attributes instead eg. header.Vertices, header.Triangles, ...")
     def definitions(self):
         """Definitions consist of a key-value pair specified just after the 
         designation preceded by the key-word 'define'      
@@ -379,45 +346,55 @@ class AmiraHeader(Block):
 
         NOTE: deprecated access the data defnitions for each data array through the corresponding attributes
         eg.: ah.Nodes.Coordinates instead of ah.data_pointers.data_pointer_1 ah.Tetrahedra.Nodes instead of 
-        ah.data_pointers.data_pointer_2 etc.
+        ah.data_pointers.data_pointer_2 etc. In any case an empty Block
         """
 
         _data_pointers = Block("data_pointers")
         return _data_pointers
 
+    @property
+    @deprecated(" use header.file_format attribute instead")
+    def filetype(self):
+        """
+        deprecated alias for file_format attribute
+        """
+        return self.file_format
+
+    __decode_format__ = {
+        'BINARY':('format','BINARY','endian','BIG'),
+        'BINARY-LITTLE-ENDIAN':('format','BINARY','endian','LITTLE'),
+        'ASCII':('format','ASCII','endian',None)
+    }
     def _load_designation(self, block_data):
-        self.add_attr('filetype', block_data.get('filetype', None))
         self.add_attr('dimension', block_data.get('dimension', None))
-        format = block_data.get('format')
-        if format == 'BINARY':
-            self.add_attr('format', format)
-            self.add_attr('endian', 'BIG')
-        elif format == 'ASCII':
-            self.add_attr('format', format)
-            self.add_attr('endian', None)
-        elif format == 'BINARY-LITTLE-ENDIAN':
-            self.add_attr('format', 'BINARY')
-            self.add_attr('endian', 'LITTLE')
-        else: # pragma: nocover
+        try:
+            format = AmiraHeader.__decode_format__[block_data.get('format')]
+        except KeyError: # pragma: nocover
             raise ValueError(
                 u'unsupported format {format}; kindly consider contacting the maintainer to include support. Thanks.'.format(
-                    format=format))
-        # self.add_attr('format', block_data.get('format', None))
+                    format=block_data.get('format')
+                )
+            )
+        self.add_attr(*format[:2])#'format', format)
+        self.add_attr(*format[2:])#'endian', 'BIG')
         self.add_attr('version', block_data.get('version', None))
         self.add_attr('content_type', block_data.get('content_type', None))
 
     def _load_parameters(self, block_data, name='Parameters', **kwargs):
         # treat materials specially (and possibly others in the future)
-        if name in ["Materials"]:
+        if name == "Materials":
             block = ListBlock(name)
             fillin = collections.deque()
             for param in block_data:
                 # a sequence of parameters
                 if isinstance(param['parameter_value'], list):
                     if len(param['parameter_value']) > 0:
-                        if param['parameter_value'][0] == '<!?c?!>': # pragma: nocover
-                            warnings.warn("Material found which is just list")
-                            block.add_attr(param['parameter_name'], param['parameter_value'][1:])
+                        if param['parameter_value'][0] == '<!?c?!>':
+                            # pragma: nocover
+                            warnings.warn("Material '{}' found which is just list".format(param['parameter_name']))
+                            sub_param = Block(param['parameter_name'])
+                            sub_param.add_attr('Values',param['parameter_value'][1:])
+                            fillin.append(sub_param)
                         else:
                             sub_param = self._load_parameters(
                                 param['parameter_value'],
@@ -430,18 +407,27 @@ class AmiraHeader(Block):
                                 block.insert(int(param_id),sub_param)
                             block.add_attr(sub_param)
                     else:
-                        block.add_attr(param['parameter_name'], param['parameter_value'])
+                        sub_param = Block(param['parameter_name'])
+                        #sub_param.add_attr('Value', param['parameter_value'])
+                        fillin.append(sub_param)
                 # a string or number
                 else:
                     block.add_attr(param['parameter_name'], param['parameter_value'])
-            if fillin:
-                for fill_hole in range(1,len(block)):
+            fill_hole = 0
+            while fillin:
+                for fill_hole in range(fill_hole+1,len(block)):
                     if block[fill_hole] is None:
-                        block[fill_hole] = fillin.popleft()
-                        block.add_attr(block[fill_hole])
-                        if not fillin:
-                            break
-                block.extend(fillin)
+                        filler = block[fill_hole] = fillin.popleft()
+                        block.add_attr(filler)
+                        filler.add_attr('Id',fill_hole)
+                        break
+                else:
+                    for fill_hole,filler in enumerate(fillin,len(block)):
+                        block.add_attr(filler)
+                        block.append(filler)
+                        filler.add_attr('Id',fill_hole)
+                    fillin.clear()
+
         else:
             block = Block(name)
             for param in block_data:
@@ -459,8 +445,13 @@ class AmiraHeader(Block):
                     else:
                         block.add_attr(param['parameter_name'], param['parameter_value'])
                 except KeyError:
-                    print(u"Found odd parameter: {} = {}".format(list(param.keys())[0], param[list(param.keys())[0]]),
-                          file=sys.stderr)
+                    print(
+                        u"Found odd parameter: {} = {}".format(
+                            list(param.keys())[0] if param.keys() else '<<missing>>', 
+                            param.get(list(param.keys())[0] if param.keys() else None,'<<missing>>')
+                        ),
+                        file=sys.stderr
+                    )
         return block
 
     def _load_declarations(self, block_data):
@@ -472,16 +463,11 @@ class AmiraHeader(Block):
                 continue
             block_type = decl.get("array_blocktype","block")
             block = select_array_block(decl)
-            #if block_type == 'list':
-            #    block = ListBlock(decl['array_name'],initial_len = decl['array_dimension'])
-            #else:
-            #    block = Block(decl['array_name'])
-            #    block.add_attr('length', decl['array_dimension'])
             # if no array_parent use invalid attribute name to ensure self is returned
-            array_links = decl.get('array_links',None)
+            array_links = decl.get('array_links',{})
             array_parent = self
-            if array_links is not None:
-                active_link = array_links.get((self.content_type if self.content_type is not None else self.filetype),None)
+            if array_links:# is not None:
+                active_link = array_links.get((self.content_type if self.content_type is not None else self._file_format),None)
                 if active_link is not None:
                     array_parent = getattr(self,active_link.get('array_parent',':<*+.=/->#'),self)
                     if array_parent is not self:
@@ -497,7 +483,7 @@ class AmiraHeader(Block):
 
     def _load_definitions(self, block_data):
         """We want to load data definitions to the appropriate array definition block"""
-        data_streams = [None]
+        data_streams = [_NoneBlock]
         for defn in block_data:
             # check whether the array_ref is an attribute on self
             if defn["array_reference"] == "Field":
@@ -547,7 +533,6 @@ class AmiraHeader(Block):
                 raise AHDSStreamError("duplicate data descriptor {}".format(block.data_index))
             # keep track of the data stream indices
             block.add_attr('type', defn['data_type'])
-            #block.add_attr('interpolation_method', defn.get('interpolation_method', None))
             block.add_attr('shape', data_shape)
             block.add_attr('format', defn.get('data_format', None))
             # insert this definition as an attribute
@@ -556,23 +541,36 @@ class AmiraHeader(Block):
         return data_streams
 
     def get_stream_by_index(self,data_index):
-        if data_index < 1 or data_index >= len(self._data_streams_block_list):
-            raise ValueError("'AmiraDataStream' with given index not provided by '{}' file".format(self._filename))
-        return self._data_streams_block_list[data_index]
+        if data_index < 1:
+            raise IndexError("'AmiraDataStream' with given index not provided by '{}' file".format(self._filename))
+        try:
+            return self._data_streams_block_list[data_index]
+        except IndexError:
+            raise IndexError("'AmiraDataStream' with given index not provided by '{}' file".format(self._filename))
 
     def get_stream_offset(self,stream):
-        if not isinstance(stream,Block):
-            raise ValueError("stream not a valid Block type object")
-        stream_index = getattr(stream,"data_index",None)
-        if stream_index is None or stream.data_index < 1 or stream_index >= len(self._data_streams_block_list) or self._data_streams_block_list[stream_index] is not stream:
+        stream_index = getattr(stream,"data_index",len(self._data_streams_block_list))
+        try:
+            if self._data_streams_block_list[stream_index] is not stream:
+                if not isinstance(stream,Block):
+                    raise ValueError("stream not a valid Block type object")
+                raise ValueError("stream not a valid data stream or not part of this file")
+        except IndexError:
+            if not isinstance(stream,Block):
+                raise ValueError("stream not a valid Block type object")
             raise ValueError("stream not a valid data stream or not part of this file")
         return self._stream_offset
 
     def set_stream_offset(self,reporter,offset):
-        if not isinstance(reporter,Block):
-            raise ValueError("stream not a valid Block type object")
-        stream_index = getattr(reporter,"data_index",None)
-        if stream_index is None or stream_index < 1 or stream_index >= len(self._data_streams_block_list) or self._data_streams_block_list[stream_index] is not reporter:
+        stream_index = getattr(reporter,"data_index",len(self._data_streams_block_list))
+        try:
+            if self._data_streams_block_list[stream_index] is not reporter:
+                if not isinstance(reporter,Block):
+                    raise ValueError("stream not a valid Block type object")
+                raise ValueError("stream not a valid data stream or not part of this file")
+        except IndexError:
+            if not isinstance(reporter,Block):
+                raise ValueError("stream not a valid Block type object")
             raise ValueError("stream not a valid data stream or not part of this file")
         self._stream_offset = offset
             

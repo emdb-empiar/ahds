@@ -4,6 +4,7 @@ from __future__ import print_function
 import sys
 import os
 import unittest
+import re
 
 import numpy
 
@@ -143,18 +144,6 @@ class TestDataStreams(TestDataStreamsBase):
             self.assertTrue(numpy.all(label_data3 == label_data))
             
 
-class TestHelpers(unittest.TestCase):
-    def test_get_set_stream_policy(self):
-        initial_policy = data_stream.get_stream_policy()
-        self.assertTrue(initial_policy != IMMEDIATE)
-        data_stream.set_stream_policy(IMMEDIATE)
-        self.assertEqual(data_stream.get_stream_policy(),IMMEDIATE)
-        with self.assertRaises(ValueError):
-            data_stream.set_stream_policy('somthing')
-        data_stream.set_stream_policy(initial_policy)
-        self.assertEqual(data_stream.get_stream_policy(),initial_policy)
-
-
 class TestLoadOndemmand(TestDataStreamsBase):
     @classmethod
     def setUpClass(cls,load_streams=IMMEDIATE):
@@ -220,6 +209,35 @@ class TestLoadOndemmand(TestDataStreamsBase):
             ).shape,
             (3,3)
         )
+
+
+    def test_printing(self):
+        self.assertIsNone(re.search(r'.*\+-\s+data:.*',str(self.af_am_hxsurf)))
+        backup_streamdata = self.af_am.Lattice.Labels._stream_data
+        backup_offset = self.af_am.Lattice.Labels._offset
+        self.af_am.Lattice.Labels._offset = None
+        del self.af_am.Lattice.Labels._stream_data
+        self.assertIsNotNone(re.search(r'.*\+-\s*data:\s*<<not loaded>>.*',str(self.af_am)))
+        self.af_am.Lattice.Labels._stream_data = backup_streamdata
+        self.af_am.Lattice.Labels._offset = backup_offset
+        no_data = ()
+        try:
+            data_backup = self.af_am.Lattice.Labels._data
+        except AttributeError:
+            data_backup = no_data
+        self.assertIsNotNone(re.search(r'.*\+-\s*data:\s*<<not loaded>>.*',str(self.af_am)))
+        if data_backup is not no_data:
+            self.af_am.Lattice.Labels._data = data_backup
+        else:
+            data_backup = self.af_am.Lattice.Labels.data
+        self.assertIsNotNone(re.search(r'.*\+-\s*data:.*',str(self.af_am)))
+        immediate_load = header.AmiraHeader(os.path.join(TEST_DATA_PATH, 'test8.am'),load_streams=IMMEDIATE)
+        self.assertIsNotNone(re.search(r'.*\+-\s*data:.*',str(immediate_load)))
+        
+        
+
+        
+        
         
 
         

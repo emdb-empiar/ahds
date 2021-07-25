@@ -215,6 +215,9 @@ class TestBlock(Py23FixTestCase):
         delattr(b2,"do_defend")
         with self.assertRaises(AttributeError):
             delattr(b2,"do_defend")
+        with self.assertRaises(AttributeError):
+            b2.remove_attr(str)
+        
 
     def test_06_get_set_state(self):
         b = Block("block")

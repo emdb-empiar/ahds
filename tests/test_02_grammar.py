@@ -15,13 +15,32 @@ class TestGramarBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls,noheader=False,noparse=False):
         cls.filepath = os.path.join(TEST_DATA_PATH,cls.filename)
-        cls.file_format = grammar.detect_format(cls.filepath)
-        if noheader:
-            return
-        cls.header = grammar.get_header(cls.filepath)
+        with open(cls.filepath,'rb') as fhnd:
+            data = fhnd.read(max(grammar._rescan_overlap,50))
+            _detected_format = grammar._file_format_match.match(data)
+            cls.file_format = core._decode_string(_detected_format.group('format')) if _detected_format else '<<unknown>>'
+            if noheader:
+                return
+            if cls.file_format == "HyperSurface":
+                stream_delimiter = grammar._stream_delimiters[1]
+            else:
+                stream_delimiter = grammar._stream_delimiters[0]
+            more_header_data,data = data,b''
+            _chunklen = 0
+            while more_header_data:
+                data += more_header_data
+                m = stream_delimiter.search(data, _chunklen)
+                if m is not None:
+                    data,stream_data = data[:m.start()],data[m.start():]
+                    break
+                _chunklen = len(data) - grammar._rescan_overlap
+                more_header_data = fhnd.read(16384)
+            cls.header = core._decode_string(data)
+            cls.header_size = len(cls.header)
         if noparse:
             return
-        cls.parsed_header = grammar.parse_header(cls.header[1] if len(cls.header) > 2 else '')
+        parser = grammar.AmiraMeshParser()
+        success,cls.parsed_header,next_item = parser.parse(cls.header)
 
 class AmiraSpreadSheet(core.Block):
     pass
@@ -75,14 +94,16 @@ class TestContentFilters(TestGramarBase):
             proc.AmiraDispatchProcessor.clear_content_type_filter('')
         proc.AmiraDispatchProcessor.clear_content_type_filter('not_relevant')
         proc.AmiraDispatchProcessor.set_content_type_filter('HxSpreadSheet',TestContentFilters.add_some_meta_data)
-        self.parsed_header = grammar.parse_header(self.header[1])
+        parser = grammar.AmiraMeshParser()
+        success,self.parsed_header,next_item = parser.parse(self.header)
         self.assertEqual(self.parsed_header[2]['array_declarations'][0].get('more_meta_data',None),'hello world')
         self.assertEqual(
             self.parsed_header[2]['array_declarations'][1]['array_links']['HxSpreadSheet'].get('more_link_data',None),
             'hello world'
         )
         self.__class__.single_shot = True
-        self.parsed_header = grammar.parse_header(self.header[1])
+        parser = grammar.AmiraMeshParser()
+        success,self.parsed_header,next_item = parser.parse(self.header)
         self.assertEqual(
             self.parsed_header[2]['array_declarations'][0].get('array_links',None),{}
         )
@@ -90,7 +111,8 @@ class TestContentFilters(TestGramarBase):
             self.parsed_header[2]['array_declarations'][1].get('array_links',None),{}
         )
         proc.AmiraDispatchProcessor.clear_content_type_filter('HxSpreadSheet')
-        self.parsed_header = grammar.parse_header(self.header[1])
+        parser = grammar.AmiraMeshParser()
+        success,self.parsed_header,next_item = parser.parse(self.header)
         proc.AmiraDispatchProcessor._array_declarations_processors.update(backup_filters)
         
 
@@ -118,8 +140,12 @@ class TestBadFormat(TestGramarBase):
         super(TestBadFormat,cls).setUpClass(noheader=True)
 
     def test_get_header_bad_format(self):
-        with self.assertRaises(ValueError):
-            header = grammar.get_header(self.filepath)
+        with open(self.filepath,'rb') as fhnd:
+            with self.assertRaises(ValueError):
+                header = grammar.get_header(fhnd,check_format=True)
+        with open(self.filepath,'rb') as fhnd:
+            with self.assertRaises(ValueError):
+                header = grammar.get_header(fhnd,check_format=False)
 
 class TestCorruptHeader(TestGramarBase):
     filename = 'testcorruptheader.am'
@@ -128,34 +154,46 @@ class TestCorruptHeader(TestGramarBase):
         super(TestCorruptHeader,cls).setUpClass(noparse=True)
 
     def test_get_header_bad_format(self):
-        with self.assertRaises(TypeError):
-            self.parsed_header = grammar.parse_header(self.header[1] if len(self.header) > 2 else '')
+        with open(self.filepath,'rb') as fhnd:
+            with self.assertRaises(TypeError):
+                file_format,self.parsed_header,header_len,stream_data = grammar.get_header(fhnd)
         
 
 class TestGrammar(TestGramarBase):
 
     def test_detect_format(self):
-        self.assertTrue(len(self.file_format)>1)
-        self.assertIn(self.file_format[0], ['AmiraMesh', 'HyperSurface'])
+        with open(self.filepath,'rb') as fhnd:
+            file_format = grammar.get_header(fhnd,check_format=True)
+        self.assertTrue(len(file_format)>1)
+        self.assertEqual(file_format,self.file_format)
+        self.assertIn(file_format, ['AmiraMesh', 'HyperSurface'])
 
     def test_get_header(self):
-        self.assertTrue(len(self.header) > 2 and self.header[0] == self.file_format[0] and len(self.header[1]) > 0)
+        with open(self.filepath,'rb') as fhnd:
+            file_format,parsed_header,header_len,header = grammar.get_header(fhnd,verbose=True)
+        self.assertEqual(self.header,core._decode_string(header))
+        self.assertTrue(len(parsed_header)>0)
 
-    def test_parse_header(self):
-        self.assertTrue(len(self.parsed_header) > 0)
+    #def test_parse_header(self):
+    #    self.assertTrue(len(self.parsed_header) > 0)
 
 
 class TestMultipleHeaderChunks(TestGramarBase):
     filename = 'BinaryHxSpreadSheet62x200.am'
-
+ 
     def test_multiple_chunks(self):
-        self.assertTrue(len(self.header) > 2 and self.header[0] == self.file_format[0] and len(self.header[1]) > 0)
+        with open(self.filepath,'rb') as fhnd:
+            file_format,parsed_header,header_len,header = grammar.get_header(fhnd,verbose=True)
+        self.assertTrue(len(header) > 2)
+        self.assertEqual(core._decode_string(header),self.header)
+        self.assertEqual(file_format,self.file_format)
+        self.assertEqual(file_format,'AmiraMesh')
 
 class TestNextAmiraBinaryStream(TestGramarBase):
     filename = "test8.am"
 
     def test_next_amira_mesh_binary_stream(self):
-        current_offset = len(self.header[1])
+        current_offset = self.header_size
         stream_remainder = b''
         bytestoread = (
             self.parsed_header[1]['array_declarations'][0]['array_dimension'] *
@@ -209,7 +247,7 @@ class TestNextAmiraASCIIStream(TestGramarBase):
     filename = "BinaryCustomLandmarks.elm"
 
     def test_next_amira_mesh_ascii_stream(self):
-        current_offset = len(self.header[1])
+        current_offset = self.header_size
         stream_remainder = b''
         elementstoread = (
             self.parsed_header[2]['array_declarations'][0]['array_dimension'] *
@@ -253,8 +291,8 @@ class TestHyperSurfaceSimple(TestGramarBase):
     filename = "simple.surf"
          
     def test_parse_simple_hxsurf_ascii(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -280,11 +318,11 @@ class TestHyperSurfaceSimple(TestGramarBase):
                 ['Vertices', 'Patch1', 'Patch1', 'Patch1', 'Patch2', 'Patch2', 'Patch2', 'Patch3', 'Patch3', 'Patch3']
             )
     def test_trigger_errors(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
+        self.assertEqual(self.file_format,'HyperSurface')
         true_format = self.parsed_header[0]['designation']['format']
         self.parsed_header[0]['designation']['format'] = 12
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -310,8 +348,8 @@ class TestHyperSurfaceSimple(TestGramarBase):
 class TestHyperSurfaceMixup(TestGramarBase):
     filename = "simple.surf"
     def test_mixedup_header(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         filecontent1 = copy.deepcopy(self.parsed_header[:1] + self.parsed_header[2:])
         filecontent2 = copy.deepcopy(self.parsed_header[:1] + self.parsed_header[-1:] + self.parsed_header[1:-1])
@@ -374,9 +412,59 @@ class TestHyperSurfaceBroken2Simple(TestGramarBase):
             
 class TestHyperSurfaceBad(TestGramarBase):
     filename = 'bad_simple.surf'
+ 
+    def test_mixedup_header(self):
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
+        stream_remainder = b''
+        filecontent1 = copy.deepcopy(self.parsed_header[:1] + self.parsed_header[2:])
+        filecontent2 = copy.deepcopy(self.parsed_header[:1] + self.parsed_header[-1:] + self.parsed_header[1:-1])
+        filecontent3 = copy.deepcopy(self.parsed_header[:-1])
+        filecontent4 = copy.deepcopy(self.parsed_header[:1] + self.parsed_header[2:] + self.parsed_header[1:2])
+        with open(self.filepath,'rb') as fhnd:
+            fhnd.seek(current_offset)
+            try:
+                self.parsed_header = grammar.parse_hypersurface_data(
+                    fhnd,
+                    parsed_data = self.parsed_header,
+                    stream_data = stream_remainder
+                )
+            except grammar.AHDSStreamError as err:
+                self.assertEqual(2,sum( 1 for item in  self.parsed_header for name in item if name in {'array_declarations','data_definitions'}))
+        with open(self.filepath,'rb') as fhnd:
+            fhnd.seek(current_offset)
+            try:
+                filecontent1 = grammar.parse_hypersurface_data(
+                    fhnd,
+                    parsed_data = filecontent1,
+                    stream_data = stream_remainder
+                )
+            except grammar.AHDSStreamError as err:
+                self.assertEqual(2,sum( 1 for item in  self.parsed_header for name in item if name in {'array_declarations','data_definitions'}))
+        with open(self.filepath,'rb') as fhnd:
+            fhnd.seek(current_offset)
+            try:
+                filecontent2 = grammar.parse_hypersurface_data(
+                    fhnd,
+                    parsed_data = filecontent2,
+                    stream_data = stream_remainder
+                )
+            except grammar.AHDSStreamError as err:
+                self.assertEqual(2,sum( 1 for item in  self.parsed_header for name in item if name in {'array_declarations','data_definitions'}))
+        with open(self.filepath,'rb') as fhnd:
+            fhnd.seek(current_offset)
+            try:
+                filecontent3 = grammar.parse_hypersurface_data(
+                    fhnd,
+                    parsed_data = filecontent3,
+                    stream_data = stream_remainder
+                )
+            except grammar.AHDSStreamError as err:
+                self.assertEqual(2,sum( 1 for item in  self.parsed_header for name in item if name in {'array_declarations','data_definitions'}))
+
     def test_parse_bad_simple_surf(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -387,11 +475,30 @@ class TestHyperSurfaceBad(TestGramarBase):
                     stream_data = stream_remainder
                 )
 
+    def test_parse_bad_simple_surf_not_success(self):
+        self.assertEqual(self.file_format,'HyperSurface')
+        parser = grammar.HyperSufaceParser()
+        success,self.parsed_header,next_item = parser.parse(self.header[1:])
+        self.assertEqual(success,0)
+        current_offset = self.header_size
+        with open(self.filepath,'rb') as fhnd:
+            fhnd.seek(current_offset)
+            parser = grammar.HyperSufaceParser(fhnd=fhnd,verbose=True)
+            with self.assertRaises(grammar.AHDSStreamError):
+                success,self.parsed_header,next_item = parser.parse(self.header)
+                
+    def test_get_header(self):
+        self.assertEqual(self.file_format,'HyperSurface')
+        with open(self.filepath,'rb') as fhnd:
+            with self.assertRaises(grammar.AHDSStreamError):
+                 file_format,self.parsed_header,header_len,stream_data = grammar.get_header(fhnd,verbose=True)
+
 class TestHyperSurfaceEmptyPatches(TestGramarBase):
     filename = 'simple_missing_patches.surf'
+
     def test_missing_patches(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -404,9 +511,10 @@ class TestHyperSurfaceEmptyPatches(TestGramarBase):
 
 class TestHyperSurfaceBadCounter(TestGramarBase):
     filename = 'simple_bad_counter.surf'
+
     def test_missing_bad_counter(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -419,9 +527,10 @@ class TestHyperSurfaceBadCounter(TestGramarBase):
 
 class TestHyperSurfaceBadGroup(TestGramarBase):
     filename = 'simple_bad_placed_group.surf'
+
     def test_missing_placed_group(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -434,9 +543,10 @@ class TestHyperSurfaceBadGroup(TestGramarBase):
 
 class TestHyperSurfaceIncomplete(TestGramarBase):
     filename = 'simple_incomplete.surf'
+
     def test_incomplete_group(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -451,8 +561,8 @@ class TestHyperSurfaceFull(TestGramarBase):
     filename = "full.surf"
          
     def test_parse_full_hxsurf_ascii(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -521,8 +631,8 @@ class TestHyperSurfaceFull(TestGramarBase):
 class TestHyperSurfaceBinary(TestGramarBase):
     filename = "BinaryHyperSurface.surf"
     def test_parse_hxsurface_binary(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -535,9 +645,10 @@ class TestHyperSurfaceBinary(TestGramarBase):
 
 class TestHyperSurfaceBinary7(TestGramarBase):
     filename = "test7.surf"
+
     def test_parse_hxsurface_7_binary(self):
-        self.assertEqual(self.file_format[0],'HyperSurface')
-        current_offset = len(self.header[1])
+        self.assertEqual(self.file_format,'HyperSurface')
+        current_offset = self.header_size
         stream_remainder = b''
         with open(self.filepath,'rb') as fhnd:
             fhnd.seek(current_offset)
@@ -547,11 +658,11 @@ class TestHyperSurfaceBinary7(TestGramarBase):
                 stream_data = stream_remainder
             )
         
-class TestGetParsedData(TestGramarBase):
-    filename = "test7.surf"
-    def test_get_parsed_data(self):
-        raw_header,header,stream_offset,file_format = grammar.get_parsed_data(self.filepath)
-        self.assertEqual(len(raw_header),stream_offset)
+#class TestGetParsedData(TestGramarBase):
+#    filename = "test7.surf"
+#    def test_get_parsed_data(self):
+#        raw_header,header,stream_offset,file_format = grammar.get_parsed_data(self.filepath)
+#        self.assertEqual(len(raw_header),stream_offset)
             
 
             

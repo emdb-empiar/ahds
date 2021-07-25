@@ -52,7 +52,7 @@ def main(): # pragma: nocover
 
 
 def get_amira_file(_file, args):
-    af = AmiraFile(_file, load_streams=args.load_streams, debug=args.debug)
+    af = AmiraFile(_file, load_streams=args.load_streams, debug=args.debug,verbose = args.literal)
     return af
 
 
@@ -93,7 +93,7 @@ def get_literal(af, args):
         string += u'*' * WIDTH + u'\n'
         string += u"ahds: Displaying literal header\n"
         string += u"-" * WIDTH + "\n"
-        string += _str(af.header.literal_data)
+        string += _str(af.header.literal_data.decode('ascii'))
     return string
 
 

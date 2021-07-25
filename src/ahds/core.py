@@ -21,7 +21,7 @@ class readonly_descriptor_base(object):
 
     __slots__ = ()
 
-    valuenotset = ()
+    #valuenotset = ()
 
     @staticmethod
     def create_descriptor(blockclass,slotname,slot):
@@ -79,70 +79,71 @@ class parent_descriptor_base(object):
         """
         adds protection and automatic reference management for the parent
         slot representing a weak reference to the parent Block type object.
-        This reference can be accesse through the read-only parent attribute.
+        This reference can be accessed through the read-only parent attribute.
         Modifications are only posible when accessed through the protected
         _parent attribute. The reference can not be deleted. In case 
-        The parent object is garbage collected or deleted the parent referes
+        The parent object is garbage collected or deleted the parent references
         of all objects linking to it are reset to None when accessed the next
         time. 
         """
         
         _parent_descriptor = getattr(blockclass,'parent',None)
-        if not isinstance(_parent_descriptor,parent_descriptor_base):
-            # class does not yet have a parent, _parent attribute pair which
-            # manages weak references.
-            _hosting_class = getattr(_parent_descriptor,'__objclass__',blockclass)
-            _parent_getter = _parent_descriptor.__get__
-            _parent_setter = _parent_descriptor.__set__
+        if isinstance(_parent_descriptor,parent_descriptor_base): # pragma: nocover should not be triggered
+            return
+        # class does not yet have a parent, _parent attribute pair which
+        # manages weak references.
+        _hosting_class = getattr(_parent_descriptor,'__objclass__',blockclass)
+        _parent_getter = _parent_descriptor.__get__
+        _parent_setter = _parent_descriptor.__set__
 
-            # create the descriptor preventing modification and assign it to the
-            # parent attribute
-            class ahds_parentmember_descriptor(parent_descriptor_base):
-                __slots__ = ()
+        # create the descriptor preventing modification and assign it to the
+        # parent attribute
+        class ahds_parentmember_descriptor(parent_descriptor_base):
+            __slots__ = ()
 
-                def __get__(self,instance,owner):
-                    if instance is not  None:
-                        _parent = _parent_getter(instance,owner)
-                        if _parent:
-                            _alifeparent = _parent()
-                            if not _alifeparent:
-                                _parent_setter(instance,_alifeparent)
-                            return _alifeparent
-                        return None 
-                    if owner is self.__objclass__ or issubclass(owner,self.__objclass__):
-                        return self.__objclass__.__dict__['parent']
-                    raise TypeError("'{}' type class not a subclass of 'Block'".format(owner))
-            
-                def __set__(self,instance,value):
-                    raise AttributeError("'{}' object attribute 'parent' is read-only".format(self.__objclass__.__name__,))
+            def __get__(self,instance,owner):
+                if instance is not  None:
+                    _parent = _parent_getter(instance,owner)
+                    if _parent:
+                        _alifeparent = _parent()
+                        if not _alifeparent:
+                            _parent_setter(instance,_alifeparent)
+                        return _alifeparent
+                    return None 
+                if owner is self.__objclass__ or issubclass(owner,self.__objclass__):
+                    return self.__objclass__.__dict__['parent']
+                raise TypeError("'{}' type class not a subclass of 'Block'".format(owner))
+        
+            def __set__(self,instance,value):
+                raise AttributeError("'{}' object attribute 'parent' is read-only".format(self.__objclass__.__name__,))
 
-                def __delete__(self,instance):
-                    raise AttributeError("'{}' type object 'parent' attribute can not be removed")
+            def __delete__(self,instance):
+                raise AttributeError("'{}' type object 'parent' attribute can not be removed")
 
-                __objclass__ = _hosting_class
+            __objclass__ = _hosting_class
 
-            _descriptor = ahds_parentmember_descriptor()
-            setattr(_hosting_class,'parent',_descriptor)
+        _descriptor = ahds_parentmember_descriptor()
+        setattr(_hosting_class,'parent',_descriptor)
 
-            # create a wrapper for the parent member_descriptor which only accepts Block
-            # type objects and the special value None for clearing reference. 
-            # For any valid Block type object a weak reference is store to the underlying
-            # parent slot.
-            class ahds_parent_descriptor(ahds_parentmember_descriptor):
+        # create a wrapper for the parent member_descriptor which only accepts Block
+        # type objects and the special value None for clearing reference. 
+        # For any valid Block type object a weak reference is store to the underlying
+        # parent slot.
+        class ahds_parent_descriptor(ahds_parentmember_descriptor):
 
-                __slots__ = ()
-                def __set__(self,instance,value):
-                    if not isinstance(value,Block):
-                        if value is not None:
-                            raise ValueError('parent must either be Block type object or None')
+            __slots__ = ()
+            def __set__(self,instance,value):
+                if not isinstance(value,Block):
+                    if value is None:
                         _parent_setter(instance,value)
                         return
-                    _parent_setter(instance,weakref.ref(value))
+                    raise ValueError('parent must either be Block type object or None')
+                _parent_setter(instance,weakref.ref(value))
 
-                __objclass__ = _hosting_class
+            __objclass__ = _hosting_class
 
-            _descriptor = ahds_parent_descriptor()
-            setattr(_hosting_class,'_parent',_descriptor)
+        _descriptor = ahds_parent_descriptor()
+        setattr(_hosting_class,'_parent',_descriptor)
 
 # TODO as soon as Python 2 is history introduce BlockNamespace dict providing __protectedslots__ as
 # out of band data of class namespace dict. will be cleared by BlockMetaClass.__new__ and its content
@@ -163,15 +164,14 @@ class BlockMetaClass(type):
     # method of dedicated subclasses of the Block class. It us utilized by the
     # ahds_readonly_descriptor.get_membersteate method to indicate that value has not
     # been provided so far.
-    valuenotset = ()
+    #valuenotset = ()
 
     @staticmethod
     def readonly_slot(name,copy=True,forceload=False,namespace = dict()):
         """
-        This method is inserted into the local namespace of class declaration 
-        shadowing the global READONLY method defined above. It stores the 
-        provide parameters in a dictionary hosted by the __protectedslots__ 
-        special member variable The items stored inside this dictionary will
+        This method is inserted into the local namespace of class declaration.
+        It stores the provided parameters in a dictionary hosted by the __protectedslots__ 
+        special member variable. The items stored inside this dictionary will
         be passed to the BlockMetaClass.create_descriptor method by the 
         BlockMetaClass.__new__ method below. 
         
@@ -185,7 +185,7 @@ class BlockMetaClass(type):
             # only public slots can be labeld read-only. Protected, private slots and
             # slots mimicking special attributes are ignored.
             return name
-        # record name and prepend with '_' and pass on name as protected slot instead 
+        # record name, prepend with '_' and pass on name as protected slot instead 
         _protectedslots[name] = dict(
             allowcopy = copy,
             loadoncopy = forceload,
@@ -197,8 +197,8 @@ class BlockMetaClass(type):
         """
         pre populate the namespace used to collect the class declaration and definition
         of the mew Block type class with an empty dictionary for the __protectedslots__
-        structure and establish all local shadows for the READONLY method and any possible
-        calls through module references to adhs and ahds.core module.
+        structure and make the readonly_slot method available as READONLY decorator within
+        class namespace.
         """
         # TODO on removing Python 2 support skip remove following line and replace _namespace.update
         # by simple _namespace = BlockNamespace(READONLY = ft.partial(...)) see above TODO
@@ -276,7 +276,9 @@ if sys.version_info[0] >= 3: #pragma: cover_py3
 
     # in define xrange alias which has been removed in Python3 as range now is equal to
     # xrange
-    xrange = range
+    # TODO would like to remove and ignore from now on eventhough this would on some places slow down
+    # python 2
+    #xrange = range
 
     # define _dict_iter_values, _dict_iter_items, _dict_iter_keys aliases imported by the
     # other parts for dict.values, dict.items and dict.keys
@@ -353,15 +355,19 @@ else: #pragma: cover_py2
     sys.setdefaultencoding("utf-8")
 
     def _decode_string(data):
-        """ in python2.x no decoding is necessary thus just returns data without any change """
+        """
+        in python2.x no decoding is necessary thus just returns data without any change
+        """
         return data
 
     # try to define xrange alias pointing to the builtin xrange
-    import __builtin__
-    try:
-        xrange = __builtins__['xrange']
-    except: # pragma: nocover
-        xrange = getattr(__builtins__, 'xrange', xrange)
+    # TODO would like to remove and ignore from now on eventhough this would on some places slow down
+    # python 2
+    #import __builtin__
+    #try:
+    #    xrange = __builtins__['xrange']
+    #except: # pragma: nocover
+    #    xrange = getattr(__builtins__, 'xrange', xrange)
 
     # define _dict_iter_values, _dict_iter_items, _dict_iter_keys aliases imported by the
     # other parts for dict.itervalues, dict.iteritems and dict.iterkeys
@@ -380,7 +386,7 @@ else: #pragma: cover_py2
     def _qualname(o):
         return o.__name__
 
-    _str = __builtin__.unicode
+    _str = __builtins__['unicode']
 
     def READONLY(name,copy=True,forceload=False):
         """
@@ -391,12 +397,11 @@ else: #pragma: cover_py2
 
         :param str name: the name of the slot to be protected
         :param bool copy: If True value will be copied by copy.copy or copy.deepcopy method
-                          If False value will be left uset by copy.copy and copy.deepcopy
-        :paran bool forceload: If true __gettattr__ will be called if value is unset when
+                          If False value will be left unset by copy.copy and copy.deepcopy
+        :param bool forceload: If true __gettattr__ will be called if value is unset when
                           block is copied using copy.copy or copy.deepcopy.
-                          If False value will left unset if not loaded by a preceeding call
+                          If False value will be left unset if not loaded by a preceeding call
                           to __getattr__
-                          If None obey _loadstreams
 
         NOTE: READONLY decorator has no impact on slot attributes whitch start with a _ like
             protected and private attributes as well as slots mimicking special attributes
@@ -423,6 +428,8 @@ else: #pragma: cover_py2
         _namespace,_readonly_hook = BlockMetaClass.__prepare__(_caller[3],None,namespace=_namespace,__readonly_2_hook__ = True)
         return _readonly_hook(name,copy,forceload,namespace=_namespace)
 
+    # add above READONLY decorator to __builtins__ dictionary to ensure it can be called on the first
+    # slot name to be made read-only as if initialized by __prepare__ method of meta class.
     __builtins__['READONLY'] = READONLY
 
     class BlockMetaClassLink(object):
@@ -464,10 +471,12 @@ def deprecated(description):
                 types.FunctionType,types.BuiltinFunctionType,types.LambdaType,
                 types.MethodType,types.BuiltinMethodType
             )):
-                warnings.warn('function/method {} is deprecated: {}'.format(_qualname(o), description),
-                              DeprecationWarning)
+                warnings.warn(
+                    "function/method/property '{}' is deprecated: {}".format(_qualname(o), description),
+                    DeprecationWarning
+                )
             elif isinstance(o,type): # pragma: cover_py3
-                warnings.warn('class {} is deprecated: {}'.format(_qualname(o), description), DeprecationWarning)
+                warnings.warn("class '{}' is deprecated: {}".format(_qualname(o), description), DeprecationWarning)
             return o(*args, **kwargs)
         return inner_wrapper
     return outer_wrapper
@@ -483,7 +492,7 @@ class _ahds_member_descriptor_base(object):
     # the corresponding attribute is defined
     __slots__ = "_alifeinstances"
 
-    # dummy value used to distinguis between instance attribute for which no content is available
+    # dummy value used to distinguish between instance attribute for which no content is available
     # and instance attributes which have explicitly set to the value None
     _name_not_a_valid_key = ()
 
@@ -539,25 +548,25 @@ class _ahds_member_descriptor_base(object):
 
 
         if name in blockinstance.__dict__:
-            # name is inside instance __dict__
             raise AttributeError("'{}' type object attributes '{}' already defined".format(blockinstance.__class__.__name__,name))
+        # TODO if not needed remove
         #for _ in ( 
         #    True
         #    for _parentclass in type.mro(blockinstance.__class__)
-        #    if name in getattr(_parentclass,'__slots__',()) or name in getattr(_parentclass,'__protectedslots__',{})
+        #    if name in _parentclass.__dict__.get('__slots__',()) or name in _parentclass.__dict__.get('__protectedslots__',{})
         #):
         #    # name refers to any of the attributes declared through __slots__ special attribute
         #    raise AttributeError("'{}' type object attributes '{}' already defined".format(blockinstance.__class__.__name__,name))
         # prepare moving of attribute
         _docleanup = _ahds_member_descriptor_base._nocleanup
         if oldname is not None:
-            _olddescriptor = getattr(blockinstance.__class__,oldname,None)
-            if _olddescriptor is None or not isinstance(oldname,str) :
-                raise AttributeError("'{}' type object has no attribute '{}'".format(blockinstance.__class__.__name__,oldname))
-            if not isinstance(_olddescriptor,_ahds_member_descriptor_base):
-                # only attributes for which the corresponding data descriptor is maintained through
-                # ahds_member_descriptor classes can be renamed
+            if not isinstance(oldname,str):
                 raise AttributeError("'{}' type object attribute '{}' is not a valid AmiraMesh or HyperSurface parameter".format(blockinstance.__class__.__name__,oldname))
+            _olddescriptor = getattr(blockinstance.__class__,oldname,None)
+            if _olddescriptor is None or not isinstance(_olddescriptor,_ahds_member_descriptor_base) or oldname not in blockinstance._attrs:
+                # only attributes existent in _atts for which the corresponding data descriptor is maintained through
+                # ahds_member_descriptor classes can be renamed
+                raise AttributeError("'{}' type object has no attribute '{}'".format(blockinstance.__class__.__name__,oldname))
             if name is None:
                 # called by delattr
                 _olddescriptor._cleanup(id(blockinstance),oldname)
@@ -585,13 +594,13 @@ class _ahds_member_descriptor_base(object):
             _docleanup(id(blockinstance),oldname)
             _descriptor._makealife(blockinstance,name)
             return True
-        _docleanup(id(blockinstance),oldname)
         # store unbound _attrs getter and dictionary get methods in closoure variables
         # to directly access both without the need for further attribute lookups
         _attrs_getter  = getattr(blockinstance.__class__,'_attrs')
         if not isinstance(_attrs_getter,types.MemberDescriptorType):
-            # indicate that attribute is now provided for specified blockinstance
+            # indicate that attribute is not provided or broken for specified blockinstance
             raise AttributeError("'{}' type object attribute '_attrs' inconsitent or missing".format(blockinstance.__class__.__name__))
+        _docleanup(id(blockinstance),oldname)
         _get_attrs = _attrs_getter.__get__
         _value_get = dict.get
 
@@ -610,11 +619,11 @@ class _ahds_member_descriptor_base(object):
                 # load _attrs dictionary of Block instance
                 _instance_attrs = _get_attrs(instance,owner)
                 # lookup name in instance._attrs dictionary if not present use _name_not_a_valid_key as default to indicate
-                # that blockattributes is not defined 
+                # that block attribute is not defined 
                 _value = _value_get(_instance_attrs,name,_ahds_member_descriptor_base._name_not_a_valid_key)
                 if _value is not _ahds_member_descriptor_base._name_not_a_valid_key:
                     return _value
-                # check if name is stored in __dict__ of instance
+                # check if name is stored in __dict__ of instance and if return its value
                 try:
                     return instance.__dict__[name]
                 except KeyError:
@@ -637,11 +646,12 @@ class _ahds_member_descriptor_base(object):
                 except KeyError:
                     raise AttributeError("'{}' type object has no '{}' attribute".format(instance.__class__.__name__,name))
 
+            # define __objecalss__ special class attribute to make descriptor look alike true member_descriptor
+            # and property data descriptors as well as to facilitate the removal of the descriptor later on 
+            # when not needed any more.
             __objclass__ = blockinstance.__class__
                     
-        # create instance of descriptor fill its __objcalss__ special variable to make it look alike 
-        # true member_descriptor and property data descriptors and to facilitate the removal of the descriptor later on 
-        # when not needed any more. Insert the descriptor into the classdict of the blockinstance
+        # create instance of descriptor and insert it into the classdict of the blockinstance
         _descriptor = ahds_member_descriptor(blockinstance)
         setattr(blockinstance.__class__,name,_descriptor)
         # indicate that attribute is now provided for specified blockinstance
@@ -831,29 +841,37 @@ class Block(BlockMetaClassLink):
                 # if it is not a Block then we construct the repr. manually
                 # don't print the whole array for large arrays
                 if isinstance(value, (np.ndarray,)):
-                    string += "{}|  +-{}:".format(prefix,attr)
-                    array_prefix = "{}|  |   ".format(prefix)
-                    formatted = np.array2string(
-                        value,
-                        precision = 9, # number of float digits printed max
-                        # number of total elements in array which shall trigger sumarized output
-                        # independent of dimensions and number of elements printed per edge
-                        # if total number is lower all array elements will be printed in any
-                        # case
-                        threshold = 20,
-                        # number of items printed at start and end of dimension
-                        # if number of entries in dimension is <= 2 * edgeitems than
-                        # all elements of dimension are printed otherwise ... are inserted
-                        # along dimension
-                        edgeitems = 3,
-                        max_line_width = 80 - len(array_prefix),
-                        floatmode = 'maxprec_equal'
-                    ).split('\n')
-                    string += "{}{}".format(array_prefix,array_prefix.join(formatted))
+                    string += self._format_array(prefix,attr,value,80)
                 else:
                     string += "{}|  +-{}: {}\n".format(prefix,attr, value)
         printed.remove(self)
         return string
+
+    @staticmethod
+    def _format_array(prefix,attr,value,linewidth):
+        """
+        formats numy array data for prity printing along with all other block
+        attributes
+        """
+        string = "{}|  +-{}:".format(prefix,attr)
+        array_prefix = "\n{}|  |   ".format(prefix)
+        formatted = np.array2string(
+            value,
+            precision = 9, # number of float digits printed max
+            # number of total elements in array which shall trigger sumarized output
+            # independent of dimensions and number of elements printed per edge
+            # if total number is lower all array elements will be printed in any
+            # case
+            threshold = 20,
+            # number of items printed at start and end of dimension
+            # if number of entries in dimension is <= 2 * edgeitems than
+            # all elements of dimension are printed otherwise ... are inserted
+            # along dimension
+            edgeitems = 3,
+            max_line_width = linewidth - len(array_prefix) + 1,
+            floatmode = 'maxprec_equal'
+        ).split('\n')
+        return string + "{}{}\n".format(array_prefix,array_prefix.join(formatted))
 
     def __getitem__(self, index):
         if not isinstance(index,int):
@@ -908,7 +926,7 @@ class ListBlock(Block):
         self._list = list() if initial_len < 1 else [None] * initial_len # separate attribute for ease of management
 
     @property
-    @deprecated("us of items on listblock is deprecated. ListBlock can be used directly where mutable sequence is expected and required")
+    @deprecated("use of items on listblock is deprecated. ListBlock can be used directly where mutable sequence is expected and required")
     def items(self):
         return self._list
 
@@ -937,12 +955,12 @@ class ListBlock(Block):
         if isinstance(key,slice):
             # raise value error if item in iterable is not a valid Block instance 
             # will only be called if below isinstance check fails
-            def reject_iterable(item):
+            def reject_iterable():
                 raise ValueError('iterable may contain Block class/subclass instances only')
 
-            rollback = self._list[:]
+            rollback = list(self._list[:])
             try:
-                self._list[key] = (( item for item in value if isinstance(item,Block) or reject_iterable(item)))
+                self._list[key] = (( item for item in value if isinstance(item,Block) or reject_iterable()))
             except ValueError:
                 # reset any item already replaced
                 self._list[:] = rollback
