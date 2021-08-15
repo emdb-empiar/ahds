@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import os
+import os.path
 import sys
 import re
 import unittest
@@ -18,7 +19,8 @@ from ahds.grammar import AHDSStreamError
 def _parse_with_shlex(cmd):
     import shlex
     import sys
-    sys.argv = shlex.split(cmd)
+    # in windows posix parsing mode must be turned off to make '\' normal non escape character
+    sys.argv = shlex.split(cmd) if os.name != 'nt' else shlex.split(cmd,posix=False)
     args = parse_args()
     return args
 
@@ -284,6 +286,7 @@ class TestMain(Py23FixTestCase):
     def setUpClass(cls):
         cls.af_fn = os.path.join(TEST_DATA_PATH, 'test12.am')
         cls.af_scalar_fn = os.path.join(TEST_DATA_PATH,'testscalar.am')
+        
 
     def test_set_file_and_paths(self):
         """Test that we correctly extract file and one or more path"""

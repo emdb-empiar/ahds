@@ -56,7 +56,7 @@ Feel free to join this initiative.
 --------------------------------------------
 Installation
 --------------------------------------------
-``ahds`` works with Python 2.7, 3.5, 3.6, 3.7 and 3.8. It requires ``numpy`` to build.
+``ahds`` works with Python 2.7, 3.6, 3.7 and 3.8. It requires ``numpy`` to build.
 
 
     pip install ahds
@@ -325,8 +325,8 @@ This is followed by grouped `parameters` enclosed in a series of braces beginnin
         }
         Patches {
         # patch attributes
-            InnerRegion â€œInsideâ€,
-            OuterRegion â€œExteriorâ€,
+            InnerRegion Inside,
+            OuterRegion Exterior,
             BoundaryID 0,
             BranchingPoints 0
         }

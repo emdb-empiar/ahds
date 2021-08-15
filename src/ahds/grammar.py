@@ -73,8 +73,8 @@ qstring                      :=    "\"", "["*, [A-Za-z0-9_,.\(\):/ \t]*, "]"*, "
 xstring                      :=    [A-Za-z], [A-Za-z0-9_\- (\xef)(\xbf)(\xbd)]*
 number_seq                   :=    number, (ts, number)*
 
-# silent production rules
-<tsn>                        :=    [ \t\n]*            
+# silent production rules: tsn skips over unix and windows line endings not just unix 
+<tsn>                        :=    [ \t\r\n]*
 <ts>                         :=    [ \t]*
 <c>                          :=    ","
 '''
@@ -180,12 +180,12 @@ _stream_delimiters = [
     re.compile(br"(?:^|\n)\s*@(?P<stream>\d+)\s*\n", flags=re.S),
     # pattern for locating stream_header in binary and ascii HyperSurface type file
     re.compile(
-        br"(?:^|\n)\s*(?P<stream>(?:"+_hyper_surface_entities+ br"))(?:\s+(?:(?P<count>\d+)|(?P<string>(?:\w|[^\n{])+)))?(?P<group>\s*(?:\n\s*)?\{\s*\n)?\s*\n"
+        br"(?:^|\n)\s*(?P<stream>(?:"+_hyper_surface_entities+ br"))(?:\s+(?:(?P<count>\d+)|(?P<string>(?:\w|[^\r\n{])+)))?(?P<group>\s*(?:\n\s*)?\{\s*\n)?\s*\n"
     ),
     # same as above for ascii type files which may contain comments will be completed below
     re.compile(br'#[^\n]*(?=\n|$)'),
     # search for end of stream either  followed by closing } and optionally opening { or by name of next stream
-    re.compile(br"(?P<stop>\s*\}(?:(?:\s|\n)*\{)?\n|(?:" + _hyper_surface_entities + b"))", re.I),
+    re.compile(br"(?P<stop>\s*\}(?:(?:\s|\n)*\{)?\s*\n|(?:" + _hyper_surface_entities + b"))", re.I),
     re.compile(br'}(?:\s*{)?')
 ]
 # pattern for locating stream_header and comments in ascii HyperSurface type file
@@ -383,6 +383,7 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
 
                 
     continue_scanning_at = 0
+    array_id = ''
     for stream_data in iter_hypersurface_stream(stream_data):
         next_stream = _stream_delimiters[1].search(stream_data, continue_scanning_at)
         if next_stream is None:
@@ -525,6 +526,7 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
                 data_shape = num_items
             )
         )
+    print("\nfhnd:",fhnd,"\npd",parsed_data,"\n")
     return parsed_data
 
 

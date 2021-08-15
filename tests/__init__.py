@@ -3,12 +3,13 @@ from __future__ import print_function
 import warnings
 
 import os
+import os.path
 import sys
 import types
 from unittest import TestCase
 
 AHDS_PACKAGE_PATH = os.path.dirname(os.path.abspath(__file__))
-TEST_DATA_PATH = os.path.join(AHDS_PACKAGE_PATH, 'data')
+TEST_DATA_PATH = os.path.join(AHDS_PACKAGE_PATH, r'data')
 
 class Py23FixAssertWarnsContext():
     """context manager mocking assertWarns context missing in python 2 unittest"""
