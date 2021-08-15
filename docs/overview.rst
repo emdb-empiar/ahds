@@ -325,8 +325,8 @@ This is followed by grouped `parameters` enclosed in a series of braces beginnin
         }
         Patches {
         # patch attributes
-            InnerRegion â€œInsideâ€,
-            OuterRegion â€œExteriorâ€,
+            InnerRegion Inside,
+            OuterRegion Exterior,
             BoundaryID 0,
             BranchingPoints 0
         }
