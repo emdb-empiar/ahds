@@ -201,7 +201,7 @@ import sys
 import collections
 import warnings
 
-from .core import Block, deprecated, ListBlock, _dict_iter_items 
+from .core import Block, deprecated, ListBlock 
 from .data_stream import set_data_stream, HEADERONLY, ONDEMMAND, IMMEDIATE, get_stream_policy,load_streams,select_array_block
 from .grammar import get_header,AHDSStreamError
 
@@ -256,7 +256,7 @@ class AmiraHeader(Block):
         block_data = { 
             block_key:block_data
             for block in self._parsed_data
-            for block_key,block_data in _dict_iter_items(block)
+            for block_key,block_data in block.items()#_dict_iter_items(block)
         }
         # load file designations
         self._load_designation(block_data['designation'])

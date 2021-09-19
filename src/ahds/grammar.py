@@ -23,7 +23,7 @@ from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatch
 # or
 # python setup.py develop
 from .proc import AmiraDispatchProcessor ,set_content_type_filter,clear_content_type_filter
-from .core import _decode_string, _dict_iter_items, _dict_iter_keys,ListBlock
+from .core import _decode_string, ListBlock
 
 class AHDSStreamError(ValueError):
     pass
@@ -156,14 +156,16 @@ _type_sizes = { 'byte':1, 'short':2, 'int':4, 'long':8, 'float':4, 'double':8,'c
 # in the below regular expression patterns
 # todo: replace this with something more meaningful
 
-_hyper_surface_entities = br'|'.join(_dict_iter_keys(_hyper_surface_file))
+#_hyper_surface_entities = br'|'.join(_dict_iter_keys(_hyper_surface_file))
+_hyper_surface_entities = br'|'.join(_hyper_surface_file.keys())
 
 # maximum number of bytes to be rescanned at the end of the already inspected
 # _stream_data array after new bytes have been read from the file. In case within this
 # range a data block marker (@<Num>) or any of the above HyperSurface section keys has
 # alreday been successfully identified rescan starts at the byte following this match
 # todo: replace this with something more meaningful
-_rescan_overlap = ( ( max(len(_key) for _key in _dict_iter_keys(_hyper_surface_file) ) + 15 ) // 16 ) * 16 
+#_rescan_overlap = ( ( max(len(_key) for _key in _dict_iter_keys(_hyper_surface_file) ) + 15 ) // 16 ) * 16 
+_rescan_overlap = ( ( max(len(_key) for _key in _hyper_surface_file.keys() ) + 15 ) // 16 ) * 16 
 
 # TODO do we need to distinguish here or could binary version be used for both as string in python2 is 
 # anyway ascii and not unicode string
