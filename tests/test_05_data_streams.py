@@ -3,14 +3,15 @@ from __future__ import print_function
 
 import sys
 import os
+import pytest
 import unittest
 import re
 
 import numpy
+from . import TEST_DATA_PATH,Py23FixTestCase
 
 import ahds
 from ahds import header, data_stream, IMMEDIATE,HEADERONLY,ONDEMMAND
-from . import TEST_DATA_PATH,Py23FixTestCase
 from ahds.grammar import AHDSStreamError
 
 

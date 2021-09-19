@@ -5,11 +5,13 @@ import os
 import os.path
 import sys
 import re
+import pytest
 import unittest
 import random
-import ahds
 
 from . import Py23FixTestCase, TEST_DATA_PATH
+
+import ahds
 from ahds.ahds import parse_args, get_debug, get_literal, get_paths, set_file_and_paths, get_amira_file, AmiraFile
 from ahds import check_format
 from ahds.core import _str

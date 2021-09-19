@@ -4,12 +4,15 @@ from __future__ import print_function
 import os
 import sys
 import numpy as np
+import pytest
+
+from . import Py23FixTestCase, TEST_DATA_PATH
 
 from ahds import header
-from . import Py23FixTestCase, TEST_DATA_PATH
 from ahds.data_stream import AmiraSpreadSheet,AmiraMeshDataStream,get_stream_policy,HEADERONLY,IMMEDIATE
 from ahds.grammar import get_header,AHDSStreamError
-from ahds.core import Block,ListBlock,_decode_string,_dict_iter_items
+from ahds.core import Block,ListBlock,_decode_string
+
 
 class TestHeaderBase(Py23FixTestCase):
     filename = 'test12.am'
@@ -34,7 +37,8 @@ class TestHeaderBase(Py23FixTestCase):
             cls.header_blocks = {
                 block_key:block_data
                 for block in cls.parsed_header
-                for block_key,block_data in _dict_iter_items(block)
+                #for block_key,block_data in _dict_iter_items(block)
+                for block_key,block_data in block.items()
             }
             return
         cls.header = header.AmiraHeader(cls.filepath,verbose=rawheader)
@@ -406,6 +410,7 @@ class TestInitDoubleDatadescriptor(TestHeaderBase):
 #         self.assertIsInstance(self.header, header.AmiraHeader)
 #         self.assertEqual(self.header._load_streams,IMMEDIATE)
 # 
+
 class TestLoadErrorsWarnings(TestHeaderBase):
 
     def test_invalid_stream_setting(self):
@@ -549,6 +554,7 @@ class TestDestinctionListOfMaterialReferences(TestHeaderBase):
         self.assertEqual(self.header.Parameters.Materials.Exterior.Id,0)
         self.assertEqual(self.header.Parameters.Materials.Something.Id,4)
         self.assertEqual(self.header.Parameters.Materials.Interior.Id,7)
+
 
 # class TestDestinctionListOfMaterialNoParameters(TestHeaderBase):
 #     filename = "test_simple_materials_noparams.am"

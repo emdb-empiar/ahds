@@ -23,7 +23,7 @@ import numpy as np
 # pip install -e /path/to/folder/with/setup.py
 # or
 # python setup.py develop
-from .core import _dict_iter_keys, _dict_iter_values, Block,ListBlock, deprecated 
+from .core import Block,ListBlock, deprecated 
 from .grammar import next_amiramesh_ascii_stream, next_amiramesh_binary_stream,_rescan_overlap,set_content_type_filter,clear_content_type_filter,AHDSStreamError
     
 

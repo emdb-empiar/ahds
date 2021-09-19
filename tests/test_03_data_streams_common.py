@@ -3,15 +3,17 @@ from __future__ import print_function
 
 import sys
 import os
+import pytest
 import unittest
 
 import numpy
 
 import ahds
 from ahds import header, data_stream, IMMEDIATE,HEADERONLY,ONDEMMAND
-from . import TEST_DATA_PATH,Py23FixTestCase
 from ahds.grammar import AHDSStreamError
 from ahds.core import Block, ListBlock
+
+from . import TEST_DATA_PATH,Py23FixTestCase
 
 class TestHelpers(unittest.TestCase):
     def test_get_set_stream_policy(self):

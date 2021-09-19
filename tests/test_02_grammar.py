@@ -2,10 +2,12 @@
 from __future__ import print_function
 
 import os
+import pytest
 import unittest
 import numpy as np
 import copy
 import re
+import types
 
 from ahds import grammar, core, proc
 from . import TEST_DATA_PATH
@@ -657,13 +659,6 @@ class TestHyperSurfaceBinary7(TestGramarBase):
                 parsed_data = self.parsed_header,
                 stream_data = stream_remainder
             )
-        
-#class TestGetParsedData(TestGramarBase):
-#    filename = "test7.surf"
-#    def test_get_parsed_data(self):
-#        raw_header,header,stream_offset,file_format = grammar.get_parsed_data(self.filepath)
-#        self.assertEqual(len(raw_header),stream_offset)
-            
 
             
             

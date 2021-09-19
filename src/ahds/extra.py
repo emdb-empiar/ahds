@@ -15,7 +15,7 @@ from skimage.measure._find_contours import find_contours
 
 # definition of numpy data types with dedicated endianess and number of bits
 # they are used by the below lookup table
-from .core import _dict_iter_items, _dict_iter_values, xrange
+from .core import _dict_iter_items, _dict_iter_values
 
 
 class Image(object):
@@ -103,7 +103,7 @@ class ImageSet(UserList):
     def _segments(self):
         """A dictionary of lists of contours keyed by z-index"""
         segments = dict()
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             image = self[i]
             for z, contour in _dict_iter_items(image.as_segments):
                 for byte_value, contour_set in _dict_iter_items(contour):

@@ -13,7 +13,7 @@ import warnings
 
 # simpleparse
 from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, singleMap
-from .core import _dict_iter_items
+#from .core import _dict_iter_items
 
 # List of literals found in older files and the constans they should
 # be mapped to ensuring consistency between different versions of
@@ -138,7 +138,8 @@ class AmiraDispatchProcessor(DispatchProcessor):
         # represents all ContentType meta declarations the array declaration could 
         # be member of
         array_links = dict()
-        for _content_type,_filter in _dict_iter_items(self.__class__._array_declarations_processors):
+        #for _content_type,_filter in _dict_iter_items(self.__class__._array_declarations_processors):
+        for _content_type,_filter in self.__class__._array_declarations_processors.items():
 
             # load current array meta declaration for ContentType and filter array declaration
             typed_meta_declaration = self._meta_array_declarations.get(_content_type,None)
@@ -179,7 +180,8 @@ class AmiraDispatchProcessor(DispatchProcessor):
         typed_meta_declaration = self._meta_array_declarations.pop(content_type,None)
         if typed_meta_declaration is None:
             return False
-        for _base_name,meta_declaration in _dict_iter_items(typed_meta_declaration):
+        #for _base_name,meta_declaration in _dict_iter_items(typed_meta_declaration):
+        for _base_name,meta_declaration in typed_meta_declaration.items():
             sub_declarations = meta_declaration.pop('sub_declarations',[])
             if len(sub_declarations) < 2:
                 array_links = sub_declarations[0].get('array_links',{})
