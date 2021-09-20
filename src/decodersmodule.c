@@ -17,9 +17,10 @@
 
 
 
+#if 0
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION // to avoid complaint
 #include <numpy/arrayobject.h> // the numpy array object definitions
-
+#endif
 // typedefs
 typedef unsigned long ulong;
 typedef unsigned char uchar;
@@ -103,8 +104,11 @@ initdecoders(void)
 #endif
     }
 
+#if 0
 	// for numpy
 	import_array();
+
+#endif
 
 #if PY_MAJOR_VERSION >= 3
 	return m;
@@ -168,40 +172,53 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *kwargs)
 	//  decoders.byterle_decoder function
 	char * keywords[] = {
 		"data", // the input data
+		// byte_rele_decode is used as dropin method for zlib.decompress
+		// which expects wbits as second optional parameter. To not depend
+		// upon whether explicitly set for whatever reason or not just accept
+		// this parameter here without considering it later
+		"wbits", 
 		// number of bytes expected in the output
-		"count", 
-		// byte_rele_decode is used as dropin method for numpy.frombuffer
-		// which expect dtype object along with input bytes and number of output
-		// bytes specified by count parameter
-		"dtype",
+		"bufsize",
 		NULL
 	};
-	PyObject * ignore_dtype = NULL;
 
-	// Python usage: hx.byterle_decode(input, count = output_size, dtype=numpy.dtype('<u8'))
-	if (!PyArg_ParseTupleAndKeywords(args,kwargs, "s#n|O",keywords, &input, &input_size, &output_size,&ignore_dtype))
+	Py_ssize_t * ignore_wbits = 0;
+
+	// Python usage: hx.byterle_decode(input, wbits=0,bufsize = output_size)
+	// or short
+	// Python usage: hx.byterle_decode(input, bufsize = output_size)
+	if (!PyArg_ParseTupleAndKeywords(args,kwargs, "s#|nn",keywords, &input, &input_size, &ignore_wbits,&output_size)) {
 		return NULL;
+	}
 
-	// allocate buffer and assign read and write pointer
-	uchar * buffer = PyMem_New(uchar, output_size); // output byte buffer
-	uchar * output = buffer; // pointer indicating positon of next output byte
+	if ( output_size < 1) {
+		return stream_error("Failed to decode stream: output buffer size must be > 0");
+	}
+
+	// allocate python bytearray to be returned and assign read and write pointer
+	PyObject * output_array = PyByteArray_FromStringAndSize(NULL,output_size);
+
+	Py_INCREF(output_array); // ... because it will be managed from Python
+
+	uchar * buffer = (uchar*)PyByteArray_AsString(output_array); // output byte buffer
+	uchar * output = buffer; // pointer indicating position of next output byte
 	uchar * buffer_end = &(buffer[output_size]); // first byte following buffer
 	uchar * terminal = &(input[input_size]); // first byte following input buffer
-	size_t num_char = 0;
+	Py_ssize_t num_char = 0;
 
 	while ( terminal != input ) { // while we still have some input
-		num_char = (size_t)input[0];
+		num_char = (Py_ssize_t)input[0];
 		if ( num_char & 0x80 ) {
 			// MSB is set the remaining 7 Bytes contain count of following not encoded
 			// bytes they have to be copied as are to output
 			num_char &= 0x7F;
 			if ( ( buffer_end - output ) < num_char ) {
-				PyMem_Del(buffer);
+				Py_DECREF(output_array);
 				return stream_error("Failed to decode stream: output buffer size (%zd bytes) exeeded",output_size);
 			}
 			input = &(input[1]);
 			if ( ( terminal - input ) < num_char ) {
-				PyMem_Del(buffer);
+				Py_DECREF(output_array);
 				return stream_error("Failed to decode stream: end of stream not expected");
 			}
 			memcpy(output,input,num_char);
@@ -212,11 +229,11 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *kwargs)
 
 		// RLE encoded block expand value provided by next byte to specified length
 		if ( (buffer_end - output) < num_char ) {
-			PyMem_Del(buffer);
+			Py_DECREF(output_array);
 			return stream_error("Failed to decode stream: output buffer size (%zd bytes) exeeded",output_size);
 		}
 		if ( terminal - input < 2 ) {
-			PyMem_Del(buffer);
+			Py_DECREF(output_array);
 			return stream_error("Failed to decode stream: end of stream not expected");
 		}
 		memset(output,(int)(input[1]),num_char);
@@ -225,15 +242,15 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *kwargs)
 
 	}
 	if ( buffer_end != output ) {
-		PyMem_Del(buffer);
+		Py_DECREF(output_array);
 		return stream_error("Failed to decode stream: %zu bytes expected %zu bytes received",output_size,(size_t)(output - buffer) );
 	} 
 
+#if 0
 	// create a numpy array using the buffer as the data source
 	npy_intp dims[1] = {(npy_intp)output_size};
 	PyObject *output_array = PyArray_SimpleNewFromData(1, dims, NPY_UINT8, buffer);
-
-	Py_INCREF(output_array); // ... because it will be managed from Python
+#endif
 	return output_array;
 }
 

@@ -18,6 +18,7 @@ import warnings
 import zlib
 
 import numpy as np
+import array
 
 # to use relative syntax make sure you have the package installed in a virtualenv in develop mode e.g. use
 # pip install -e /path/to/folder/with/setup.py
@@ -132,21 +133,22 @@ _type_map = {
 try:
     from .decoders import byterle_decoder
 except ImportError:
-    def byterle_decoder(data, count,**kwargs):
+    
+    def byterle_decoder(data, wbits=0,bufsize = 0):
         """If the C-ext. failed to compile or is unimportable use this slower Python equivalent
 
         :param str data: a raw stream of data to be unpacked
-        :param int output_size: the number of items when ``data`` is uncompressed
-        :return np.array output: an array of ``np.uint8``
+        :param int wbits: ignore, just accepted to be in sync with zlib.decompress signature
+        :param int bufsize: the number of items when ``data`` is uncompressed
         """
 
         from warnings import warn
         warn("using pure-Python (instead of Python C-extension) implementation of byterle_decoder")
 
         # load input data into numpy array buffer
-        input_data = np.frombuffer(data, dtype=_np_ubytelittle, count=len(data))
+        input_data = array.array('B',data)
         # output buffer 
-        output = np.zeros(count, dtype=np.uint8)
+        output = bytearray().zfill(bufsize)
         get = 0 # index of next byte to read
         put = 0 # index to write next decoded byte to
         while get < len(input_data):
@@ -158,25 +160,28 @@ except ImportError:
                 # copy as is. The lower 7 Bytes provide the number of bytes to be
                 # copied
                 numbytes &= 0x7F
-                nextput = put + numbytes
                 nextget = get + numbytes
+                nextput = put + numbytes
                 output[put:nextput] = input_data[get:nextget]
                 get = nextget
                 put = nextput
                 continue
             # encoded block of numbytes bytes expand
             nextput = put + numbytes
-            output[put:nextput] = input_data[get]
+            #output[put:nextput] = input_data[get]
+            output[put:nextput] = ( input_data[get] for _ in range(numbytes) )
             get += 1
             put = nextput
 
-        assert put == count
+        #assert put == count
+        if put != bufsize:
+            raise AHDSStreamError("Failed to decode stream: {} bytes expected {} bytes received",bufsize,put);
 
         return output
 
 # define common alias for the selected byterle_decoder implementation
 hxbyterle_decode = byterle_decoder
-def hxraw_decode(data):
+def hxraw_decode(data,wbits=0,bufsize=0):
     """
     noop decoder to keep code below simple happy
     """
@@ -352,9 +357,9 @@ def load_streams(header):
 class AmiraMeshDataStream(AmiraDataStream):
     """Class that defines an AmiraMesh data stream"""
     __decode_data__ = {
-        'HxZip':(np.frombuffer,zlib.decompress),
-        'HxByteRLE':(hxbyterle_decode,hxraw_decode),
-        None:(np.frombuffer,hxraw_decode)
+        'HxZip':zlib.decompress,
+        'HxByteRLE':hxbyterle_decode,
+        None:hxraw_decode
     }
 
     def _read(self):
@@ -404,15 +409,16 @@ class AmiraMeshDataStream(AmiraDataStream):
         # first we handle binary files
         if self._header.format == 'BINARY':
             try:
-                decode,extract = self.__decode_data__[self.format]
+                decode = self.__decode_data__[self.format]
             except KeyError:
                 raise AHDSStreamError("Data stream format '{}' not supported".format(self.format))
             # _type_map[endianness] uses endianness = True for endian == 'LITTLE'
             is_little_endian = self._header.endian == 'LITTLE'
-            return decode(
-                extract(data),
-                dtype=_type_map[is_little_endian][self.type],
-                count=np.prod(new_shape).tolist()
+            bufsize = np.prod(new_shape).tolist()
+            return np.frombuffer(
+                decode( data, bufsize = bufsize),
+                count = bufsize,
+                dtype = _type_map[is_little_endian][self.type]
             ).reshape(*new_shape)
         # assume the file is ASCII
         #else:
