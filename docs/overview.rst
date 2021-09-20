@@ -2,11 +2,23 @@
 ``ahds``
 ==============================================
 
+.. image:: https://img.shields.io/pypi/v/ahds
+    :alt: PyPI
+
+.. image:: https://img.shields.io/pypi/pyversions/ahds
+    :alt: PyPI - Python Version
+
+.. image:: https://travis-ci.org/emdb-empiar/ahds.svg?branch=master
+    :target: https://travis-ci.org/emdb-empiar/ahds
+
 .. image:: https://readthedocs.org/projects/ahds/badge/?version=latest
     :target: https://ahds.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. contents:: Table of Contents
+.. image:: https://coveralls.io/repos/github/emdb-empiar/ahds/badge.svg
+    :target: https://coveralls.io/github/emdb-empiar/ahds
+
+.. contents::
 
 ----------------------------------------------
 Overview
@@ -56,7 +68,7 @@ Feel free to join this initiative.
 --------------------------------------------
 Installation
 --------------------------------------------
-``ahds`` works with Python 2.7, 3.5, 3.6, 3.7 and 3.8. It requires ``numpy`` to build.
+``ahds`` works with Python 2.7, 3.5, 3.6, 3.7 and 3.8.
 
 
     pip install ahds

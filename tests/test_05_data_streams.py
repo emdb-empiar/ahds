@@ -126,23 +126,30 @@ class TestDataStreams(TestDataStreamsBase):
                 new_shape = labels.shape.tolist() + [labels.dimension]
             else:
                 new_shape = [labels.shape] if not isinstance(labels.shape,(list,tuple)) else list(labels.shape)
-            label_data = byterle_decoder(
-                labels._stream_data,
-                int(labels.shape.prod())
+            label_data = numpy.asarray(
+                byterle_decoder(
+                    labels._stream_data,
+                    bufsize = int(labels.shape.prod())
+                )
             ).reshape(*new_shape)
         print("inbytes",len(labels._stream_data),"outbytes",labels.shape.prod())
         self.assertTrue(numpy.all(label_data == labels.data))
         label_data = label_data.flatten()
         label_data[128:144] = label_data[-144:-128] = range(1,17)
         encoded_data = TestDataStreams.byterle_encoder(label_data)
-        label_data2 = data_stream.byterle_decoder(encoded_data,count=int(labels.shape.prod()))
+        label_data2 = data_stream.byterle_decoder(encoded_data,bufsize=int(labels.shape.prod()))
         self.assertTrue(numpy.all(label_data2 == label_data))
         with self.assertWarns(UserWarning):
-            label_data3 = byterle_decoder(
-                encoded_data,
-                count=int(labels.shape.prod())
+            label_data3 = numpy.asarray(
+                byterle_decoder(
+                    encoded_data,
+                    bufsize=int(labels.shape.prod())
+                )
             )
             self.assertTrue(numpy.all(label_data3 == label_data))
+        with self.assertWarns(UserWarning):
+            with self.assertRaises(AHDSStreamError):
+                broken_stream = byterle_decoder(encoded_data,bufsize=int(labels.shape.prod())+1)
             
 
 class TestLoadOndemmand(TestDataStreamsBase):

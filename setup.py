@@ -91,7 +91,7 @@ if sys.version_info[0] > 2:
         url=AHDS_URL,
         license=AHDS_LICENSE,
         keywords=AHDS_KEYWORDS,
-        setup_requires=["numpy"],
+        #setup_requires=["numpy"],
         # additional dependencies to prevent failed install due to no support for Py27
         install_requires=AHDS_INSTALL_REQUIRES,
         ext_modules=[decoders],
@@ -118,7 +118,7 @@ else:
         url=AHDS_URL,
         license=AHDS_LICENSE,
         keywords=AHDS_KEYWORDS,
-        setup_requires=["numpy"],
+        #setup_requires=["numpy"],
         # additional dependencies to prevent failed install due to no support for Py27
         install_requires=["simpleparse==2.1.1", "scikit-image<0.14", "scipy<1.2", "backports.shutil_get_terminal_size",
                           "networkx==2.2", "matplotlib<3.0","PyWavelets<=1.0.3", "Pillow<=6.2.1","kiwisolver<=1.1.0"],
