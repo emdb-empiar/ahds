@@ -24,22 +24,20 @@ Design
      * Functions: `Block.add_attr`, `Block.rename_attr`, `Block.remove_attr`
      * Attributes: `Header._data_streams_block_list`
    - hilevel interface:
-     * add_stream
-       similary to loader table in hickle [hickle](https://github.com/telegraphic/hickle)
-       uses  builder table containing for all supported types of python objects the
-       reference to its corresponding AhdsDataStream class which know how to convert the
-       content of the object into appropriate set(s) of array declaration(s),
-	   data descriptor(s) and datastream(s) receives the name of the array eg. Vertices.
-	   and the name of the data stream eg. coordinates if array already exists than only
-	   Datastream is added if array diemensions fit. otherwise an Exceptoin is thrown
-	   Datastream object created is appended to the `_data_streams_block_list` of the 
-       header block 
+	 * add_array
+       code already implicitly present in `ahds.AmiraHeader._load_delartions` needs to be
+       made explicit through refactor of `ahds.AmiraHeader._load_declarations`
+     * add_stream/define element
+       code already implict present in `ahds.AmiraHeader._load_definitions` needs to be 
+       made explicit through refactor of `ahds.AmiraHeader._load_definitions`
      * add_parameter (+)
      * add_material (+)
-     * remove_stream
-       the opposit to add_stream removes the datastream again and also takes care that 
-       the block representing the array is removed when the last data stream is removed
-       from it. Removes the datastream from the `_data_streams_block_list`.
+     * remove_stream/remove_element
+       the opposit to add_strean/add_element removes the element and thus the corresponding
+       data stream again from the list of data_streams. (needs to be implemented)
+     * remove_array
+       implicitly calls remove_stream/remove_element for all elements still defined on array
+       and removes array declaration/definition from `ahds.AmiraHeader`. (needs to be implemented)
      * remove_parameter (+)
      * remove_material (+)
 
@@ -112,4 +110,6 @@ TODO
   * Check how list of non block items are represented in memory
   * Check if format of lists can be altered directly or if a helper class for
     formatting lists in Amira Header style can handled by above approach
-  )* discuss if outputting comments should be supported and how
+  * discuss if outputting comments should be supported and how
+  * How to handle Structures which require meta arrays like HxSpreadSheet or HxSurface patches.
+
