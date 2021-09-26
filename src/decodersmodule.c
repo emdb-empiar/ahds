@@ -198,8 +198,6 @@ decoders_byterle_decode(PyObject *self, PyObject *args,PyObject *kwargs)
 	// allocate python bytearray to be returned and assign read and write pointer
 	PyObject * output_array = PyByteArray_FromStringAndSize(NULL,output_size);
 
-	Py_INCREF(output_array); // ... because it will be managed from Python
-
 	uchar * buffer = (uchar*)PyByteArray_AsString(output_array); // output byte buffer
 	uchar * output = buffer; // pointer indicating position of next output byte
 	uchar * buffer_end = &(buffer[output_size]); // first byte following buffer

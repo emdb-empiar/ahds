@@ -121,18 +121,25 @@ class TestDataStreams(TestDataStreamsBase):
         self.assertEqual(byterle_decoder.__module__,'ahds.data_stream')
         # these seem to always be bytes so no type introspection
         labels = self.af_am.Lattice.Labels
+        if isinstance(labels.shape, numpy.ndarray):
+            new_shape = labels.shape.tolist() + [labels.dimension]
+        else:
+            new_shape = [labels.shape] if not isinstance(labels.shape,(list,tuple)) else list(labels.shape)
+        bufsize = numpy.prod(new_shape).tolist()
         with self.assertWarns(UserWarning):
-            if isinstance(labels.shape, numpy.ndarray):
-                new_shape = labels.shape.tolist() + [labels.dimension]
-            else:
-                new_shape = [labels.shape] if not isinstance(labels.shape,(list,tuple)) else list(labels.shape)
-            label_data = numpy.asarray(
-                byterle_decoder(
-                    labels._stream_data,
-                    bufsize = int(labels.shape.prod())
-                )
-            ).reshape(*new_shape)
-        print("inbytes",len(labels._stream_data),"outbytes",labels.shape.prod())
+            decoded_bytes = byterle_decoder(
+                labels._stream_data,
+                bufsize = bufsize
+            )
+        self.assertIsInstance(decoded_bytes,bytearray,msg="decoded_bytes must be a valid bytearray")
+        # just a test to identify whether numpy contains breaking changes?
+        linear_labels = numpy.frombuffer(decoded_bytes,count=bufsize,dtype=numpy.uint8)
+        self.assertIs(linear_labels.base,decoded_bytes)
+        label_data = linear_labels.reshape(*new_shape)
+        self.assertIs(label_data.base,linear_labels)
+        #print("inbytes",len(labels._stream_data),"outbytes",labels.shape.prod())
+        self.assertIsInstance(labels.data.base,numpy.ndarray)
+        self.assertIsInstance(labels.data.base.base,bytearray)
         self.assertTrue(numpy.all(label_data == labels.data))
         label_data = label_data.flatten()
         label_data[128:144] = label_data[-144:-128] = range(1,17)
