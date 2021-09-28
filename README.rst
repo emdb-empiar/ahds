@@ -74,7 +74,8 @@ Installation
     pip install ahds
 
 
-.. deprecated::
+.. deprecated:: 0.2.4
+
     Python 2.7 support is deprecated since Jannuray 1st 2020. It may be removed any time soon.
     Therfore use of ahds within Python 2.7 based setups is to be discouraged unless integrated
     before Jannuary 1st 2020.

@@ -16,6 +16,7 @@ import sys
 # TODO remove as soon as DataStreams class is removed
 import warnings
 import zlib
+import itertools
 
 import numpy as np
 import array
@@ -169,7 +170,7 @@ except ImportError:
             # encoded block of numbytes bytes expand
             nextput = put + numbytes
             #output[put:nextput] = input_data[get]
-            output[put:nextput] = ( input_data[get] for _ in range(numbytes) )
+            output[put:nextput] = itertools.repeat(input_data[get],numbytes)
             get += 1
             put = nextput
 

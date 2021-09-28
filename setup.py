@@ -9,7 +9,7 @@ import sys
 
 # fixme: how can I pre-install numpy???
 
-AHDS_VERSION = '0.2.0.dev0'
+AHDS_VERSION = '0.2.4.dev0'
 
 # with open("requirements.txt", 'r') as f:
 #     for row in f:
