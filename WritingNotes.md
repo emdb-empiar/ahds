@@ -112,4 +112,6 @@ TODO
     formatting lists in Amira Header style can handled by above approach
   * discuss if outputting comments should be supported and how
   * How to handle Structures which require meta arrays like HxSpreadSheet or HxSurface patches.
+  * define which protective measures (overwriting files) are responasbilitiy of user, which
+    would by nice when provided by and which a must be provided by ahds.
 
