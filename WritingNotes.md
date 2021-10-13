@@ -114,4 +114,19 @@ TODO
   * How to handle Structures which require meta arrays like HxSpreadSheet or HxSurface patches.
   * define which protective measures (overwriting files) are responasbilitiy of user, which
     would by nice when provided by and which a must be provided by ahds.
+	+ cleanest approache would be to maintain for each file a list of weak references 
+      to all AmiraHeader/Amirafile objects which access it in in ONDEMMAND mode. Use the 
+      (stat_result(<truefile>).st_dev,stat_result(<truefile>.st_ino) value pair to uniquely
+      identfy each file.
+  * define if files/streams which are not seekable and can not be read multiple times should
+    be handled directly by ahds at all (1)
+	+ should a future extension map ONDEMMAND mode on these files to IMMEDIATE mode as
+      for HxSurface files
+  * define if non seekable/rereadable files/streams should be directly written by ahds (1)
+
+
+(1) Pythons file/file-like io design allows to support these files by wrapping file handle
+    within buffered-file object which even may be provided by caller -> support of any 
+    thinkable stream possible using this approach including reading directly from and
+    storing to archive files (tar,zip, etc.)
 
