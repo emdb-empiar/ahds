@@ -179,7 +179,7 @@ _file_format_match = re.compile(br'^\s*#\s*(?P<format>AmiraMesh|HyperSurface)(?:
 _strip_lineend = b'\n'
 _stream_delimiters = [
     # pattern for locating stream_header in binary and ascii AmiraMesh type file
-    re.compile(br"(?:^|\n)\s*@(?P<stream>\d+)\s*\n", flags=re.S),
+    re.compile(br"(?:^|\n)[ \t\b]*@(?P<stream>\d+)[^ \t\b]*\n", flags=re.S),
     # pattern for locating stream_header in binary and ascii HyperSurface type file
     re.compile(
         br"(?:^|\n)\s*(?P<stream>(?:"+_hyper_surface_entities+ br"))(?:\s+(?:(?P<count>\d+)|(?P<string>(?:\w|[^\r\n{])+)))?(?P<group>\s*(?:\n\s*)?\{\s*\n)?\s*\n"
@@ -528,7 +528,8 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
                 data_shape = num_items
             )
         )
-    print("\nfhnd:",fhnd,"\npd",parsed_data,"\n")
+    if verbose:
+        print("\nfhnd:",fhnd,"\npd",parsed_data,"\n")
     return parsed_data
 
 
