@@ -405,12 +405,14 @@ class AmiraHeader(Block):
                                 fillin.append(sub_param)
                             else:
                                 block.insert(int(param_id),sub_param)
-                            block.add_attr(sub_param)
+                            block.add_attr(param['parameter_name'],sub_param)
                     else:
                         sub_param = Block(param['parameter_name'])
                         #sub_param.add_attr('Value', param['parameter_value'])
                         fillin.append(sub_param)
                 # a string or number
+                elif param['parameter_name'] == 'name':
+                    block._name = param['parameter_name']
                 else:
                     block.add_attr(param['parameter_name'], param['parameter_value'])
             fill_hole = 0
@@ -438,10 +440,14 @@ class AmiraHeader(Block):
                                 block.add_attr(param['parameter_name'], param['parameter_value'][1:])
                             else:
                                 block.add_attr(
-                                    self._load_parameters(param['parameter_value'], name=param['parameter_name']))
+                                    param['parameter_name'], # parameter_value can contain an explicit name attribute
+                                    self._load_parameters(param['parameter_value'], name=param['parameter_name'])
+                                )
                         else: # pragma: nocover
                             warnings.warn("have direct value parameter {} in file {}: remove nocover".format(param['parameter_name'],self.filename))
                             block.add_attr(param['parameter_name'], param['parameter_value'])
+                    elif param['parameter_name'] == 'name':
+                        block._name = param['parameter_name']
                     else:
                         block.add_attr(param['parameter_name'], param['parameter_value'])
                 except KeyError:
