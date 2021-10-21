@@ -14,6 +14,7 @@ import pickle
 import numpy as np
 import time
 import weakref
+import importlib
 
 from . import TEST_DATA_PATH, Py23FixTestCase
 from ahds.core import (
@@ -368,15 +369,22 @@ class TestUtils(Py23FixTestCase):
             if sys.version_info[1] < 7:
                 self.assertTrue(issubclass(_dict,collections.OrderedDict))
                 true_version = sys.version_info
-                monkey = list(sys.version_info)
-                monkey[1] = 7
-                setattr(sys,'version_info',monkey)
-                hide_core = sys.modules['ahds.core']
-                del sys.modules['ahds.core']
-                from ahds.core import _dict
-                self.assertTrue(issubclass(_dict,dict))
-                setattr(sys,'version_info',true_version)
-                sys.modules['ahds_core'] = hide_core
+                #monkey = list(sys.version_info)
+                #monkey[1] = 7
+                #setattr(sys,'version_info',monkey)
+                #####
+                # hide_core = sys.modules['ahds.core']
+                # del sys.modules['ahds.core']
+                # from ahds.core import _dict
+                # self.assertTrue(issubclass(_dict,dict))
+                # sys.modules['ahds_core'] = hide_core
+                #####
+                #core_less_py37_spec = importlib.util.find_spec('ahds.core')
+                #core_less_py37_module = importlib.util.module_from_spec(core_less_py37)
+                #core_less_py37_spec.loader.exec_module(core_less_py37_module)
+                #_dict = core_less_py37_module._dict
+                #setattr(sys,'version_info',true_version)
+                #self.assertTrue(issubclass(_dict,dict))
             else:
                 self.assertTrue(issubclass(_dict,dict))
         else:

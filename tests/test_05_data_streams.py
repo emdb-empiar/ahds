@@ -3,16 +3,25 @@ from __future__ import print_function
 
 import sys
 import os
+import os.path
 import pytest
 import unittest
 import re
 
-import numpy
+if sys.version_info[0] >= 3:
+    import importlib 
+else:
+    import imp
 from . import TEST_DATA_PATH,Py23FixTestCase
+import numpy
 
-import ahds
-from ahds import header, data_stream, IMMEDIATE,HEADERONLY,ONDEMMAND
+#import ahds
+from ahds import header, data_stream,IMMEDIATE,HEADERONLY,ONDEMMAND
 from ahds.grammar import AHDSStreamError
+from ahds.core import Block
+from ahds.proc import set_content_type_filter
+
+
 
 
 class TestDataStreamsBase(Py23FixTestCase):
@@ -35,29 +44,34 @@ class TestDataStreams(TestDataStreamsBase):
 
     def test_data_stream(self):
         # test9.am
-        self.assertIsInstance(self.af_am.Lattice, ahds.Block)
+        self.assertIsInstance(self.af_am.Lattice, Block)
         self.assertEqual(self.af_am.data_stream_count, 1)
         self.assertEqual(self.af_am.Lattice.Labels.name, 'Labels')
 
         # test8.am
-        self.assertIsInstance(self.af_am_hxsurf, ahds.Block)
+        self.assertIsInstance(self.af_am_hxsurf, Block)
         self.assertEqual(self.af_am_hxsurf.data_stream_count, 3)
         self.assertEqual(self.af_am_hxsurf.Vertices.name, 'Vertices')
         self.assertEqual(self.af_am_hxsurf.Triangles.name, 'Triangles')
         self.assertEqual(getattr(self.af_am_hxsurf,'Patches-0').name, "Patches-0")
 
         # test7.surf
-        self.assertIsInstance(self.af_hxsurf, ahds.Block)
+        self.assertIsInstance(self.af_hxsurf, Block)
         self.assertEqual(self.af_hxsurf.data_stream_count, 5)
         self.assertEqual(self.af_hxsurf.Patches[1].name,'Patch1')
 
     def test_spread_sheet(self):
-        self.assertTrue(isinstance(getattr(self.spread_sheet,'Sheet1',None),ahds.ListBlock))
+        self.assertIsInstance(getattr(self.spread_sheet,'Sheet1',None),data_stream.AmiraSpreadSheet)
         self.assertEqual(len(self.spread_sheet.Sheet1),500)
+        self.assertEqual(self.spread_sheet.Sheet1[100].name, '__Column0100')
+        self.assertIsInstance(getattr(self.spread_sheet.Sheet1[100],'__Column0100',None),data_stream.AmiraMeshDataStream)
+        self.assertEqual(getattr(self.spread_sheet.Sheet1[100],'__Column0100',Block('')).name, '__Column0100')
+        self.assertEqual(self.spread_sheet.Sheet1[499].name, '__Column0499')
+        self.assertIsInstance(getattr(self.spread_sheet.Sheet1[499],'__Column0499',None),data_stream.AmiraMeshDataStream)
+        self.assertEqual(getattr(self.spread_sheet.Sheet1[499],'__Column0499',Block('')).name, '__Column0499')
         #self.assertEqual(self.spread_sheet.Sheet1[0].dimension,62)
 
-        self.assertTrue(data_stream.AmiraSpreadSheet.identify_columns({},{},'','') is None)
-        self.assertTrue(data_stream.AmiraSpreadSheet.identify_columns({},{},'HxSpreadSheet','HxSpreadSheet') is None)
+
     @staticmethod
     def byterle_encoder(array_data):
         array_data = array_data.flatten()
@@ -98,27 +112,72 @@ class TestDataStreams(TestDataStreamsBase):
                 
                 
             
+    #@pytest.mark.skip(reason="just exclude for testing why test damn")
     def test_decoder_import(self):
         import sys
-        backup_modules = [
-            'decoders','.decoders','ahds.decoders',
-            'data_stream','.data_stream','ahds.data_stream',
-            'header','.header','ahds.header'
-        ]
-        backup = {}
-        for module in backup_modules:
-            backup[module] = sys.modules.pop(module,None)
-        trick_import = sys.modules[__name__]
-        for decoder in backup_modules[:3]:
-            if backup[decoder] is not None:
-                sys.modules[decoder] = trick_import
-        from ahds.data_stream import  byterle_decoder
+        import inspect
         
-        for name,module in backup.items():
-            if module is not None:
-               sys.modules[name] = module
+        self.assertTrue(inspect.isbuiltin(data_stream.byterle_decoder))
+        self.assertIs(data_stream,sys.modules['ahds.data_stream'])
+
+        if sys.version_info[0] >= 3:
+            decoder_path = os.path.join(os.path.dirname(data_stream.__spec__.origin),'decoders')
+        else:
+            decoder_path = os.path.join(os.path.dirname(data_stream.__file__),'decoders')
+        backup_decoders_module = dict()
+        backup_data_stream_decoder = data_stream.byterle_decoder
+        for name,module in sys.modules.items():
+            if sys.version_info[0] >= 3:
+                spec = getattr(module,'__spec__',None)
+                if spec is None or not spec.has_location or not spec.origin.startswith(decoder_path):
+                    continue
+            elif not getattr(module,'__file__','').startswith(decoder_path):
+                continue
+            backup_decoders_module[name] = module
+            if sys.version_info[0] >= 3:
+                sys.modules[name] = None
+            else:
+                fake_module = sys.modules[name] = imp.new_module(name)
+                fake_module.__file__ = './fake_decoders.py'
+
+        self.assertTrue(len(backup_decoders_module) > 0)
         
+        if sys.version_info[0] >= 3:
+            data_stream_fallback_spec = importlib.util.find_spec('ahds.data_stream')
+            data_stream_fallback_module = importlib.util.module_from_spec(data_stream_fallback_spec)
+            data_stream_fallback_spec.loader.exec_module(data_stream_fallback_module)
+            byterle_decoder = data_stream_fallback_module.byterle_decoder
+        else:
+            ahds_data_stream_backup = sys.modules['ahds.data_stream']
+            sys.modules.pop('ahds.data_stream')
+            data_stream_fallback_spec = imp.find_module('data_stream',sys.modules['ahds'].__path__)
+            data_stream_fallback_module = imp.load_module('ahds.data_stream',*data_stream_fallback_spec)
+            data_stream_fallback_spec[0].close()
+            byterle_decoder = data_stream_fallback_module.byterle_decoder
+            sys.modules['ahds.data_stream'] = ahds_data_stream_backup
+        for name,module in backup_decoders_module.items():
+            sys.modules[name] = module
+        
+        self.assertIs(data_stream,sys.modules['ahds.data_stream'])
+        self.assertIs(sys.modules['ahds.data_stream'].byterle_decoder,backup_data_stream_decoder)
+        self.assertIs(data_stream.AmiraSpreadSheet,sys.modules['ahds.data_stream'].AmiraSpreadSheet)
+
+        #######################################################################################
+        ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!         NOTE         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ## !! above faking of import failure in 'ahds.data_stream' to fallback to
+        ## !! pure python implementation of byterle_decoder replaces the DispatchFilter for
+        ## !! 'HxSpreadSheet' 'ContentType' files with a new incompatible version.
+        ## !! must be reset here to version from initial import otherwise following tests will
+        ## !! fail
+        ## !!
+        ## !! Remove not before HxSpreadSheet related classes and items have been moved to
+        ## !! dedicated HxSpreadSheet ContentType module and thus above error faking does not
+        ## !! trigger update
+        ## !!
+        set_content_type_filter('HxSpreadSheet',data_stream.AmiraSpreadSheetCollector)
+
         self.assertEqual(byterle_decoder.__module__,'ahds.data_stream')
+        self.assertEqual(data_stream.byterle_decoder.__module__,'ahds.decoders')
         # these seem to always be bytes so no type introspection
         labels = self.af_am.Lattice.Labels
         if isinstance(labels.shape, numpy.ndarray):
@@ -250,10 +309,19 @@ class TestLoadOndemmand(TestDataStreamsBase):
         self.assertIsNotNone(re.search(r'.*\+-\s*data:.*',str(immediate_load)))
         
         
+        
+class TestStrangeHxSpreadSheet(Py23FixTestCase):
+    @classmethod
+    def setUpClass(cls,load_streams=IMMEDIATE):
+        cls.spread_sheet = header.AmiraHeader(os.path.join(TEST_DATA_PATH, 'EqualLabeledColumnsSpreadSheet.am'))
 
-        
-        
-        
-
-        
+    def test_equal_named_column_arrays(self):
+        self.assertIsInstance(getattr(self.spread_sheet,'AT',None),data_stream.AmiraSpreadSheet)
+        self.assertEqual(len(self.spread_sheet.AT),9)
+        self.assertEqual(self.spread_sheet.AT[0].name, 'AT0000')
+        self.assertIsInstance(getattr(self.spread_sheet.AT[0],'AT0000',None),data_stream.AmiraMeshDataStream)
+        self.assertEqual(self.spread_sheet.AT[0].AT0000.name, 'AT0000')
+        self.assertEqual(self.spread_sheet.AT[8].name, 'AT0008')
+        self.assertIsInstance(getattr(self.spread_sheet.AT[8],'AT0008',None),data_stream.AmiraMeshDataStream)
+        self.assertEqual(self.spread_sheet.AT[8].AT0008.name, 'AT0008')
         

@@ -10,6 +10,9 @@ import sys
 
 import numpy as np
 import warnings
+import types
+from .core import IterableType
+    
 
 # simpleparse
 from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatchList, singleMap
@@ -43,6 +46,25 @@ _strip_material_name = re.compile(r'^\s*"\s*|\s*",*$')
 _sub_content_type = re.compile(r'^\s*contenttype\s*$',re.I)
 
 
+class DispatchFilter(object):
+    __slots__ = ()
+
+    def __new__(cls,failed,*args,**kwargs):
+        class DispatchFilter_(cls):
+            __slots__ = ('post_processing',)
+            failed = None
+        DispatchFilter.failed = failed
+        dispatchfilter = super(DispatchFilter,cls).__new__(DispatchFilter_)
+        dispatchfilter.post_processing = False
+        return dispatchfilter
+        
+    def filter(self,array_definition):
+        raise NotImplementedError("'filter(self,array_definition)' must be implemented by subclass")
+
+    def post_process(self,data_definition):
+        raise NotImplementedError("'filter(self,data_definition)' must be implemented by subclass")
+        
+
 class AmiraDispatchProcessor(DispatchProcessor):
     """Class defining methods to handle each token specified in the grammar"""
     _array_declarations_processors = dict(
@@ -51,6 +73,7 @@ class AmiraDispatchProcessor(DispatchProcessor):
     @classmethod
     def set_content_type_filter(cls,content_type,filter):
         """
+        # TODO rewrite to fit new interface
         register a filter function which allows to inspect, process and
         inject a met array_declaration block for the specified content_type.
         The filter is called during parsing array_declarations with the following
@@ -98,10 +121,10 @@ class AmiraDispatchProcessor(DispatchProcessor):
               method. 
 
         """
-        if not callable(filter):
-            raise ValueError("filter must be callable function")
         if not isinstance(content_type,str) or not content_type:
-            raise ValueError("conten_type must be no empty string")
+            raise ValueError("'conten_type' must be no empty string")
+        if not isinstance(filter,type) or filter is DispatchFilter or not issubclass(filter,DispatchFilter):
+            raise ValueError("'filter' must be a subclass of DispatchFilter")
         cls._array_declarations_processors[content_type] = filter
 
     @classmethod
@@ -111,7 +134,7 @@ class AmiraDispatchProcessor(DispatchProcessor):
         """
         if not isinstance(content_type,str) or not content_type:
             raise ValueError("conten_type must be no empty string")
-        cls._array_declarations_processors.pop(content_type,None)
+        return cls._array_declarations_processors.pop(content_type,None)
 
     def __init__(self,*args,**kwargs):
         """
@@ -124,52 +147,20 @@ class AmiraDispatchProcessor(DispatchProcessor):
         self._base_contenttype = kwargs.pop('content_type',None)
         if sys.version_info[0] > 2: # pragma: cover_py3
             super(AmiraDispatchProcessor,self).__init__(*args,**kwargs)
-        self._meta_array_declarations = dict()
         self._designation = []
-        self._array_declarations = []
+        self._array_definitions = []
+        self._post_process = None
+        self._dispatch_success = True
 
-    def _filter_array_declaration(self,array_declaration):
-        """
-        parses the provided array declaration dict structure for inclusion witin
-        an array meta declaration corresponding to a refined content type denoted
-        by special ContentType parameter.
-        """
-
-        # represents all ContentType meta declarations the array declaration could 
-        # be member of
-        array_links = dict()
-        #for _content_type,_filter in _dict_iter_items(self.__class__._array_declarations_processors):
-        for _content_type,_filter in self.__class__._array_declarations_processors.items():
-
-            # load current array meta declaration for ContentType and filter array declaration
-            typed_meta_declaration = self._meta_array_declarations.get(_content_type,None)
-            _result = _filter(typed_meta_declaration,array_declaration,_content_type,self._base_contenttype)
-            if _result is None:
-                # no match
-                continue
-            # crate new or update existing meta declaratoin
-            if typed_meta_declaration is None:
-                self._meta_array_declarations[_content_type] = typed_meta_declaration = dict()
-            base_name,array_index,array_blocktype,other_meta_data,other_declarations = _result
-            meta_declaration = typed_meta_declaration.get(base_name,None)
-            if meta_declaration is None:
-                typed_meta_declaration[base_name] = meta_declaration = dict(
-                    array_name = base_name,
-                    array_dimension = array_index + 1,
-                    array_blocktype = array_blocktype,
-                    array_content = _content_type,
-                    sub_declarations = []
-                )
-            elif meta_declaration["array_dimension"] >= array_index:
-                meta_declaration["array_dimension"] = array_index + 1
-            if isinstance(other_meta_data,dict):
-                meta_declaration.update(other_meta_data)
-            meta_declaration['sub_declarations'].append(array_declaration)
-            array_links[_content_type] = linked_content_type = dict(array_parent = base_name,array_itemid = array_index)
-            if isinstance(other_declarations,dict):
-                linked_content_type.update(other_declarations)
-        array_declaration['array_links'] = array_links
-        return array_declaration
+    def __call__( self, value, buffer ):
+        if len(value) != 3:
+            return DispatchProcessor.__call__(self,value,buffer)
+        success,result,next = DispatchProcessor.__call__(self,value,buffer)
+        return success & self._dispatch_success,result,next
+        
+    
+    def mark_failed(self):
+        self._dispatch_success = False
 
     def _emmit_meta_array_declaration(self,content_type):
         """
@@ -177,20 +168,39 @@ class AmiraDispatchProcessor(DispatchProcessor):
         just parsed if more than one array declaration is to be included within meta declaratoin
         structure. 
         """
-        typed_meta_declaration = self._meta_array_declarations.pop(content_type,None)
-        if typed_meta_declaration is None:
-            return False
-        #for _base_name,meta_declaration in _dict_iter_items(typed_meta_declaration):
-        for _base_name,meta_declaration in typed_meta_declaration.items():
-            sub_declarations = meta_declaration.pop('sub_declarations',[])
-            if len(sub_declarations) < 2:
-                array_links = sub_declarations[0].get('array_links',{})
-                array_links.pop(content_type,None)
+        processor  = self.__class__._array_declarations_processors.get(content_type,None)
+        if processor is None:
+            return
+        processor = processor(failed=self.mark_failed)
+        filter = processor.filter
+        typed_meta_definitions = dict()
+        for array_definition in self._array_definitions:
+            result = filter(array_definition)
+            if not isinstance(result,(tuple,list)) or len(result) != 5:
                 continue
-            self._array_declarations.insert(0,meta_declaration)
-        self._meta_array_declarations.clear()
-        self._base_contenttype = None
-        return True
+            base_name,array_blocktype,array_index,meta_data,link_data = result
+            meta_definition = typed_meta_definitions.get(base_name,None)
+            if meta_definition is None:
+                typed_meta_definitions[base_name] = meta_definition = dict(
+                    array_name = base_name,
+                    array_dimension = array_index + 1,
+                    array_blocktype = array_blocktype,
+                    array_content = content_type,
+                    sub_definitions = []
+                )
+                self._array_definitions.insert(0,meta_definition)
+            elif meta_definition["array_dimension"] >= array_index:
+                meta_definition["array_dimension"] = array_index + 1
+            meta_definition['sub_definitions'].append(array_definition)
+            if isinstance(meta_data,(dict,types.GeneratorType,IterableType)):
+                meta_definition.update((key,value) for key,value in meta_data.items() if key not in {'array_name','array_dimension','array_blocktype','array_content','sub_definitions'})
+            array_definition['array_link'] = dict(array_parent = base_name,array_itemid = array_index,**{key:value for key,value in link_data.items() if key not in {'array_parent','array_itemid'}})
+
+        if processor.post_processing:
+            post_process = processor.post_process
+            def data_definition(value, buffer_):
+                return post_process(singleMap(value[3], self, buffer_))
+            self.data_definition = data_definition
                     
     def designation(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
@@ -232,16 +242,16 @@ class AmiraDispatchProcessor(DispatchProcessor):
 
     def array_declarations(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
-        array_declarations_list = dispatchList(self, value[3], buffer_)
+        array_definitions_list = dispatchList(self, value[3], buffer_)
 
-        self._array_declarations = array_declarations_list
-        return dict(array_declarations = array_declarations_list)
+        self._array_definitions = array_definitions_list
+        return dict(array_declarations = array_definitions_list)
         
 
     def array_declaration(self, value, buffer_):  # @UnusedVariable
         # value = (tag, left, right, taglist)
-        declaration = singleMap(value[3], self, buffer_)
-        return self._filter_array_declaration(declaration)
+        definition = singleMap(value[3], self, buffer_)
+        return definition
 
     def array_name(self, value, buffer_):
         # value = (tag, left, right, taglist)
@@ -364,9 +374,6 @@ class AmiraDispatchProcessor(DispatchProcessor):
         return {'data_definitions': dispatchList(self, value[3], buffer_)}
 
     def data_definition(self, value, buffer_):
-        if self._meta_array_declarations:
-            self._emmit_meta_array_declaration(self._base_contenttype)
-                
         # value = (tag, left, right, taglist)
         return singleMap(value[3], self, buffer_)
 

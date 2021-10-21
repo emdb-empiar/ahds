@@ -470,21 +470,19 @@ class AmiraHeader(Block):
             block_type = decl.get("array_blocktype","block")
             block = select_array_block(decl)
             # if no array_parent use invalid attribute name to ensure self is returned
-            array_links = decl.get('array_links',{})
+            array_link = decl.get('array_link',{})
             array_parent = self
-            if array_links:# is not None:
-                active_link = array_links.get((self.content_type if self.content_type is not None else self._file_format),None)
-                if active_link is not None:
-                    array_parent = getattr(self,active_link.get('array_parent',':<*+.=/->#'),self)
-                    if array_parent is not self:
-                        # add hidden shortcut to hypersurface subarray to be found by _load_definitions below
-                        # but is not accessible by any other means. '_@' is not a valid attribut name and thus
-                        # not accessible via . operator only getattr, setattr, delattr will be able to handle
-                        setattr(self,'_@{}'.format(block.name),block)
-                        if isinstance(array_parent,ListBlock):
-                            item_id = active_link.get('array_itemid',None)
-                            if item_id is not None and item_id >= 0:
-                                array_parent[item_id] = block
+            if array_link:# is not None:
+                array_parent = getattr(self,array_link.get('array_parent',':<*+.=/->#'),self)
+                if array_parent is not self:
+                     # add hidden shortcut to hypersurface subarray to be found by _load_definitions below
+                     # but is not accessible by any other means. '_@' is not a valid attribut name and thus
+                     # not accessible via . operator only getattr, setattr, delattr will be able to handle
+                     setattr(self,'_@{}'.format(block.name),block)
+                     if isinstance(array_parent,ListBlock):
+                         item_id = array_link.get('array_itemid',None)
+                         if item_id is not None and item_id >= 0:
+                             array_parent[item_id] = block
             array_parent.add_attr(block)
 
     def _load_definitions(self, block_data):
