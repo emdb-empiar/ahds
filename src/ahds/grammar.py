@@ -22,7 +22,7 @@ from simpleparse.dispatchprocessor import DispatchProcessor, getString, dispatch
 # pip install -e /path/to/folder/with/setup.py
 # or
 # python setup.py develop
-from .proc import AmiraDispatchProcessor ,set_content_type_filter,clear_content_type_filter
+from .proc import AmiraDispatchProcessor ,set_content_type_filter,clear_content_type_filter,DispatchFilter
 from .core import _decode_string, ListBlock
 
 class AHDSStreamError(ValueError):
@@ -59,7 +59,7 @@ materials                    :=    "Materials" , tsn, "{", tsn*, ( parameter_lis
 
 data_definitions             :=    data_definition*
 data_definition              :=    array_reference , ts, "{", ts, data_type, "["*, data_dimension*, "]"*, ts, data_name, ts, "}", ts, "="*, ts*, interpolation_method*, "("*, "@", data_index, ")"* , "("*, data_format*, ","*, data_length* , ")"* , tsn
-array_reference              :=    hyphname / "Field"
+array_reference              :=    array_name / "Field"
 data_type                    :=    hyphname
 data_dimension               :=    number
 data_name                    :=    hyphname
@@ -403,11 +403,9 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
                         dict(
                             array_name = array_name,
                             array_dimension = 0,
-                            array_links = dict(
-                                hxsurface = dict(
-                                    array_parent = group_name,
-                                    array_itemid = item_count
-                                )
+                            array_link = dict(
+                                 array_parent = group_name,
+                                 array_itemid = item_count
                             )
                         )
                     )
@@ -450,11 +448,9 @@ def parse_hypersurface_data(fhnd,parsed_data = dict(),verbose = False,stream_byt
                     dict(
                         array_name = array_name,
                         array_dimension = 0,
-                        array_links = dict(
-                            hxsurface = dict(
-                                array_parent = group_name,
-                                array_itemid = item_count
-                            )
+                        array_link = dict(
+                            array_parent = group_name,
+                            array_itemid = item_count
                         )
                     )
                 ))

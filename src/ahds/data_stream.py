@@ -26,7 +26,7 @@ import array
 # or
 # python setup.py develop
 from .core import Block,ListBlock, deprecated 
-from .grammar import next_amiramesh_ascii_stream, next_amiramesh_binary_stream,_rescan_overlap,set_content_type_filter,clear_content_type_filter,AHDSStreamError
+from .grammar import next_amiramesh_ascii_stream, next_amiramesh_binary_stream,_rescan_overlap,set_content_type_filter,clear_content_type_filter,DispatchFilter,AHDSStreamError
     
 
 # definition of numpy data types with dedicated endianess and number of bits
@@ -254,26 +254,69 @@ class AmiraSpreadSheet(ListBlock):
     def __init__(self,name,initial_len,*args,**kwargs):
         super(AmiraSpreadSheet,self).__init__(name,initial_len,*args,**kwargs)
 
-    @staticmethod
-    def identify_columns(typed_meta_declaration,array_declaration,content_type,base_contenttype):
+
+class AmiraSpreadSheetCollector(DispatchFilter):
+    __slots__ = ('not_counted_names',)
+
+    def __init__(self,*args,**kwargs):
+        self.not_counted_names = dict()
+
+    #  base_name,array_blocktype,array_index,meta_data = filter(array_declaration)
+    def filter(self,array_definition):
         """
         filter function called by AmiraDispatchProcessor to collect all array declaration
         structures which could be part of HxSpreadSheet structure
         """
-        if content_type != 'HxSpreadSheet' and base_contenttype != 'HxSpreadSheet':
-            return None
-        
-        array_name = array_declaration.get('array_name',None)
+        array_name = array_definition.get('array_name',None)
         if array_name is None:
             return None
         has_counter = _extract_trailing_counter.match(array_name[::-1])
+        
         if has_counter is None:
-            return None
-        base_name = array_name[:-has_counter.end()]
-        array_index = int(array_name[-has_counter.end():])
-        return 'Sheet1',array_index,AmiraSpreadSheet,None,None
+            array_index = self.not_counted_names.get(array_name,0)
+            if array_index <= 0:
+                array_index = self.not_counted_names[array_name] = 0
+            elif not self.post_processing:
+                self.post_processing = True
+            self.not_counted_names[array_name] = array_index + 1
+            base_name = array_name
+            array_definition['array_name'] = array_name = '{}{:04d}'.format(array_name,array_index)
+        else:
+            base_name = array_name[:-has_counter.end()]
+            array_index = int(array_name[-has_counter.end():])
+        if base_name[0] == '_':
+            if base_name[2:] == 'Column':
+                base_name = 'Sheet1'
+            else:
+                base_name = base_name.lstrip('_')
+        return base_name,AmiraSpreadSheet,array_index,{},{}
 
-set_content_type_filter('HxSpreadSheet',AmiraSpreadSheet.identify_columns)
+    def post_process(self,data_definition):
+        array_reference = data_definition.get('array_reference','')
+        data_name = data_definition.get('data_name','')
+        if not array_reference and not data_name:
+            return data_definition
+        num_arrays = self.not_counted_names.get(array_reference,None)
+        if num_arrays is None:
+            return data_definition
+        name_index = self.not_counted_names.get((array_reference,data_name),None)
+        if name_index is None:
+            name_index = self.not_counted_names[(array_reference,data_name)]=0
+        if name_index >= num_arrays:
+            target_array_reference = '{}{:04d}'.format(array_reference,num_arrays-1)
+        else:
+            target_array_reference = '{}{:04d}'.format(array_reference,name_index)
+        self.not_counted_names[(array_reference,data_name)] = name_index + 1
+        target_data_name = '{}{:04d}'.format(data_name,name_index)
+        if self.not_counted_names.get((target_array_reference,target_data_name),None) is not None:
+            self.failed()
+            data_definition['failed'] = AHDSStreamError("column data name '{}' already defined on array '{}' base: ({},{})".format(target_data_name,target_array_reference,array_reference,data_name))
+            return data_definition
+        data_definition['array_reference'] = target_array_reference
+        data_definition['data_name'] = target_data_name
+        return data_definition
+
+set_content_type_filter('HxSpreadSheet',AmiraSpreadSheetCollector)
 
 def set_data_stream(name, header,file_offset = None,encoded_data = None):
     """Factory function used by AmiraHeader to determine the type of data stream present"""
@@ -489,9 +532,6 @@ def check_stream_data(datastream): # pragma: nocover
     print(datastream.Vertices.Coordinates.data)
     print(datastream.Patches[1].Triangles.data)
     return 0
-    
-    
-    
 
 if __name__ == "__main__": # pragma: nocover
     from ahds.header import main

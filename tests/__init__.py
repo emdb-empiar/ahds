@@ -20,7 +20,7 @@ class Py23FixAssertWarnsContext():
     def __enter__(self):
         for v in list(sys.modules.values()):
             if getattr(v,'__warningregistry__',None):
-                v.__warningregistry__ = {}
+                setattr(v,'__warningregistry__',{})
         self.warnings_manager = warnings.catch_warnings(record = True)
         self.warnings = self.warnings_manager.__enter__()
         warnings.simplefilter("always",self.expected)

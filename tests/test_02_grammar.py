@@ -47,6 +47,35 @@ class TestGramarBase(unittest.TestCase):
 class AmiraSpreadSheet(core.Block):
     pass
 
+class SomeContentTypeDispatchFilter(proc.DispatchFilter):
+        
+    def filter(self,array_definition):
+        return None
+
+    def post_process(self,data_definition):
+        return data_definition
+        
+class AddSomeMetaDataDispatchFilter(proc.DispatchFilter):
+    def filter(self,array_definition):
+        array_name = array_definition.get('array_name',None)
+        if array_name is None:
+            return None
+        has_counter = TestContentFilters._extract_trailing_counter.match(array_name[::-1])
+        if has_counter is None:
+            return None
+        base_name = array_name[:-has_counter.end()]
+        array_index = int(array_name[-has_counter.end():])
+        #    base_name,array_blocktype,array_index,meta_data = result
+        return (
+            'Sheet1',
+            AmiraSpreadSheet,
+            array_index,
+            dict(more_meta_data = 'hello world'),
+            dict(more_link_data = 'hello world')
+        )
+    
+    
+
 class TestContentFilters(TestGramarBase):
     filename = 'BinaryHxSpreadSheet62x200.am'
     @classmethod
@@ -55,29 +84,6 @@ class TestContentFilters(TestGramarBase):
         cls.single_shot = False
 
     _extract_trailing_counter = re.compile(r'^\d+(?![-_]\d)')
-        
-    @classmethod
-    def add_some_meta_data(cls,typed_meta_declaration,array_declaration,content_type,base_contenttype):
-        if content_type != 'HxSpreadSheet' and base_contenttype != 'HxSpreadSheet':
-            return None
-        if typed_meta_declaration is not None:
-            if cls.single_shot:
-                return
-        array_name = array_declaration.get('array_name',None)
-        if array_name is None:
-            return None
-        has_counter = TestContentFilters._extract_trailing_counter.match(array_name[::-1])
-        if has_counter is None:
-            return None
-        base_name = array_name[:-has_counter.end()]
-        array_index = int(array_name[-has_counter.end():])
-        return (
-            'Sheet1',
-            array_index,
-            AmiraSpreadSheet,
-            dict(more_meta_data = 'hello world'),
-            dict(more_link_data = 'hello world')
-        )
 
         
     def test_set_content_filter(self):
@@ -88,29 +94,23 @@ class TestContentFilters(TestGramarBase):
             proc.AmiraDispatchProcessor.set_content_type_filter('',lambda a,b,c,d:())
         with self.assertRaises(ValueError):
             proc.AmiraDispatchProcessor.set_content_type_filter('HxSpreadSheet',None)
-        
-        proc.AmiraDispatchProcessor.set_content_type_filter('not_relevant',lambda a,b,c,d:())
+        with self.assertRaises(ValueError):
+            proc.AmiraDispatchProcessor.set_content_type_filter('HxSpreadSheet',proc.DispatchFilter)
+        with self.assertRaises(ValueError):
+            proc.AmiraDispatchProcessor.set_content_type_filter('HxSpreadSheet',TestContentFilters)
+        proc.AmiraDispatchProcessor.set_content_type_filter('SomeContenType',SomeContentTypeDispatchFilter)
         with self.assertRaises(ValueError):
             proc.AmiraDispatchProcessor.clear_content_type_filter(12)
         with self.assertRaises(ValueError):
             proc.AmiraDispatchProcessor.clear_content_type_filter('')
-        proc.AmiraDispatchProcessor.clear_content_type_filter('not_relevant')
-        proc.AmiraDispatchProcessor.set_content_type_filter('HxSpreadSheet',TestContentFilters.add_some_meta_data)
+        proc.AmiraDispatchProcessor.clear_content_type_filter('SomeContentTypeDispatchFilter')
+        proc.AmiraDispatchProcessor.set_content_type_filter('HxSpreadSheet',AddSomeMetaDataDispatchFilter)
         parser = grammar.AmiraMeshParser()
         success,self.parsed_header,next_item = parser.parse(self.header)
         self.assertEqual(self.parsed_header[2]['array_declarations'][0].get('more_meta_data',None),'hello world')
         self.assertEqual(
-            self.parsed_header[2]['array_declarations'][1]['array_links']['HxSpreadSheet'].get('more_link_data',None),
+            self.parsed_header[2]['array_declarations'][1]['array_link'].get('more_link_data',None),
             'hello world'
-        )
-        self.__class__.single_shot = True
-        parser = grammar.AmiraMeshParser()
-        success,self.parsed_header,next_item = parser.parse(self.header)
-        self.assertEqual(
-            self.parsed_header[2]['array_declarations'][0].get('array_links',None),{}
-        )
-        self.assertEqual(
-            self.parsed_header[2]['array_declarations'][1].get('array_links',None),{}
         )
         proc.AmiraDispatchProcessor.clear_content_type_filter('HxSpreadSheet')
         parser = grammar.AmiraMeshParser()
@@ -311,8 +311,8 @@ class TestHyperSurfaceSimple(TestGramarBase):
             )
             self.assertEqual(self.parsed_header[1]['array_declarations'][1]['array_blocktype'],core.ListBlock)
             for index,item in enumerate(self.parsed_header[1]['array_declarations'][2:],1):
-                self.assertEqual(item['array_links']['hxsurface']['array_parent'],'Patches')
-                self.assertEqual(item['array_links']['hxsurface']['array_itemid'],index)
+                self.assertEqual(item['array_link']['array_parent'],'Patches')
+                self.assertEqual(item['array_link']['array_itemid'],index)
 
             self.assertEqual(len(self.parsed_header[4]['data_definitions']),10)
             self.assertEqual(

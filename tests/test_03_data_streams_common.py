@@ -7,11 +7,13 @@ import pytest
 import unittest
 
 import numpy
+import copy
 
-import ahds
+# import ahds
 from ahds import header, data_stream, IMMEDIATE,HEADERONLY,ONDEMMAND
-from ahds.grammar import AHDSStreamError
+from ahds.grammar import get_header,AHDSStreamError,set_content_type_filter,clear_content_type_filter,DispatchFilter
 from ahds.core import Block, ListBlock
+#from ahds.data_stream import AmiraSpreadSheet,AmiraMeshDataStream,get_stream_policy,HEADERONLY,IMMEDIATE
 
 from . import TEST_DATA_PATH,Py23FixTestCase
 
@@ -107,3 +109,87 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(base_stream.name,"HyperSufaceStream")
         self.assertIsNone(base_stream._offset)
 
+
+class DispatchFilterFailedException(Exception):
+    """ just to mark that parsing would be invalidated """
+
+@pytest.mark.Skip
+class TestAmiraSpreadSheetCollector(Py23FixTestCase):
+    # TODO to be moved to dedicated ContentType tests when ContenType's are supported
+    #      bejond parser interface and basic structure building during loading of data
+    filename = 'BinaryHxSpreadSheet62x200.am'
+    strange_file = 'EqualLabeledColumnsSpreadSheet.am'
+
+    @staticmethod
+    def dofail():
+        raise DispatchFilterFailedException()
+
+    @classmethod
+    def setUpClass(cls):
+        cls.filepath = os.path.join(TEST_DATA_PATH,cls.filename)
+        # disable possibly installed filter for 'HxSpreadSheet'
+        filter_backup = clear_content_type_filter('HxSpreadSheet')
+        with open(cls.filepath,'rb') as fhnd:
+            cls.file_format,cls.parsed_header,cls.header_size,_ = get_header(fhnd)
+        cls.header_data = {
+            block_key:block_data
+            for block in cls.parsed_header
+            for block_key,block_data in block.items()
+        }
+        cls.filepath = os.path.join(TEST_DATA_PATH,cls.strange_file)
+        with open(cls.filepath,'rb') as fhnd:
+            cls.strange_file_format,cls.strange_parsed_header,cls.strange_header_size,_ = get_header(fhnd)
+        cls.strange_header_data = {
+            block_key:block_data
+            for block in cls.strange_parsed_header
+            for block_key,block_data in block.items()
+        }
+        #  possibly installed filter for 'HxSpreadSheet'
+        if issubclass(filter_backup,DispatchFilter):
+            set_content_type_filter('HxSpreadSheet',filter_backup)
+        else:
+            assert False
+
+    def setUp(self):
+        self.array_declarations = copy.deepcopy(self.header_data['array_declarations'])
+        self.data_definitions = copy.deepcopy(self.header_data['data_definitions'])
+        self.strange_array_declarations = copy.deepcopy(self.strange_header_data['array_declarations'])
+        self.strange_data_definitions = copy.deepcopy(self.strange_header_data['data_definitions'])
+
+    def test_filter(self):
+        dispatchprocessor = data_stream.AmiraSpreadSheetCollector(TestAmiraSpreadSheetCollector.dofail)
+        self.assertIsNone(dispatchprocessor.filter({}))
+
+        self.assertEqual(dispatchprocessor.filter(self.array_declarations[1]),('Sheet1',data_stream.AmiraSpreadSheet,1,{},{}))
+        test_dec = {key:value for key,value in self.array_declarations[2].items()}
+        test_dec['array_name'] = test_dec['array_name'][2:]
+        self.assertEqual(dispatchprocessor.filter(test_dec),(test_dec['array_name'][:-4],data_stream.AmiraSpreadSheet,2,{},{}))
+        test_dec['array_name'] = self.array_declarations[2]['array_name'][1:]
+        self.assertEqual(dispatchprocessor.filter(test_dec),(test_dec['array_name'][1:-4],data_stream.AmiraSpreadSheet,2,{},{}))
+        self.assertEqual(len(dispatchprocessor.not_counted_names),0)
+        self.assertFalse(dispatchprocessor.post_processing)
+        dispatchprocessor = data_stream.AmiraSpreadSheetCollector(TestAmiraSpreadSheetCollector.dofail)
+        index = -1
+        self.assertFalse(dispatchprocessor.post_processing)
+        for index,decl in enumerate(self.strange_array_declarations):
+            decl_name = decl['array_name']
+            self.assertEqual(dispatchprocessor.filter(decl),(decl_name,data_stream.AmiraSpreadSheet,index,{},{}))
+            self.assertEqual(decl['array_name'],'{}{:04d}'.format(decl_name,index))
+        self.assertEqual(dispatchprocessor.not_counted_names.get(self.strange_array_declarations[0]['array_name'][:-4],-1),index+1)
+        self.assertTrue(dispatchprocessor.post_processing)
+
+    def test_post_process(self):
+        dispatchprocessor = data_stream.AmiraSpreadSheetCollector(TestAmiraSpreadSheetCollector.dofail)
+        self.assertEqual(dispatchprocessor.post_process({}),{})
+        for decl in self.array_declarations:
+            dispatchprocessor.filter(decl)
+        self.assertFalse(dispatchprocessor.post_processing)
+        self.assertEqual(dispatchprocessor.post_process(self.data_definitions[2]),self.data_definitions[2])
+        dispatchprocessor = data_stream.AmiraSpreadSheetCollector(TestAmiraSpreadSheetCollector.dofail)
+        for decl in self.strange_array_declarations:
+            dispatchprocessor.filter(decl)
+        self.assertTrue(dispatchprocessor.post_processing)
+        for index,definition in enumerate(self.strange_data_definitions):
+            definition_name = definition['data_name']
+            self.assertEqual(dispatchprocessor.post_process(definition).get('array_reference',''),self.strange_array_declarations[index]['array_name'])
+            self.assertEqual(definition['data_name'],'{}{:04d}'.format(definition_name,index))

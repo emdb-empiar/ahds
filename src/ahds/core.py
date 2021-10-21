@@ -46,7 +46,7 @@ class ahds_readonly_descriptor(object):
         _hosting_class = getattr(_descriptor,'__objclass__',blockclass)
         _getter = _descriptor.__get__
 
-        class ahds_readonly_descriptor(cls):
+        class ahds_readonly_descriptor_(cls):
             __slots__ = ()
             def __get__(self,instance,owner):
                 if instance is not None:
@@ -64,7 +64,7 @@ class ahds_readonly_descriptor(object):
             __objclass__ = _hosting_class
 
         # create new descriptor
-        return super(cls,cls).__new__(ahds_readonly_descriptor)
+        return super(ahds_readonly_descriptor,cls).__new__(ahds_readonly_descriptor_)
 
 class ahds_parent_descriptor(object):
     """
@@ -97,7 +97,7 @@ class ahds_parent_descriptor(object):
 
         # create the descriptor preventing modification and assign it to the
         # parent attribute
-        class ahds_parent_descriptor(cls):
+        class ahds_parent_descriptor_(cls):
             __slots__ = ()
 
             def __get__(self,instance,owner):
@@ -121,16 +121,15 @@ class ahds_parent_descriptor(object):
 
             __objclass__ = _hosting_class
 
-        _public_descriptor = super(cls,cls).__new__(ahds_parent_descriptor)
+        _public_descriptor = super(ahds_parent_descriptor,cls).__new__(ahds_parent_descriptor_)
         print(_public_descriptor)
 
         # create a wrapper for the parent member_descriptor which only accepts Block
         # type objects and the special value None for clearing reference. 
         # For any valid Block type object a weak reference is store to the underlying
         # parent slot.
-        cascade_descriptors = ahds_parent_descriptor
-        ahds_parent_descriptor = None
-        class ahds_parent_descriptor(cascade_descriptors):
+        cascade_descriptors = ahds_parent_descriptor_
+        class ahds_parent_descriptor_(cascade_descriptors):
 
             __slots__ = ()
             def __set__(self,instance,value):
@@ -141,7 +140,7 @@ class ahds_parent_descriptor(object):
                     raise ValueError('parent must either be Block type object or None')
                 _parent_setter(instance,weakref.ref(value))
 
-        _private_descriptor = super(cls,cls).__new__(ahds_parent_descriptor)
+        _private_descriptor = super(ahds_parent_descriptor,cls).__new__(ahds_parent_descriptor_)
         print(_private_descriptor)
         return _public_descriptor,_private_descriptor
 
@@ -275,6 +274,7 @@ class BlockMetaClass(type):
 
 if sys.version_info[0] >= 3: #pragma: cover_py3
     # All defnitions for Python3 and newer which differ from their counterparts in Python2.x
+    from collections.abc import Iterable as IterableType
 
     def _decode_string(data):
         """ decodes binary ASCII string to python3 UTF-8 standard string """
@@ -303,8 +303,8 @@ if sys.version_info[0] >= 3: #pragma: cover_py3
 
     if sys.version_info[0] > 3 or sys.version_info[1] >= 7: # pragma: nocover
         _dict = dict
-    else: # pragma: nocover
-        from collections import OrderedDict
+    else:
+        from collections import OrderedDict # pargma: nocover
         _dict = OrderedDict
 
     def _qualname(o):
@@ -361,6 +361,7 @@ else: #pragma: cover_py2
     # All defnitions for Python 2.x which differ from their counterparts in Python 3.x and newer
     # TODO drop whole else clause when dropping Python 2 support
     from imp import reload
+    from collections import Iterable as IterableType
     reload(sys)
     sys.setdefaultencoding("utf-8")
 
@@ -638,7 +639,7 @@ class ahds_member_descriptor(object):
         _get_attrs = _attrs_getter.__get__
         _value_get = dict.get
 
-        class ahds_member_descriptor(cls):
+        class ahds_member_descriptor_(cls):
             __slots__ = ()
                 
             def __get__(self,instance,owner):
@@ -683,7 +684,7 @@ class ahds_member_descriptor(object):
             __objclass__ = blockinstance.__class__
                     
         # create instance of descriptor and insert it into the classdict of the blockinstance
-        _descriptor = super(cls,cls).__new__(ahds_member_descriptor)
+        _descriptor = super(ahds_member_descriptor,cls).__new__(ahds_member_descriptor_)
         _descriptor._alifeinstances = dict()
         _descriptor._makealife(blockinstance,name)
         return _descriptor
