@@ -6,6 +6,8 @@ import os
 import os.path
 import sys
 import types
+import inspect
+import functools as ft
 from unittest import TestCase
 
 AHDS_PACKAGE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -61,6 +63,16 @@ class Py23FixAssertWarnsContext():
         finally:
             pass #self = None
 
+if sys.version_info[0] >= 3:
+        _partialmethod = ft.partialmethod
+else:
+    class _partialmethod(ft.partial):
+        def __get__(self,instance,owner):
+            if instance is None:
+                return self
+            return ft.partial(self.func,instance,*(self.args or ()),**(self.keywords or {}))
+            
+
 class Py23FixTestCase(TestCase):
     """Mixin to fix method changes in TestCase class"""
 
@@ -77,3 +89,29 @@ class Py23FixTestCase(TestCase):
     def _assertWarns(self,expected_warning,*args,**kwargs):
         _context = Py23FixAssertWarnsContext(expected_warning,self)
         return _context.handle('assertWarns',args,kwargs)
+
+    @staticmethod
+    def parametrize(param_names,param_list):
+        fullstack = inspect.stack()
+        if len(fullstack) < 2:
+            raise TypeError("parametrize can only be used on method definitions")
+        frame = fullstack[1][0]
+        if frame.f_locals == frame.f_globals or not frame.f_locals.get('__module__',''):
+            raise TypeError("parametrize can only be used on method definiitons")
+        namespace = frame.f_locals
+        global_namespace = frame.f_globals
+        if isinstance(param_names,str):
+            param_names = param_names.split(',')
+        elif not isinstance(param_names,(list,tuple)) or any( not isinstance(name,str) or not name for name in param_names):
+            raise ValueError("'param_names' must be either a list/tuple of parameter name strings or a string listing all parameter names")
+        if not isinstance(param_list,(list,tuple)) or any(len(param_names) != len(param_set) for param_set in param_list):
+            raise ValueError("'param_list' must be a list/tuple of list/tuples providing a value for each specified parameter")
+        def parametrizer(func):
+            first_call = _partialmethod(func,**{key:value for key,value in zip(param_names,param_list[0])})
+            for repeat,keywords in enumerate( ( {key:value for key,value in zip(param_names,param_set) } for param_set in param_list[1:]),1):
+                func_name = "{}[{:d}]".format(func.__name__,repeat)
+                namespace[func_name] = _partialmethod(func,**keywords)
+            return first_call
+        return parametrizer
+
+        

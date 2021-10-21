@@ -22,8 +22,6 @@ from ahds.core import Block
 from ahds.proc import set_content_type_filter
 
 
-
-
 class TestDataStreamsBase(Py23FixTestCase):
     @classmethod
     def setUpClass(cls,load_streams=IMMEDIATE):
