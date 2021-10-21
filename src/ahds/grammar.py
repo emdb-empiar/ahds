@@ -179,15 +179,15 @@ _file_format_match = re.compile(br'^\s*#\s*(?P<format>AmiraMesh|HyperSurface)(?:
 _strip_lineend = b'\n'
 _stream_delimiters = [
     # pattern for locating stream_header in binary and ascii AmiraMesh type file
-    re.compile(br"(?:^|\n)[ \t\b]*@(?P<stream>\d+)[^ \t\b]*\n", flags=re.S),
+    re.compile(br"(?:^|\n)[^\S\n]*@(?P<stream>\d+)[^\S\n]*\n", flags=re.S),
     # pattern for locating stream_header in binary and ascii HyperSurface type file
     re.compile(
-        br"(?:^|\n)\s*(?P<stream>(?:"+_hyper_surface_entities+ br"))(?:\s+(?:(?P<count>\d+)|(?P<string>(?:\w|[^\r\n{])+)))?(?P<group>\s*(?:\n\s*)?\{\s*\n)?\s*\n"
+        br"(?:^|\n)[^\S\n]*(?P<stream>(?:"+_hyper_surface_entities+ br"))(?:[^\S\n]+(?:(?P<count>\d+)|(?P<string>(?:\w|[^\S\n])+)))?(?P<group>(?:[^\S\n]*(?:\n[^\S\n]*)?\{)+)?[^\S\n]*\n"
     ),
     # same as above for ascii type files which may contain comments will be completed below
     re.compile(br'#[^\n]*(?=\n|$)'),
     # search for end of stream either  followed by closing } and optionally opening { or by name of next stream
-    re.compile(br"(?P<stop>\s*\}(?:(?:\s|\n)*\{)?\s*\n|(?:" + _hyper_surface_entities + b"))", re.I),
+    re.compile(br"(?P<stop>\}(?:(?:[^\S\n]|\n)*\{)?[^\S\n]*\n|(?:" + _hyper_surface_entities + b"))", re.I),
     re.compile(br'}(?:\s*{)?')
 ]
 # pattern for locating stream_header and comments in ascii HyperSurface type file

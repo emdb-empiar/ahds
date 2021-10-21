@@ -10,8 +10,40 @@ import re
 import types
 
 from ahds import grammar, core, proc
-from . import TEST_DATA_PATH
+from . import TEST_DATA_PATH,Py23FixTestCase
 
+class TestStreamDelimiters(unittest.TestCase):
+    # TODO not working check how todo in unittest grrr
+    @Py23FixTestCase.parametrize(
+        ['filename','stream_delimiters'],
+        [
+            ("testscalar.am",grammar._stream_delimiters[0]),
+            ("BinaryCustomLandmarks.elm",grammar._stream_delimiters[0]),
+            ("simple.surf",grammar._stream_delimiters[1]),
+            ("full.surf",grammar._stream_delimiters[1]),
+            ("BinaryHyperSurface.surf",grammar._stream_delimiters[1])
+        ]
+    )
+    def test_stream_header_patterns(self,filename,stream_delimiters):
+        filepath = os.path.join(TEST_DATA_PATH,filename)
+        with open(filepath,'rb') as fhnd:
+            data = fhnd.read(max(grammar._rescan_overlap,50))
+            _detected_format = grammar._file_format_match.match(data)
+            file_format = core._decode_string(_detected_format.group('format')) if _detected_format else '<<unknown>>'
+            self.assertIn(file_format,{'AmiraMesh',"HyperSurface"})
+            more_header_data,data = data,b''
+            _chunklen = 0
+            while more_header_data:
+                data += more_header_data
+                m = stream_delimiters.search(data, _chunklen)
+                if m is not None:
+                    data,stream_data = data[:m.start()],data[m.start():]
+                    break
+                _chunklen = len(data) - grammar._rescan_overlap
+                more_header_data = fhnd.read(16384)
+            else:
+                self.fail("missed stream handle/header")
+    
 class TestGramarBase(unittest.TestCase):
     filename = 'testscalar.am'
     @classmethod
