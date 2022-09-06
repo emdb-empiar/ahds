@@ -18,10 +18,10 @@ from ..core import Block, ListBlock, _print
 class TestBlock(Py23FixTestCase):
     def test_create(self):
         b = Block('block')
-        self.assertTrue(b.block_name, 'block')
+        self.assertTrue(b.name, 'block')
         self.assertFalse(b.is_parent)
         with self.assertRaises(AttributeError):
-            b.block_name = 'something else'
+            b.name = 'something else'
 
     def test_add_attrs(self):
         b = Block('block')
@@ -153,7 +153,7 @@ class TestListBlock(Py23FixTestCase):
         self.assertEqual(len(l), 3)
         # insert
         l.insert(1, Block('inserted'))
-        self.assertEqual(l[1].block_name, 'inserted')
+        self.assertEqual(l[1].name, 'inserted')
         # pop
         l.pop()
         self.assertEqual(len(l), 3)
@@ -223,8 +223,8 @@ class HxSurfSegment(object):
         # id
         self._segment_id = self._material.Id
         # name
-        if self._material.block_name:
-            self._name = self._material.block_name
+        if self._material.name:
+            self._name = self._material.name
         else:
             self._name = None
         # colour
@@ -486,9 +486,9 @@ class TestAmiraFile(unittest.TestCase):
         else:
             self.assertIsNone(af.header.Parameters.Materials.material_dict)
         # print(segments)
-        # print(list(map(lambda s: (s.id, s.block_name, s.colour, len(s.vertices), len(s.triangles)), segments.values())))
+        # print(list(map(lambda s: (s.id, s.name, s.colour, len(s.vertices), len(s.triangles)), segments.values())))
         # print(segments[patch_id].id)
-        # print(segments[patch_id].block_name)
+        # print(segments[patch_id].name)
         # print(segments[patch_id].colour)
         # print(len(segments[patch_id].vertices))  # , len(segments[2].vertices))
         # print(len(segments[patch_id].triangles))  # , len(segments[2].triangles))
@@ -502,7 +502,7 @@ class TestAmiraFile(unittest.TestCase):
         #             \rColour:{}
         #             \rNo. vertices: {}
         #             \rNo. triangles: {}
-        #             """.format(s.id, s.block_name, s.colour, len(s.vertices), len(s.triangles)))
+        #             """.format(s.id, s.name, s.colour, len(s.vertices), len(s.triangles)))
 
 
 if __name__ == "__main__":
