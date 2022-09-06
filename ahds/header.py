@@ -218,7 +218,7 @@ class AmiraHeader(Block):
         if hasattr(_parameters, 'Materials'):
             material_dict = dict()
             for material in _parameters.Materials:
-                material_dict[material.name] = material
+                material_dict[material.block_name] = material
             _parameters.Materials.material_dict = material_dict
         super(AmiraHeader, self).add_attr('Parameters', _parameters)
         # load array declarations
