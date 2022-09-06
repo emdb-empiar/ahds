@@ -96,13 +96,13 @@ class AmiraFile(Block):
     def __repr__(self):
         return "AmiraFile('{}', read={})".format(self._fn, self._read)
 
-    def __str__(self, prefix="", index=None):
+    def __str__(self, prefix="", index=None,alt_name=None):
         width = 140
         string = ""
         string += '*' * width + '\n'
         string += "AMIRA (R) HEADER AND DATA STREAMS\n"
         string += "-" * width + "\n"
-        string += super(AmiraFile, self).__str__(prefix=prefix, index=index)
+        string += super(AmiraFile, self).__str__(prefix=prefix, index=index,alt_name=alt_name)
         string += "*" * width
         return string
 
