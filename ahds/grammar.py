@@ -220,11 +220,12 @@ def _swap_illegal_chars(byte_seq, seq_map):
     return swapped_byte_seq
 
 
-def get_header(fn, file_format, header_bytes=20000, verbose=True, *args, **kwargs):
+def get_header(fn, file_format, header_bytes=20000, verbose=False, *args, **kwargs):
     """Apply rules for detecting the boundary of the header
     
     :param str fn: file name
     :param str file_format: either ``AmiraMesh`` or ``HyperSurface``
+    :param bool verbose: verbose output; default False
     :param int header_bytes: number of bytes in which to search for the header [default: 20000]
     :return str data: the header as per the ``file_format``
     """
@@ -270,7 +271,8 @@ def parse_header(data, verbose=False, *args, **kwargs):
     """Parse the data using the grammar specified in this module
     
     :param str data: delimited data to be parsed for metadata
-    :return list parsed_data: structured metadata 
+    :param bool verbose: verbose output; default False
+    :return list parsed_data: structured metadata
     """
     # the parser
     if verbose:

@@ -29,22 +29,22 @@ class TestDataStreams(unittest.TestCase):
         # test9.am
         self.assertIsInstance(self.af_am.data_streams, ahds.Block)
         self.assertEqual(self.af_am.header.data_stream_count, 1)
-        self.assertEqual(self.af_am.data_streams.name, 'data_streams')
-        self.assertEqual(self.af_am.data_streams.Labels.name, 'Labels')
+        self.assertEqual(self.af_am.data_streams.block_name, 'data_streams')
+        self.assertEqual(self.af_am.data_streams.Labels.block_name, 'Labels')
 
         # test8.am
         self.assertIsInstance(self.af_am_hxsurf.data_streams, ahds.Block)
         self.assertEqual(self.af_am_hxsurf.header.data_stream_count, 3)
-        self.assertEqual(self.af_am_hxsurf.data_streams.name, 'data_streams')
-        self.assertEqual(self.af_am_hxsurf.data_streams.Vertices.name, 'Vertices')
-        self.assertEqual(self.af_am_hxsurf.data_streams.Triangles.name, 'Triangles')
-        self.assertEqual(getattr(self.af_am_hxsurf.data_streams, "Patches-0").name, "Patches-0")
+        self.assertEqual(self.af_am_hxsurf.data_streams.block_name, 'data_streams')
+        self.assertEqual(self.af_am_hxsurf.data_streams.Vertices.block_name, 'Vertices')
+        self.assertEqual(self.af_am_hxsurf.data_streams.Triangles.block_name, 'Triangles')
+        self.assertEqual(getattr(self.af_am_hxsurf.data_streams, "Patches-0").block_name, "Patches-0")
 
         # test7.surf
         self.assertIsInstance(self.af_hxsurf.data_streams, ahds.Block)
         self.assertEqual(self.af_hxsurf.header.data_stream_count, 1)
-        self.assertEqual(self.af_hxsurf.data_streams.name, 'data_streams')
-        self.assertEqual(self.af_hxsurf.data_streams.Data.name, 'Data')
+        self.assertEqual(self.af_hxsurf.data_streams.block_name, 'data_streams')
+        self.assertEqual(self.af_hxsurf.data_streams.Data.block_name, 'Data')
 
 
         # self.assertIsInstance(af_am_data_stream, data_stream.AmiraMeshDataStream)
