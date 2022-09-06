@@ -113,16 +113,16 @@ def deprecated(description):
 @ft.total_ordering
 class Block(object):
     """Data content block for atomic entities"""
-    __slots__ = ('_block_name', '_attrs', '_is_parent', '__dict__', '__weakref__')
+    __slots__ = ('_name', '_attrs', '_is_parent', '__dict__', '__weakref__')
 
     def __init__(self, name):
-        self._block_name = name
+        self._name = name
         self._attrs = _dict()
         self._is_parent = False
 
     @property
-    def block_name(self):
-        return self._block_name
+    def name(self):
+        return self._name
 
     def attrs(self):
         return list(self._attrs.keys())
@@ -134,25 +134,25 @@ class Block(object):
     def add_attr(self, attr, value=None, isparent=False):
         """Add an attribute to this block object"""
         try:
-            assert hasattr(attr, 'block_name') or isinstance(attr, str)
+            assert hasattr(attr, 'name') or isinstance(attr, str)
         except AssertionError:
-            raise ValueError('attr should be str or have .block_name attribute')
-        if hasattr(attr, 'block_name'):
-            attr_block_name = attr.block_name
+            raise ValueError('attr should be str or have .name attribute')
+        if hasattr(attr, 'name'):
+            attr_name = attr.name
         elif isinstance(attr, str):
-            attr_block_name = attr
+            attr_name = attr
         else:
             raise ValueError("invalid type for attr: {}".format(type(attr)))
         # first check that the attribute does not exist on the class
-        if hasattr(self, attr_block_name):
-            raise ValueError("will not overwrite attribute '{}'".format(attr_block_name))
+        if hasattr(self, attr_name):
+            raise ValueError("will not overwrite attribute '{}'".format(attr_name))
         try:
-            assert attr_block_name not in self._attrs
+            assert attr_name not in self._attrs
         except AssertionError:
             raise ValueError("attribute '{}' already exists".format(attr))
 
         if isinstance(attr, Block):
-            self._attrs[attr.block_name] = attr
+            self._attrs[attr.name] = attr
             self._is_parent = True
         else:
             self._attrs[attr] = value
@@ -181,7 +181,7 @@ class Block(object):
         try:
             assert new_name not in self._attrs
         except AssertionError:
-            raise ValueError('''will not overwrite attribute \'{}\''''.format(new_name))
+            raise ValueError("will not overwrite attribute '{}'".format(new_name))
         else:
             try:
                 self._attrs[new_name] = self._attrs[name]
@@ -192,13 +192,13 @@ class Block(object):
     def rename_attr(self, attr, new_name):
         self.move_attr(new_name, attr)
 
-    def __getattr__(self, block_name):
+    def __getattr__(self, name):
         try:
-            return self._attrs[block_name]
+            return self._attrs[name]
         except KeyError:
-            raise AttributeError('''attribute {} not found'''.format(block_name))
+            raise AttributeError('''attribute {} not found'''.format(name))
 
-    def __str__(self, prefix="", index=None):
+    def __str__(self, prefix="", index=None,alt_name=None):
         """Compile the hierarchy of Blocks into a tree
 
         :param str prefix: prefix to signify depth in the tree
@@ -211,12 +211,12 @@ class Block(object):
         string = ''
         if index is not None:
             string += "{} {} [is_parent? {:<5}]\n".format(
-                format(prefix + "+[{}]-{}".format(index, self.block_name), '<55'),
+                format(prefix + "+[{}]-{}".format(index, self.name if alt_name == self.name else alt_name), '<55'),
                 format(type(self).__name__, '>50'),
                 str(self.is_parent)
             )
         else:
-            name = format(prefix + "+-{}".format(self.block_name), '<55')
+            name = format(prefix + "+-{}".format(self.name if alt_name == self.name else alt_name), '<55')
             if len(name) > 55:
                 name = name[:52] + '...'
             string += "{} {} [is_parent? {:<5}]\n".format(
@@ -229,7 +229,7 @@ class Block(object):
             if isinstance(self._attrs[attr], Block):
                 # if it is a Block then the prefix will change by having extra '| ' before it
                 # string += 'something\n'
-                string += self._attrs[attr].__str__(prefix=prefix + "|  ")
+                string += self._attrs[attr].__str__(prefix=prefix + "|  ",alt_name=attr)
             else:
                 # if it is not a Block then we construct the repr. manually
                 val = self._attrs[attr]
@@ -246,7 +246,9 @@ class Block(object):
                         string += prefix + "|  +-{}: {},...,{}\n".format(attr, val[start], val[end])
                 else:
                     if isinstance(self._attrs[attr], str):
-                        if len(self._attrs[attr]) > 55:
+                        if attr == "@alias" and alt_name == self._attrs[attr]:
+                            string += prefix + "|  +-{}: {}\n".format(attr, self.name)
+                        elif len(self._attrs[attr]) > 55:
                             string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr][:52] + '...')
                         else:
                             string += prefix + "|  +-{}: {}\n".format(attr, self._attrs[attr])
@@ -259,7 +261,7 @@ class Block(object):
             assert isinstance(index, int)
         except AssertionError:
             raise ValueError('index must be an integer or long')
-        if self.block_name == 'Materials':
+        if self.name == 'Materials':
             for attr in self.attrs():
                 block = getattr(self, attr)
                 if hasattr(block, 'Id'):
@@ -279,7 +281,7 @@ class Block(object):
             assert isinstance(other, Block)
         except AssertionError:
             raise ValueError('item must be a Block class/subclass')
-        if self.block_name == other.block_name:
+        if self.name == other.name:
             return True
         return False
 
@@ -288,7 +290,7 @@ class Block(object):
             assert isinstance(other, Block)
         except AssertionError:
             raise ValueError('item must be a Block class/subclass')
-        if self.block_name < other.block_name:
+        if self.name < other.name:
             return True
         return False
 
@@ -308,7 +310,7 @@ class ListBlock(Block):
     @property
     def ids(self):
         ids = list()
-        if self.block_name == 'Materials':
+        if self.name == 'Materials':
             # first check non-list items
             for attr in self.attrs():
                 _attrval = getattr(self, attr)
@@ -336,7 +338,7 @@ class ListBlock(Block):
     @material_dict.setter
     def material_dict(self, value):
         """Check that this is a material block"""
-        if self.block_name == "Materials":
+        if self.name == "Materials":
             if isinstance(value, dict):
                 keys_are_strings = map(lambda k: isinstance(k, str), value.keys())
                 values_are_blocks = map(lambda v: isinstance(v, Block), value.values())
@@ -384,7 +386,7 @@ class ListBlock(Block):
             else:
                 return False
 
-    def __str__(self, prefix="", index=None):
+    def __str__(self, prefix="", index=None,alt_name=None):
         """Convert the ListBlock into a string
 
         :param str prefix: prefix to signify depth in the tree
@@ -392,7 +394,7 @@ class ListBlock(Block):
         :returns str string: formatted string of attributes
         """
         # first we use the superclass to populate everything else
-        string = super(ListBlock, self).__str__(prefix=prefix, index=index)
+        string = super(ListBlock, self).__str__(prefix=prefix, index=index,alt_name=alt_name)
         # now we stringify the list-blocks
         for index, block in enumerate(self.items()):
             string += block.__str__(prefix=prefix + "|  ", index=index)

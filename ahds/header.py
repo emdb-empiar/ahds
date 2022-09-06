@@ -120,6 +120,7 @@ from __future__ import print_function
 
 import sys
 import numpy
+import warnings
 
 from .core import Block, deprecated, ListBlock
 from .data_stream import set_data_stream
@@ -218,7 +219,7 @@ class AmiraHeader(Block):
         if hasattr(_parameters, 'Materials'):
             material_dict = dict()
             for material in _parameters.Materials:
-                material_dict[material.block_name] = material
+                material_dict[material.name] = material
             _parameters.Materials.material_dict = material_dict
         super(AmiraHeader, self).add_attr('Parameters', _parameters)
         # load array declarations
@@ -328,12 +329,23 @@ class AmiraHeader(Block):
                                 block.add_attr(param['parameter_name'], param['parameter_value'][1:])
                             else:
                                 block.add_attr(
-                                    self._load_parameters(param['parameter_value'], name=param['parameter_name']))
+                                    self._load_parameters(param['parameter_value'], name=param['parameter_name'],parent_block=block))
                         else:
                             # print(param['parameter_name'], type(param['parameter_name']))
                             block.add_attr(param['parameter_name'], param['parameter_value'])
                     else:
-                        block.add_attr(param['parameter_name'], param['parameter_value'])
+                        parameter_name = param['parameter_name']
+                        if parameter_name == 'name':
+                            parameter_value = param['parameter_value']
+                            if parameter_value != name:
+                                parent_block = kwargs.get('parent_block',None)
+                                if isinstance(parent_block,Block):
+                                    parent_block.add_attr(parameter_value,block)
+                                else: # may be removed to silently ignore alias definitions on Parameters
+                                    warnings.warn("Setting alias '{}' for block '{}' failed: No parent".format(parameter_value,name))
+                                block.add_attr('@alias',parameter_value)
+                        else:
+                            block.add_attr(param['parameter_name'], param['parameter_value'])
                 except KeyError:
                     print(u"Found odd parameter: {} = {}".format(list(param.keys())[0], param[list(param.keys())[0]]),
                           file=sys.stderr)
