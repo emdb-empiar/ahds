@@ -138,21 +138,20 @@ class Block(object):
         except AssertionError:
             raise ValueError('attr should be str or have .name attribute')
         if hasattr(attr, 'name'):
-            attr_name = attr.name
-        elif isinstance(attr, str):
-            attr_name = attr
-        else:
+            value = attr
+            attr = attr.name
+        elif not isinstance(attr, str):
             raise ValueError("invalid type for attr: {}".format(type(attr)))
         # first check that the attribute does not exist on the class
-        if hasattr(self, attr_name):
-            raise ValueError("will not overwrite attribute '{}'".format(attr_name))
+        if hasattr(self, attr):
+            raise ValueError("will not overwrite attribute '{}'".format(attr))
         try:
-            assert attr_name not in self._attrs
+            assert attr not in self._attrs
         except AssertionError:
             raise ValueError("attribute '{}' already exists".format(attr))
 
-        if isinstance(attr, Block):
-            self._attrs[attr.name] = attr
+        if isinstance(value, Block):
+            self._attrs[attr] = value
             self._is_parent = True
         else:
             self._attrs[attr] = value
@@ -211,12 +210,12 @@ class Block(object):
         string = ''
         if index is not None:
             string += "{} {} [is_parent? {:<5}]\n".format(
-                format(prefix + "+[{}]-{}".format(index, self.name if alt_name == self.name else alt_name), '<55'),
+                format(prefix + "+[{}]-{}".format(index, self.name if alt_name in (self.name,None,'') else alt_name), '<55'),
                 format(type(self).__name__, '>50'),
                 str(self.is_parent)
             )
         else:
-            name = format(prefix + "+-{}".format(self.name if alt_name == self.name else alt_name), '<55')
+            name = format(prefix + "+-{}".format(self.name if alt_name in (self.name,None,'') else alt_name), '<55')
             if len(name) > 55:
                 name = name[:52] + '...'
             string += "{} {} [is_parent? {:<5}]\n".format(
