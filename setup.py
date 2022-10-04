@@ -58,7 +58,7 @@ AHDS_CLASSIFIERS = [
 ]
 
 if sys.version_info[0] > 2:
-    AHDS_INSTALL_REQUIRES = ["simpleparse>=2.1.1"]
+    AHDS_INSTALL_REQUIRES = ["simpleparse"]
     if sys.version_info[1] > 5:
         AHDS_INSTALL_REQUIRES += ["scikit-image"]
     else:
